@@ -14,7 +14,7 @@ function Tournaments({ onViewMatches }) { // Add onViewMatches prop
 
     const API_BASE = import.meta.env.VITE_API_BASE
     // API URL for tournaments - Using the new API URL provided by the user
-   const TOURNAMENTS_API_URL = API_BASE+`api/torneos?populate=*`;
+   const TOURNAMENTS_API_URL = API_BASE+`api/torneos?populate=partidos.pareja1&populate=partidos.pareja2&populate=partidos.ganador&populate=club.logo`;
 
     // Fetch tournaments data on component mount
     useEffect(() => {
