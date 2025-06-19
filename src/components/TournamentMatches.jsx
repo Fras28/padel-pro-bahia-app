@@ -135,7 +135,7 @@ function TournamentMatches({ tournament, onBack }) { // Changed props to receive
 
             {/* Matches Played Section */}
             <div className="border-t pt-3 mt-3">
-                <p className="font-semibold text-lg mb-2">Partidos del Torneo ({matches.length}):</p>
+                <p className="font-semibold text-lg mb-2  text-black">Partidos del Torneo ({matches.length}):</p>
                 {matches.length > 0 ? (
                     <ul className="list-disc list-inside text-sm max-h-96 overflow-y-auto bg-gray-50 p-3 rounded-md">
                         {matches.sort((a, b) => new Date(a.fechaPartido) - new Date(b.fechaPartido)).map(match => (
@@ -146,11 +146,11 @@ function TournamentMatches({ tournament, onBack }) { // Changed props to receive
                                         Parejas: {match.pareja1.nombrePareja} vs {match.pareja2.nombrePareja}
                                     </p>
                                 )}
-                                <p>Fecha: {match.fechaPartido ? new Date(match.fechaPartido).toLocaleString() : 'N/A'}</p>
-                                <p>Cancha: {match.cancha || 'N/A'}</p>
-                                <p>Estado: <span className={`font-semibold ${match.estado === 'En Curso' ? 'text-blue-600' : match.estado === 'Finalizado' ? 'text-green-600' : 'text-gray-600'}`}>{match.estado || 'N/A'}</span></p>
+                                <p className="font-medium text-black">Fecha: {match.fechaPartido ? new Date(match.fechaPartido).toLocaleString() : 'N/A'}</p>
+                                <p className="font-medium text-black">Cancha: {match.cancha || 'N/A'}</p>
+                                <p className="font-medium text-black">Estado: <span className={`font-semibold ${match.estado === 'En Curso' ? 'text-blue-600' : match.estado === 'Finalizado' ? 'text-green-600' : 'text-gray-600'}`}>{match.estado || 'N/A'}</span></p>
                                 {match.resultadoSet1 && (
-                                    <p>Resultado: {match.resultadoSet1} {match.resultadoSet2 ? `- ${match.resultadoSet2}` : ''} {match.resultadoSet3 ? `- ${match.resultadoSet3}` : ''}</p>
+                                    <p className="font-medium text-black">Resultado: {match.resultadoSet1} {match.resultadoSet2 ? `- ${match.resultadoSet2}` : ''} {match.resultadoSet3 ? `- ${match.resultadoSet3}` : ''}</p>
                                 )}
                                 {match.ganador_pareja && ( // Assuming a 'ganador_pareja' field for the winning pair
                                     <p className="text-green-700 font-semibold">Ganador: {match.ganador_pareja.nombrePareja}</p>
