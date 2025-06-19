@@ -1,20 +1,20 @@
 // src/components/Tournaments.jsx
 import React, { useEffect, useState } from 'react';
-import TournamentDetailModal from './TournamentDetailModal'; // Import the detail modal
+// Removed TournamentDetailModal import as it will no longer be used
 
 // Tournaments component to display a list of tournaments categorized by status
-function Tournaments() {
+function Tournaments({ onViewMatches }) { // Add onViewMatches prop
     // State to store tournaments data
     const [tournaments, setTournaments] = useState([]);
     // State to manage loading status
     const [loading, setLoading] = useState(true);
     // State to store any error messages
     const [error, setError] = useState(null);
-    // State to store the tournament selected for detail view
-    const [selectedTournament, setSelectedTournament] = useState(null);
+    // Removed selectedTournament state
+
     const API_BASE = import.meta.env.VITE_API_BASE
     // API URL for tournaments - Using the new API URL provided by the user
-   const TOURNAMENTS_API_URL = API_BASE+`api/torneos?populate=club.logo&populate=parejas_inscritas&populate=categorias`;
+   const TOURNAMENTS_API_URL = API_BASE+`api/torneos?populate=*`;
 
     // Fetch tournaments data on component mount
     useEffect(() => {
@@ -83,15 +83,7 @@ function Tournaments() {
 
     const groupedTournaments = groupTournamentsByStatus(tournaments);
 
-    // Function to handle card click and open the modal
-    const handleCardClick = (tournament) => {
-        setSelectedTournament(tournament);
-    };
-
-    // Function to close the modal
-    const handleCloseModal = () => {
-        setSelectedTournament(null);
-    };
+    // Removed handleCardClick and handleCloseModal as modal is removed
 
     if (loading) {
         return (
@@ -131,7 +123,7 @@ function Tournaments() {
                                 <div
                                     key={tournament.id}
                                     className="bg-gray-50 rounded-lg shadow-sm p-4 border border-gray-200 cursor-pointer hover:shadow-md transition-shadow duration-200"
-                                    onClick={() => handleCardClick(tournament)} // Make card clickable
+                                    onClick={() => onViewMatches(tournament)} // Now calls onViewMatches directly
                                 >
                                     <h4 className="text-lg font-semibold text-blue-700">{tournament.nombre}</h4>
                                     <p className="text-sm text-gray-600">Estado: <span className="font-medium">{tournament.estado}</span></p>
@@ -233,10 +225,7 @@ function Tournaments() {
                 </div>
             ))}
 
-            {/* Render the TournamentDetailModal when a tournament is selected */}
-            {selectedTournament && (
-                <TournamentDetailModal tournament={selectedTournament} onClose={handleCloseModal} />
-            )}
+            {/* Removed TournamentDetailModal rendering */}
         </div>
     );
 }

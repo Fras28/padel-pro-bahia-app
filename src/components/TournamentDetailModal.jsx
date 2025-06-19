@@ -2,7 +2,7 @@
 import React from 'react';
 
 // TournamentDetailModal component to display comprehensive tournament information
-function TournamentDetailModal({ tournament, onClose }) {
+function TournamentDetailModal({ tournament, onClose, onViewMatches }) { // Add onViewMatches prop
     if (!tournament) {
         return null; // Don't render if no tournament data is provided
     }
@@ -85,22 +85,34 @@ function TournamentDetailModal({ tournament, onClose }) {
                         </div>
                     )}
 
-                    {/* Matches Played - Removed as 'partidos' is no longer populated by the new API
+                    {/* Matches Played - Re-added with assumption of updated API for players in matches */}
                     {tournament.partidos && tournament.partidos.length > 0 && (
                         <div className="border-t pt-3 mt-3">
-                            <p className="font-semibold text-lg mb-2">Partidos Jugados ({tournament.partidos.length}):</p>
-                            <ul className="list-disc list-inside text-sm max-h-40 overflow-y-auto bg-gray-50 p-3 rounded-md">
+                            <p className="font-semibold text-lg mb-2">Partidos del Torneo ({tournament.partidos.length}):</p>
+                            <ul className="list-disc list-inside text-sm max-h-60 overflow-y-auto bg-gray-50 p-3 rounded-md">
                                 {tournament.partidos.map(match => (
-                                    <li key={match.id}>
-                                        Cancha: {match.cancha?.numero || 'N/A'}, Resultado: {match.resultado || 'N/A'}
-                                        {match.ganador && ` (Ganador: ${match.ganador.nombre} ${match.ganador.apellido})`}
+                                    <li key={match.id} className="mb-2">
+                                        <p className="font-medium">Ronda: {match.ronda || 'N/A'}</p>
+                                        {match.pareja1 && match.pareja2 && (
+                                            <p>
+                                                Parejas: {match.pareja1.nombrePareja} vs {match.pareja2.nombrePareja}
+                                            </p>
+                                        )}
+                                        <p>Fecha: {match.fechaPartido ? new Date(match.fechaPartido).toLocaleString() : 'N/A'}</p>
+                                        <p>Cancha: {match.cancha || 'N/A'}</p>
+                                        <p>Estado: <span className={`font-semibold ${match.estado === 'En Curso' ? 'text-blue-600' : match.estado === 'Finalizado' ? 'text-green-600' : 'text-gray-600'}`}>{match.estado || 'N/A'}</span></p>
+                                        {match.resultadoSet1 && (
+                                            <p>Resultado: {match.resultadoSet1} {match.resultadoSet2 ? `- ${match.resultadoSet2}` : ''} {match.resultadoSet3 ? `- ${match.resultadoSet3}` : ''}</p>
+                                        )}
+                                        {match.ganador_pareja && ( // Assuming a 'ganador_pareja' field for the winning pair
+                                            <p className="text-green-700 font-semibold">Ganador: {match.ganador_pareja.nombrePareja}</p>
+                                        )}
                                     </li>
                                 ))}
-                                {tournament.partidos.length === 0 && <p>No hay partidos registrados.</p>}
+                                {tournament.partidos.length === 0 && <p>No hay partidos registrados para este torneo.</p>}
                             </ul>
                         </div>
                     )}
-                    */}
                 </div>
 
                 {/* WhatsApp Button for "Abierto" tournaments inside the modal */}
@@ -109,15 +121,12 @@ function TournamentDetailModal({ tournament, onClose }) {
                         {(() => {
                             const rawPhoneNumber = tournament.club.telefono;
                             let parsedPhoneNumber = rawPhoneNumber;
-
                             // Remove leading '0' if present, e.g., '02915729501' -> '2915729501'
                             if (parsedPhoneNumber.startsWith('0') && parsedPhoneNumber.length > 1) {
                                 parsedPhoneNumber = parsedPhoneNumber.substring(1);
                             }
-
                             // Prepend Argentina's country code (54) and '9' for mobile numbers
                             const formattedPhoneNumber = '549' + parsedPhoneNumber;
-
                             const message = encodeURIComponent(`Hola, me gustaría solicitar la inscripción para el torneo ${tournament.nombre}.`);
                             const whatsappLink = `https://wa.me/${formattedPhoneNumber}?text=${message}`;
 
@@ -130,13 +139,12 @@ function TournamentDetailModal({ tournament, onClose }) {
                                         className="w-full text-center bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 text-sm flex items-center justify-center"
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" fill="currentColor" className="w-4 h-4 mr-2">
-                                            {/* FontAwesome WhatsApp icon SVG path */}
-                                            <path d="M380.9 97.1C339.2 53.7 283.5 25.1 224 25.1c-119.5 0-216.5 97-216.5 216.5 0 35.3 8.3 68.3 24.3 97.1L1.6 476.3l100.2-26.2c28.5 15.5 60.1 23.8 93.3 23.8h0c119.5 0 216.5-97 216.5-216.5 0-59.5-28.6-115.2-72-156.9zM224 433.8c-25.2 0-49.3-6.7-70.1-19.3L111 411.3l-20.5 5.4 5.4-20.5 13.7-32.1c-13.6-21.2-20.9-45.8-20.9-70.1 0-80.9 65.7-146.6 146.6-146.6 39.3 0 76.5 15.3 104.5 43.3s43.3 65.2 43.3 104.5c0 80.9-65.7 146.6-146.6 146.6zM342.3 218.8c-2.9-1.5-17.2-8.4-19.9-9.3s-4.6-1.4-6.5 1.4-8.7 11.7-10.6 14.1-3.8 2.6-7 1.1c-19.9-9.3-46.1-18.9-66.2-38.9-1.9-1.9-1.5-2.9 1.3-5.7s4.2-6.5 6.2-9.3c1.9-2.9 2.6-4.9 3.9-6.5 1.4-1.9.7-3.8-.7-4.6s-6.5-1.4-9.3-1.4c-2.9 0-5.7.7-8.7 1.4-2.9.7-7.7 2.9-11.7 5.7-3.8 2.9-8.4 8.7-12.2 16.6s-5.7 15.3-8.7 18.2c-2.9 2.9-5.7 5.7-8.7 8.4-2.9 2.9-5.7 4.2-8.7 4.2h-1.4c-2.9 0-5.7-.7-8.7-1.4-2.9-.7-5.7-1.4-8.7-2.9s-5.7-1.9-7.7-1.9c-2.9 0-5.7 1.4-8.7 1.4-2.9.7-5.7 1.4-8.7 2.9s-4.6 2.9-6.5 5.7-2.9 5.7-4.2 8.7-1.4 7-1.4 8.4c0 1.4.7 2.9 1.4 4.2.7 1.4 1.9 2.9 2.9 4.2 1.9 1.9 3.8 3.8 5.7 6.5s4.2 5.7 6.5 8.7c2.9 2.9 5.7 5.7 8.7 8.7s6.5 6.5 10.6 9.3c4.2 2.9 8.7 5.7 13.6 8.7 4.9 2.9 10.6 5.7 16.6 7c5.9 1.4 11.7 2.1 16.6 2.1 4.9 0 9.3-.7 13.6-1.4 4.9-.7 9.9-1.9 14.1-3.8 4.2-1.9 8.7-3.8 12.2-5.7 3.8-1.9 7.7-3.8 10.6-5.7s5.4-3.5 7-4.6c1.9-1.4 3.5-1.9 5-1.9h.7c1.4 0 2.9.7 4.2 1.4 1.4.7 2.9 1.9 3.8 2.9 1.9 1.9 3.5 3.8 4.6 5.7s1.9 3.5 1.9 4.2c0 .7-.7 1.4-1.4 1.9s-2.9.7-4.2.7h-1.4c-.7 0-1.4-.7-2.1-.7s-1.4-.7-1.9-.7c-2.9-1.4-5.7-2.9-8.4-4.2s-5.7-2.9-8.4-4.2c-2.9-1.4-5.7-2.9-8.4-4.2-2.9-1.4-5.7-2.9-8.4-4.2z"/>
+                                            <path d="M380.9 97.1C339.2 53.7 283.5 25.1 224 25.1c-11.7 0-23.4.7-34.8 2.1-79.6 10.7-142.3 73.4-153 153-1.4 11.4-2.1 23.1-2.1 34.8 0 59.5 24.1 114.7 66.5 156.9l-16.7 61.3 62.2-16.3c40.5 22.1 86.8 33.8 135.2 33.8h.2c114.6 0 207.6-93 207.6-207.6 0-59.5-24.1-114.7-66.5-156.9zM224 430.7H224.2c-47 0-91.8-11.6-131.9-33.6l-9.3-4.5-35.1 9.2 9.5-34.7-4.7-9c-42.4-42.4-66-98.8-66-159.2 0-30.8 4.7-60.5 13.9-88.7 8.3-26.1 20.2-50.6 35.7-71.5C92.2 67.5 154.3 35.1 224 35.1c32.7 0 64.3 6.4 93.8 19.3 28.5 12.4 54.4 30.4 75.6 51.5 21.2 21.2 39.2 47.1 51.5 75.6 12.9 29.5 19.3 61.1 19.3 93.8 0 70.3-32.4 132.4-86.8 174.6-20.9 15.6-45.4 27.5-71.5 35.7-28.2 9.2-57.9 13.9-88.7 13.9zM346.3 306.4c-2.3-1.1-13.7-6.8-15.8-7.6-2.1-.9-3.6-1.4-5.2 1.4-1.6 2.9-6 6.8-7.3 8.2-1.4 1.4-2.7 1.6-5 1.1s-10.7-3.9-20.5-12.6c-8.7-7.6-14.5-17.1-16.3-20.1-1.9-2.9-.2-4.5 1.2-5.7.7-.7 1.6-1.9 2.3-2.9 1.4-1.9 1.9-3.6 2.9-5.4.9-1.9.5-3.6-.2-5-.7-1.4-6.8-16.2-9.3-22.1-2.3-5.7-4.6-4.5-6-4.5-1.4 0-2.9-.2-4.5-.2-1.6 0-4.2.5-6.4 2.9-2.3 2.3-8.7 8.4-8.7 20.5 0 12.1 9 23.8 10.2 25.4 1.2 1.6 17.6 26.8 42.7 37.1 25.1 10.2 25.1 6.8 29.6 6.5 4.5-.2 13.7-5.6 15.6-11.4 1.9-5.7 1.9-10.6 1.4-11.4-.2-.7-.9-1.1-2.3-1.6z"/>
                                         </svg>
                                         ¡Inscríbete por WhatsApp!
                                     </a>
                                     <p className="text-xs text-gray-500 mt-1 text-center">
-                                        El número debe estar en formato internacional de WhatsApp.
+                                        El número debe estar en formato internacional.
                                     </p>
                                 </>
                             );
@@ -144,15 +152,20 @@ function TournamentDetailModal({ tournament, onClose }) {
                     </div>
                 )}
 
-                {/* Tournament Winner - Removed as 'ganador_torneo' is no longer populated by the new API
-                {tournament.ganador_torneo && (
-                    <div className="mt-6 pt-4 border-t-2 border-green-500 text-center">
-                        <p className="text-xl font-bold text-green-700">
-                            ¡Ganador del Torneo: {tournament.ganador_torneo.nombre} {tournament.ganador_torneo.apellido}!
-                        </p>
+                {/* Button to view tournament matches */}
+                {tournament.partidos && tournament.partidos.length > 0 && (
+                    <div className="mt-4 pt-3 border-t border-gray-200">
+                        <button
+                            onClick={() => {
+                                onClose(); // Close the modal
+                                onViewMatches(tournament); // Call the handler to view matches
+                            }}
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 text-sm"
+                        >
+                            Ver Partidos del Torneo
+                        </button>
                     </div>
                 )}
-                */}
             </div>
         </div>
     );
