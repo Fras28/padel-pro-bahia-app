@@ -142,7 +142,7 @@ function TournamentMatches({ tournament, onBack }) { // Changed props to receive
                             <li key={match.id} className="mb-2">
                                 <p className="font-medium text-black">Ronda: {match.ronda || 'N/A'}</p>
                                 {match.pareja1 && match.pareja2 && (
-                                    <p>
+                                    <p className="font-medium text-black">
                                         Parejas: {match.pareja1.nombrePareja} vs {match.pareja2.nombrePareja}
                                     </p>
                                 )}
