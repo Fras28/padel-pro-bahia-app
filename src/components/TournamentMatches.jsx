@@ -140,7 +140,7 @@ function TournamentMatches({ tournament, onBack }) { // Changed props to receive
                     <ul className="list-disc list-inside text-sm max-h-96 overflow-y-auto bg-gray-50 p-3 rounded-md">
                         {matches.sort((a, b) => new Date(a.fechaPartido) - new Date(b.fechaPartido)).map(match => (
                             <li key={match.id} className="mb-2">
-                                <p className="font-medium">Ronda: {match.ronda || 'N/A'}</p>
+                                <p className="font-medium text-black">Ronda: {match.ronda || 'N/A'}</p>
                                 {match.pareja1 && match.pareja2 && (
                                     <p>
                                         Parejas: {match.pareja1.nombrePareja} vs {match.pareja2.nombrePareja}
