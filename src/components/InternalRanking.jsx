@@ -99,7 +99,7 @@ function InternalRanking({ category, onBack }) {
                     <tbody className="bg-white divide-y divide-gray-200">
                         {players.length > 0 ? (
                             players.map((player, index) => {
-                                const playerName = player ? `${player.nombre || ''} ${player.apellido || ''}`.trim() : 'Desconocido';
+                                const playerName = player ? `${player.nombre[0] || ''}. ${player.apellido || ''}`.trim() : 'Desconocido';
                                 const clubName = player?.club?.nombre || 'N/A';
                                 const clubLogoUrl = player?.club?.logo?.url || 'https://placehold.co/32x32/cccccc/333333?text=Club';
                                 const rankingGeneral = player?.rankingGeneral || 0; 
@@ -110,7 +110,7 @@ function InternalRanking({ category, onBack }) {
                                         className="hover:bg-gray-50 cursor-pointer transition-colors duration-200"
                                         onClick={() => openPlayerModal(player)}
                                     >
-                                        <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm font-medium text-gray-900">{index + 1}</td>
+                                        <td className="px-5 py-2 m-auto sm:px-6 sm:py-4 whitespace-nowrap text-sm font-medium text-gray-900 ">{index + 1}</td>
                                         <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700">
                                             <div className="flex items-center">
                                                 <img
