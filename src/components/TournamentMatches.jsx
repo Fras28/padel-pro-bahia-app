@@ -149,7 +149,7 @@ function TournamentMatches({ tournament, onBack }) {
               </p>
               <ul className="list-disc list-inside text-sm max-h-40 overflow-y-auto bg-gray-50 p-3 rounded-md">
                 {tournament.parejas_inscritas.map((pair) => (
-                  <li key={pair.id}>{pair.nombrePareja}</li>
+                  <li key={pair.id}>{pair?.nombrePareja}</li>
                 ))}
                 {tournament.parejas_inscritas.length === 0 && (
                   <p>No hay parejas inscritas.</p>
@@ -229,22 +229,22 @@ function TournamentMatches({ tournament, onBack }) {
                       Parejas:{" "}
                       <span
                         className={
-                          match.ganador.nombrePareja?.id === match.pareja1.id
+                          match.ganador?.nombrePareja?.id === match.pareja1.id
                             ? "text-green-700 font-bold"
                             : ""
                         }
                       >
-                        {match.pareja1.nombrePareja}
+                        {match.pareja1?.nombrePareja}
                       </span>{" "}
                       vs{" "}
                       <span
                         className={
-                          match.ganador.nombrePareja?.id === match.pareja2.id
+                          match.ganador?.nombrePareja?.id === match.pareja2.id
                             ? "text-green-700 font-bold"
                             : ""
                         }
                       >
-                        {match.pareja2.nombrePareja}
+                        {match.pareja2?.nombrePareja}
                       </span>
                     </p>
                   )}
@@ -279,9 +279,9 @@ function TournamentMatches({ tournament, onBack }) {
                     </p>
                   )}
                   {/* Se mantiene la línea original de ganador.nombrePareja también si se quiere mostrar por separado */}
-                  {match.ganador.nombrePareja && ( 
+                  {match?.ganador?.nombrePareja && ( 
                     <p className="text-green-700 font-semibold">
-                      Ganador: {match.ganador.nombrePareja}
+                      Ganador: {match.ganador?.nombrePareja}
                     </p>
                   )}
                 </li>

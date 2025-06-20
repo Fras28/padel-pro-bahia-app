@@ -171,7 +171,7 @@ function Tournaments({ onViewMatches }) { // Add onViewMatches prop
                                     {tournament.estado === 'Finalizado' && tournament.ganador_torneo && (
                                         <div className="mt-3 pt-3 border-t border-gray-200">
                                             <p className="text-sm text-green-700 font-bold mb-1">
-                                                Pareja Ganadora: {tournament.ganador_torneo.nombrePareja}
+                                                Pareja Ganadora: {tournament.ganador_torneo?.nombrePareja}
                                             </p>
                                         </div>
                                     )}
