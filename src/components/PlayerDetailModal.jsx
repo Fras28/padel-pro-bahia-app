@@ -119,7 +119,7 @@ const PlayerDetailModal = ({ player, onClose }) => {
         {/* Ranking General & Win Rate Block */}
         <div className="grid grid-cols-2 gap-3 w-full text-center mb-6 z-10">
           <div className={`p-3 rounded-lg ${style.winRateBg} ${style.cardBorder} border shadow-inner flex flex-col justify-center items-center`}>
-            <span className={`text-base sm:text-lg font-semibold ${style.playerTitleColor}`}>Ranking General</span>
+            <span className={`text-base sm:text-lg font-semibold ${style.playerTitleColor}`}>Pts Ranking</span>
             <span className={`text-2xl sm:text-3xl font-extrabold ${style.accentColor}`}>{player.rankingGeneral || 'N/A'}</span>
           </div>
           <div className={`p-3 rounded-lg ${style.winRateBg} ${style.cardBorder} border shadow-inner flex flex-col justify-center items-center`}>
