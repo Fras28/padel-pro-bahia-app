@@ -85,7 +85,7 @@ function RankingGlobal() {
                         ) : ranking.length > 0 ? (
                             ranking.map((entry, index) => {
                                 const player = entry.jugador; 
-                                const playerName = player ? `${player.nombre || ''} ${player.apellido || ''}`.trim() : 'Desconocido';
+                                const playerName = player ? `${player.nombre[0] || ''}. ${player.apellido || ''}`.trim() : 'Desconocido';
                                 const clubName = player && player.club ? player.club.nombre : 'N/A';
                                 const clubLogoUrl = player && player.club && player.club.logo && player.club.logo.url ? player.club.logo.url : 'https://placehold.co/32x32/cccccc/333333?text=Club';
                                 const globalPoints = entry.puntosGlobales || 0;
