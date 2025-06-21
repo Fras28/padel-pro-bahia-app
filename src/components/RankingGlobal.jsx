@@ -3,23 +3,60 @@ import React, { useEffect, useState } from 'react';
 // Importa el componente PlayerDetailModal, asegurando que la ruta sea correcta
 import PlayerDetailModal from './PlayerDetailModal'; 
 
+// Componente para el switch de género con temática de Padel
+const GenderSwitch = ({ selectedGender, onGenderChange }) => {
+  return (
+    <div className="flex bg-gray-200 rounded-full p-1 mb-6 shadow-inner">
+      <button
+        className={`flex-1 px-4 py-2 text-sm sm:text-base font-semibold rounded-full transition-all duration-300 ease-in-out
+          ${selectedGender === 'Femenina' ? 'bg-green-600 text-white shadow-md' : 'text-gray-700 hover:bg-gray-300'}`
+        }
+        onClick={() => onGenderChange('Femenina')}
+      >
+        Femenino
+      </button>
+      <button
+        className={`flex-1 px-4 py-2 text-sm sm:text-base font-semibold rounded-full transition-all duration-300 ease-in-out
+          ${selectedGender === 'Masculina' ? 'bg-green-600 text-white shadow-md' : 'text-gray-700 hover:bg-gray-300'}`
+        }
+        onClick={() => onGenderChange('Masculina')}
+      >
+        Masculino
+      </button>
+      <button
+        className={`flex-1 px-4 py-2 text-sm sm:text-base font-semibold rounded-full transition-all duration-300 ease-in-out
+          ${selectedGender === 'all' ? 'bg-green-600 text-white shadow-md' : 'text-gray-700 hover:bg-gray-300'}`
+        }
+        onClick={() => onGenderChange('all')}
+      >
+        Todos
+      </button>
+    </div>
+  );
+};
+
 // RankingGlobal component to display the global player ranking
 function RankingGlobal() {
-    // State to store ranking data
-    const [ranking, setRanking] = useState([]);
-    // State to manage loading status
+    // Estado para almacenar los datos brutos del ranking
+    const [rawRanking, setRawRanking] = useState([]);
+    // Estado para almacenar los datos del ranking filtrados por género
+    const [filteredRanking, setFilteredRanking] = useState([]);
+    // Estado para gestionar el estado de carga
     const [loading, setLoading] = useState(true);
-    // State to store any error messages
+    // Estado para almacenar cualquier mensaje de error
     const [error, setError] = useState(null);
-    // State to control modal visibility
+    // Estado para controlar la visibilidad del modal
     const [isModalOpen, setIsModalOpen] = useState(false);
-    // State to store data of the player selected for the modal
+    // Estado para almacenar los datos del jugador seleccionado para el modal
     const [selectedPlayer, setSelectedPlayer] = useState(null);
-    const API_BASE = import.meta.env.VITE_API_BASE
-    // API URL for global ranking - ensures all necessary data is populated
-    const RANKING_API_URL = API_BASE+'api/ranking-global?populate=entradasRankingGlobal.jugador.estadisticas&populate=entradasRankingGlobal.jugador.club.logo&populate=entradasRankingGlobal.jugador.pareja';
+    // Estado para el género seleccionado por el switch ('all', 'Femenina', 'Masculina')
+    const [selectedGenderFilter, setSelectedGenderFilter] = useState('all');
 
-    // Fetch ranking data on component mount
+    const API_BASE = import.meta.env.VITE_API_BASE;
+    // URL de la API para el ranking global - asegura que todos los datos necesarios estén poblados
+    const RANKING_API_URL = API_BASE + 'api/ranking-global?populate=entradasRankingGlobal.jugador.estadisticas&populate=entradasRankingGlobal.jugador.club.logo&populate=entradasRankingGlobal.jugador.pareja';
+
+    // Obtener datos del ranking al montar el componente
     useEffect(() => {
         const fetchRanking = async () => {
             try {
@@ -32,9 +69,9 @@ function RankingGlobal() {
                 
                 if (data.data && data.data.entradasRankingGlobal) {
                     const sortedRanking = data.data.entradasRankingGlobal.sort((a, b) => b.puntosGlobales - a.puntosGlobales);
-                    setRanking(sortedRanking);
+                    setRawRanking(sortedRanking); // Guardar el ranking sin filtrar
                 } else {
-                    setRanking([]); 
+                    setRawRanking([]); 
                     console.warn("La estructura de datos de la API de ranking no es la esperada (falta data.data o entradasRankingGlobal).");
                 }
             } catch (err) {
@@ -48,13 +85,25 @@ function RankingGlobal() {
         fetchRanking();
     }, []); 
 
-    // Function to open the player detail modal
+    // Filtrar el ranking cada vez que cambian los datos brutos o el filtro de género
+    useEffect(() => {
+        if (selectedGenderFilter === 'all') {
+            setFilteredRanking(rawRanking);
+        } else {
+            const filtered = rawRanking.filter(entry => 
+                entry.jugador && entry.jugador.sexo === selectedGenderFilter
+            );
+            setFilteredRanking(filtered);
+        }
+    }, [rawRanking, selectedGenderFilter]);
+
+    // Función para abrir el modal de detalles del jugador
     const openPlayerModal = (playerData) => {
         setSelectedPlayer(playerData);
         setIsModalOpen(true);
     };
 
-    // Function to close the player detail modal
+    // Función para cerrar el modal de detalles del jugador
     const closePlayerModal = () => {
         setIsModalOpen(false);
         setSelectedPlayer(null);
@@ -63,6 +112,15 @@ function RankingGlobal() {
     return (
         <div className="bg-white rounded-xl shadow-md p-4 sm:p-6">
             <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6 text-center">Ranking Global</h2>
+            
+            {/* Switch de Género */}
+            <div className="flex justify-center mb-6">
+                <GenderSwitch 
+                    selectedGender={selectedGenderFilter} 
+                    onGenderChange={setSelectedGenderFilter} 
+                />
+            </div>
+
             <div className="overflow-x-auto rounded-lg shadow-md border border-gray-200">
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
@@ -82,8 +140,8 @@ function RankingGlobal() {
                             <tr>
                                 <td colSpan="4" className="px-6 py-4 text-center text-sm text-red-500">{error}</td>
                             </tr>
-                        ) : ranking.length > 0 ? (
-                            ranking.map((entry, index) => {
+                        ) : filteredRanking.length > 0 ? (
+                            filteredRanking.map((entry, index) => {
                                 const player = entry.jugador; 
                                 const playerName = player ? `${player.nombre[0] || ''}. ${player.apellido || ''}`.trim() : 'Desconocido';
                                 const clubName = player && player.club ? player.club.nombre : 'N/A';
@@ -115,7 +173,7 @@ function RankingGlobal() {
                             })
                         ) : (
                             <tr>
-                                <td colSpan="4" className="px-6 py-4 text-center text-sm text-gray-600">No se encontraron entradas en el ranking.</td>
+                                <td colSpan="4" className="px-6 py-4 text-center text-sm text-gray-600">No se encontraron entradas en el ranking para el género seleccionado.</td>
                             </tr>
                         )}
                     </tbody>
