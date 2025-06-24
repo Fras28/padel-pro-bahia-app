@@ -1,6 +1,13 @@
 // src/components/RankingGlobal.jsx
 import React, { useEffect, useState } from 'react';
 import PlayerDetailModal from './PlayerDetailModal'; 
+import Dternera from "../assets/DeTernera.png";
+import DonAlf from "../assets/donalf.jpg";
+import Morton from "../assets/morton.png";
+import Rucca from "../assets/ruca.png";
+import ENA from "../assets/ENA.avif";
+import ADN from "../assets/ADN.png";
+import SponsorBanner from './SponsorBanner';
 
 // We'll remove the GenderSwitch as categories will implicitly handle gender.
 
@@ -26,6 +33,14 @@ function RankingGlobal() {
     // URL for categories
     const CATEGORIES_API_URL = API_BASE + 'api/categorias';
 
+    const sponsorImages = [
+        { src: Dternera, url: 'https://www.deternara.com.ar/' }, // Replace with actual URL
+        { src: DonAlf, url: 'https://www.donalf.com.ar/' },       // Replace with actual URL
+        { src: Morton, url: 'https://www.morton.com.ar/' },       // Replace with actual URL
+        { src: Rucca, url: 'https://www.rucca.com.ar/' },         // Replace with actual URL
+        { src: ENA, url: 'https://www.ena.com.ar/' },             // Replace with actual URL
+        { src: ADN, url: 'https://www.adn.com.ar/' },             // Replace with actual URL
+    ];
     useEffect(() => {
         const fetchAllData = async () => {
             try {
@@ -117,7 +132,6 @@ function RankingGlobal() {
     return (
         <div className="bg-white rounded-xl shadow-md p-4 sm:p-6">
             <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6 text-center">Ranking Global por Categoría</h2>
-            
             {loading ? (
                 <div className="text-center text-sm text-gray-600">Cargando rankings por categoría...</div>
             ) : error ? (
@@ -126,6 +140,7 @@ function RankingGlobal() {
                 Object.values(categorizedRanking).length > 0 ? (
                     Object.values(categorizedRanking).sort((a,b) => a.name.localeCompare(b.name)).map((categoryData, catIndex) => (
                         <div key={catIndex} className="mb-8">
+                               <SponsorBanner sponsorImages={sponsorImages} />
                             <h3 className="text-lg sm:text-xl font-semibold text-gray-700 mb-4 border-b pb-2">{categoryData.name}</h3>
                             {categoryData.players.length > 0 ? (
                                 <div className="overflow-x-auto rounded-lg shadow-md border border-gray-200">
