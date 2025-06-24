@@ -1,9 +1,31 @@
+/* App.css */
+
 #root {
+  /* Basic layout for centering and max width */
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+  /* Add box-sizing to ensure padding doesn't push content out */
+  box-sizing: border-box; /* Crucial for consistent sizing */
+  /* Ensure it always takes at least 100% of the viewport width on smaller screens */
+  width: 100%;
 }
+
+/* On very small screens, adjust padding */
+@media (max-width: 640px) { /* Tailwind's 'sm' breakpoint is 640px */
+  #root {
+    padding: 1rem; /* Reduce padding on small screens */
+  }
+}
+
+/* Consider adding a min-height to #root if content can be very short, to prevent jumps in body's centering */
+/* This might be less relevant if your content always fills space */
+/*
+#root {
+    min-height: calc(100vh - (some header/footer height if they exist));
+}
+*/
 
 .logo {
   height: 6em;
