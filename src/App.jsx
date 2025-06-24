@@ -271,7 +271,7 @@ function App() {
           {/* Banner de patrocinadores en la parte superior de la tarjeta de contenido principal */}
           <SponsorBanner sponsorImages={sponsorImages} />
           <div className="flex justify-center">
-            <img src={PadelPro} alt="" width='60px'/>
+            <img src={PadelPro} alt="" width='108px'/>
           </div>
           <p className="text-xl text-blue-900 font-bold mb-4">
             Ranking Bahia Blanca
