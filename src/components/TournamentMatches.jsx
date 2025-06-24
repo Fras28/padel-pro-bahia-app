@@ -51,7 +51,7 @@ function TournamentMatches({ tournament, onBack }) {
 
   return (
     <div className="p-6 bg-white rounded-xl shadow-lg relative w-full max-w-2xl mx-auto my-8">
-      <button
+      {/* <button
         onClick={onBack}
         className="absolute top-4 left-4 text-gray-500 hover:text-gray-800 transition-colors duration-200"
       >
@@ -69,7 +69,7 @@ function TournamentMatches({ tournament, onBack }) {
             d="M10 19l-7-7m0 0l7-7m-7 7h18"
           />
         </svg>
-      </button>
+      </button> */}
       <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
         Detalles del Torneo: {tournament.nombre || "N/A"}
       </h2>
