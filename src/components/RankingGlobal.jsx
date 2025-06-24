@@ -34,12 +34,12 @@ function RankingGlobal() {
     const CATEGORIES_API_URL = API_BASE + 'api/categorias';
 
     const sponsorImages = [
-        { src: Dternera, url: 'https://www.deternara.com.ar/' }, // Replace with actual URL
+        { src: Dternera, url: 'https://www.deternera.com.ar/' }, // Replace with actual URL
         { src: DonAlf, url: 'https://www.donalf.com.ar/' },       // Replace with actual URL
         { src: Morton, url: 'https://www.morton.com.ar/' },       // Replace with actual URL
-        { src: Rucca, url: 'https://www.rucca.com.ar/' },         // Replace with actual URL
-        { src: ENA, url: 'https://www.ena.com.ar/' },             // Replace with actual URL
-        { src: ADN, url: 'https://www.adn.com.ar/' },             // Replace with actual URL
+        { src: Rucca, url: 'https://www.ruccabahia.com/' },         // Replace with actual URL
+        { src: ENA, url: 'https://www.enasport.com/' },             // Replace with actual URL
+        { src: ADN, url: 'https://www.adn.com.ar/' },              // Replace with actual URL
     ];
     useEffect(() => {
         const fetchAllData = async () => {
