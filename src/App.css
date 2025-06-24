@@ -11,11 +11,7 @@
 }
 
 /* On very small screens, adjust padding */
-@media (max-width: 640px) { /* Tailwind's 'sm' breakpoint is 640px */
-  #root {
-    padding: 1rem; /* Reduce padding on small screens */
-  }
-}
+
 
 /* Consider adding a min-height to #root if content can be very short, to prevent jumps in body's centering */
 /* This might be less relevant if your content always fills space */
