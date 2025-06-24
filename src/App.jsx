@@ -8,6 +8,7 @@ import Categories from './components/Categories';
 import InternalRanking from './components/InternalRanking';
 import Tournaments from './components/Tournaments';
 import TournamentMatches from './components/TournamentMatches'; // Import the new component
+import AllPlayers from './components/AllPlayers'; // Import the AllPlayers component
 // Removed TournamentDetailModal import
 import './index.css';
 
@@ -107,6 +108,15 @@ function App() {
         console.log("Navigating to tournaments view.");
     };
 
+    // Handler to navigate to all players view
+    const handleViewAllPlayers = () => {
+        setCurrentView('allPlayers');
+        setSelectedClub(null);
+        setSelectedCategory(null);
+        setSelectedTournament(null);
+        console.log("Navigating to all players view.");
+    };
+
     // Handler to view matches for a specific tournament
     const handleViewMatches = (tournament) => {
         setSelectedTournament(tournament);
@@ -200,6 +210,10 @@ function App() {
                         />
                     )
                 );
+            case 'allPlayers': // New case for AllPlayers component
+                return (
+                    <AllPlayers />
+                );
             default:
                 return (
                     <div className="text-center text-lg text-red-500">Vista no reconocida.</div>
@@ -229,6 +243,14 @@ function App() {
                                 className="px-4 py-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 transition duration-300 text-sm"
                             >
                                 Ver Torneos
+                            </button>
+                        )}
+                        {currentView !== 'allPlayers' && ( // New button for AllPlayers
+                            <button
+                                onClick={handleViewAllPlayers}
+                                className="px-4 py-2 bg-green-500 text-white rounded-lg shadow-md hover:bg-green-600 transition duration-300 text-sm"
+                            >
+                                Ver Jugadores
                             </button>
                         )}
                     </div>

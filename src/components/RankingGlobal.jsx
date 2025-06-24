@@ -1,109 +1,114 @@
 // src/components/RankingGlobal.jsx
 import React, { useEffect, useState } from 'react';
-// Importa el componente PlayerDetailModal, asegurando que la ruta sea correcta
 import PlayerDetailModal from './PlayerDetailModal'; 
 
-// Componente para el switch de género con temática de Padel
-const GenderSwitch = ({ selectedGender, onGenderChange }) => {
-  return (
-    <div className="flex bg-gray-200 rounded-full p-1 mb-6 shadow-inner">
-      <button
-        className={`flex-1 px-4 py-2 text-sm sm:text-base font-semibold rounded-full transition-all duration-300 ease-in-out
-          ${selectedGender === 'Femenina' ? 'bg-green-600 text-white shadow-md' : 'text-gray-700 hover:bg-gray-300'}`
-        }
-        onClick={() => onGenderChange('Femenina')}
-      >
-        Femenino
-      </button>
-      <button
-        className={`flex-1 px-4 py-2 text-sm sm:text-base font-semibold rounded-full transition-all duration-300 ease-in-out
-          ${selectedGender === 'Masculina' ? 'bg-green-600 text-white shadow-md' : 'text-gray-700 hover:bg-gray-300'}`
-        }
-        onClick={() => onGenderChange('Masculina')}
-      >
-        Masculino
-      </button>
-      <button
-        className={`flex-1 px-4 py-2 text-sm sm:text-base font-semibold rounded-full transition-all duration-300 ease-in-out
-          ${selectedGender === 'all' ? 'bg-green-600 text-white shadow-md' : 'text-gray-700 hover:bg-gray-300'}`
-        }
-        onClick={() => onGenderChange('all')}
-      >
-        Todos
-      </button>
-    </div>
-  );
-};
+// We'll remove the GenderSwitch as categories will implicitly handle gender.
 
-// RankingGlobal component to display the global player ranking
 function RankingGlobal() {
-    // Estado para almacenar los datos brutos del ranking
+    // State to store the raw ranking data fetched
     const [rawRanking, setRawRanking] = useState([]);
-    // Estado para almacenar los datos del ranking filtrados por género
-    const [filteredRanking, setFilteredRanking] = useState([]);
-    // Estado para gestionar el estado de carga
+    // State to store categories
+    const [categories, setCategories] = useState([]);
+    // State to store the processed ranking, grouped by category and limited to top 10
+    const [categorizedRanking, setCategorizedRanking] = useState({});
+    // State to manage loading status
     const [loading, setLoading] = useState(true);
-    // Estado para almacenar cualquier mensaje de error
+    // State to store any error messages
     const [error, setError] = useState(null);
-    // Estado para controlar la visibilidad del modal
+    // State to control modal visibility
     const [isModalOpen, setIsModalOpen] = useState(false);
-    // Estado para almacenar los datos del jugador seleccionado para el modal
+    // State to store selected player data for the modal
     const [selectedPlayer, setSelectedPlayer] = useState(null);
-    // Estado para el género seleccionado por el switch ('all', 'Femenina', 'Masculina')
-    const [selectedGenderFilter, setSelectedGenderFilter] = useState('all');
 
     const API_BASE = import.meta.env.VITE_API_BASE;
-    // URL de la API para el ranking global - asegura que todos los datos necesarios estén poblados
-    const RANKING_API_URL = API_BASE + 'api/ranking-global?populate=entradasRankingGlobal.jugador.estadisticas&populate=entradasRankingGlobal.jugador.club.logo&populate=entradasRankingGlobal.jugador.pareja';
+    // URL for global ranking data - ensures all necessary data is populated
+    const RANKING_API_URL = API_BASE + 'api/ranking-global?populate=entradasRankingGlobal.jugador.estadisticas&populate=entradasRankingGlobal.jugador.club.logo&populate=entradasRankingGlobal.jugador.categoria&populate=entradasRankingGlobal.jugador.pareja';
+    // URL for categories
+    const CATEGORIES_API_URL = API_BASE + 'api/categorias';
 
-    // Obtener datos del ranking al montar el componente
     useEffect(() => {
-        const fetchRanking = async () => {
+        const fetchAllData = async () => {
             try {
-                const response = await fetch(RANKING_API_URL);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                // Fetch categories first
+                const categoriesResponse = await fetch(CATEGORIES_API_URL);
+                if (!categoriesResponse.ok) {
+                    throw new Error(`HTTP error! status: ${categoriesResponse.status} for categories`);
                 }
-                const data = await response.json();
-                console.log("Datos brutos de la API (Ranking Global):", data); 
+                const categoriesData = await categoriesResponse.json();
+                setCategories(categoriesData.data || []);
+                console.log("Categorias fetched:", categoriesData.data);
+
+                // Then fetch global ranking
+                const rankingResponse = await fetch(RANKING_API_URL);
+                if (!rankingResponse.ok) {
+                    throw new Error(`HTTP error! status: ${rankingResponse.status} for ranking`);
+                }
+                const rankingData = await rankingResponse.json();
+                console.log("Raw API data (Global Ranking):", rankingData); 
                 
-                if (data.data && data.data.entradasRankingGlobal) {
-                    const sortedRanking = data.data.entradasRankingGlobal.sort((a, b) => b.puntosGlobales - a.puntosGlobales);
-                    setRawRanking(sortedRanking); // Guardar el ranking sin filtrar
+                if (rankingData.data && rankingData.data.entradasRankingGlobal) {
+                    // Sort the raw ranking by global points in descending order
+                    const sortedRanking = rankingData.data.entradasRankingGlobal.sort((a, b) => b.puntosGlobales - a.puntosGlobales);
+                    setRawRanking(sortedRanking); // Save the raw, sorted ranking
                 } else {
                     setRawRanking([]); 
-                    console.warn("La estructura de datos de la API de ranking no es la esperada (falta data.data o entradasRankingGlobal).");
+                    console.warn("Ranking API data structure is not as expected (missing data.data or entradasRankingGlobal).");
                 }
             } catch (err) {
-                setError("Error al cargar el ranking. Inténtalo de nuevo más tarde."); 
-                console.error("Error fetching ranking:", err);
+                setError("Error al cargar los datos del ranking o las categorías. Inténtalo de nuevo más tarde."); 
+                console.error("Error fetching data:", err);
             } finally {
                 setLoading(false); 
             }
         };
 
-        fetchRanking();
+        fetchAllData();
     }, []); 
 
-    // Filtrar el ranking cada vez que cambian los datos brutos o el filtro de género
+    // Process the raw ranking data when it changes or categories are loaded
     useEffect(() => {
-        if (selectedGenderFilter === 'all') {
-            setFilteredRanking(rawRanking);
-        } else {
-            const filtered = rawRanking.filter(entry => 
-                entry.jugador && entry.jugador.sexo === selectedGenderFilter
-            );
-            setFilteredRanking(filtered);
-        }
-    }, [rawRanking, selectedGenderFilter]);
+        const processRankingByCategories = () => {
+            const tempCategorizedRanking = {};
 
-    // Función para abrir el modal de detalles del jugador
+            categories.forEach(category => {
+                // Initialize an empty array for each category
+                tempCategorizedRanking[category.id] = {
+                    name: category.nombre,
+                    players: []
+                };
+            });
+
+            // Populate the temporary categorized ranking
+            rawRanking.forEach(entry => {
+                const player = entry.jugador;
+                if (player && player.categoria && tempCategorizedRanking[player.categoria.id]) {
+                    tempCategorizedRanking[player.categoria.id].players.push(entry);
+                }
+            });
+
+            // Limit to top 10 players for each category
+            const finalCategorizedRanking = {};
+            for (const categoryId in tempCategorizedRanking) {
+                finalCategorizedRanking[categoryId] = {
+                    name: tempCategorizedRanking[categoryId].name,
+                    players: tempCategorizedRanking[categoryId].players.slice(0, 10) // Take top 10
+                };
+            }
+            setCategorizedRanking(finalCategorizedRanking);
+        };
+
+        if (rawRanking.length > 0 && categories.length > 0) {
+            processRankingByCategories();
+        }
+    }, [rawRanking, categories]);
+
+    // Function to open the player details modal
     const openPlayerModal = (playerData) => {
         setSelectedPlayer(playerData);
         setIsModalOpen(true);
     };
 
-    // Función para cerrar el modal de detalles del jugador
+    // Function to close the player details modal
     const closePlayerModal = () => {
         setIsModalOpen(false);
         setSelectedPlayer(null);
@@ -111,74 +116,71 @@ function RankingGlobal() {
 
     return (
         <div className="bg-white rounded-xl shadow-md p-4 sm:p-6">
-            <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6 text-center">Ranking Global</h2>
+            <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6 text-center">Ranking Global por Categoría</h2>
             
-            {/* Switch de Género */}
-            <div className="flex justify-center mb-6">
-                <GenderSwitch 
-                    selectedGender={selectedGenderFilter} 
-                    onGenderChange={setSelectedGenderFilter} 
-                />
-            </div>
+            {loading ? (
+                <div className="text-center text-sm text-gray-600">Cargando rankings por categoría...</div>
+            ) : error ? (
+                <div className="text-center text-sm text-red-500">{error}</div>
+            ) : (
+                Object.values(categorizedRanking).length > 0 ? (
+                    Object.values(categorizedRanking).sort((a,b) => a.name.localeCompare(b.name)).map((categoryData, catIndex) => (
+                        <div key={catIndex} className="mb-8">
+                            <h3 className="text-lg sm:text-xl font-semibold text-gray-700 mb-4 border-b pb-2">{categoryData.name}</h3>
+                            {categoryData.players.length > 0 ? (
+                                <div className="overflow-x-auto rounded-lg shadow-md border border-gray-200">
+                                    <table className="min-w-full divide-y divide-gray-200">
+                                        <thead className="bg-gray-50">
+                                            <tr>
+                                                <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Posición</th>
+                                                <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Club</th>
+                                                <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jugador</th>
+                                                <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Puntos</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                            {categoryData.players.map((entry, index) => {
+                                                const player = entry.jugador; 
+                                                const playerName = player ? `${player.nombre[0] || ''}. ${player.apellido || ''}`.trim() : 'Desconocido';
+                                                const clubName = player && player.club ? player.club.nombre : 'N/A';
+                                                const clubLogoUrl = player && player.club && player.club.logo && player.club.logo.url ? player.club.logo.url : 'https://placehold.co/32x32/cccccc/333333?text=Club';
+                                                const globalPoints = entry.puntosGlobales || 0;
 
-            <div className="overflow-x-auto rounded-lg shadow-md border border-gray-200">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                        <tr>
-                            <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Posición</th>
-                            <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Club</th>
-                            <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jugador</th>
-                            <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Puntos</th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                        {loading ? (
-                            <tr>
-                                <td colSpan="4" className="px-6 py-4 text-center text-sm text-gray-600">Cargando ranking...</td>
-                            </tr>
-                        ) : error ? (
-                            <tr>
-                                <td colSpan="4" className="px-6 py-4 text-center text-sm text-red-500">{error}</td>
-                            </tr>
-                        ) : filteredRanking.length > 0 ? (
-                            filteredRanking.map((entry, index) => {
-                                const player = entry.jugador; 
-                                const playerName = player ? `${player.nombre[0] || ''}. ${player.apellido || ''}`.trim() : 'Desconocido';
-                                const clubName = player && player.club ? player.club.nombre : 'N/A';
-                                const clubLogoUrl = player && player.club && player.club.logo && player.club.logo.url ? player.club.logo.url : 'https://placehold.co/32x32/cccccc/333333?text=Club';
-                                const globalPoints = entry.puntosGlobales || 0;
-
-                                return (
-                                    <tr
-                                        key={entry.id}
-                                        className="hover:bg-gray-50 cursor-pointer transition-colors duration-200"
-                                        onClick={() => openPlayerModal(player)}
-                                    >
-                                        <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm font-medium text-gray-900">{index + 1}</td>
-                                        <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700">
-                                            <div className="flex items-center">
-                                                <img
-                                                    src={clubLogoUrl}
-                                                    alt={`${clubName} Logo`}
-                                                    className="w-6 h-6 sm:w-8 sm:h-8 object-contain rounded-full mr-1 sm:mr-2 shadow-sm"
-                                                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/32x32/cccccc/333333?text=Club'; }} // Fallback image on error
-                                                />
-                                                <span>{clubName}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700">{playerName}</td>
-                                        <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700">{globalPoints}</td>
-                                    </tr>
-                                );
-                            })
-                        ) : (
-                            <tr>
-                                <td colSpan="4" className="px-6 py-4 text-center text-sm text-gray-600">No se encontraron entradas en el ranking para el género seleccionado.</td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
+                                                return (
+                                                    <tr
+                                                        key={entry.id}
+                                                        className="hover:bg-gray-50 cursor-pointer transition-colors duration-200"
+                                                        onClick={() => openPlayerModal(player)}
+                                                    >
+                                                        <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm font-medium text-gray-900">{index + 1}</td>
+                                                        <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700">
+                                                            <div className="flex items-center">
+                                                                <img
+                                                                    src={clubLogoUrl}
+                                                                    alt={`${clubName} Logo`}
+                                                                    className="w-6 h-6 sm:w-8 sm:h-8 object-contain rounded-full mr-1 sm:mr-2 shadow-sm"
+                                                                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/32x32/cccccc/333333?text=Club'; }} // Fallback image on error
+                                                                />
+                                                                <span>{clubName}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700">{playerName}</td>
+                                                        <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700">{globalPoints}</td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ) : (
+                                <p className="px-6 py-4 text-center text-sm text-gray-600">No se encontraron jugadores en esta categoría.</p>
+                            )}
+                        </div>
+                    ))
+                ) : (
+                    <p className="px-6 py-4 text-center text-sm text-gray-600">No se encontraron categorías o entradas de ranking.</p>
+                )
+            )}
 
             {/* Player Detail Modal component rendered conditionally */}
             {isModalOpen && selectedPlayer && (
