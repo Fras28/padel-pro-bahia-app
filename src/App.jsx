@@ -262,7 +262,8 @@ function App() {
             */}
       <div className="relative py-3 w-full sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto">
         {/* Efecto de fondo decorativo inclinado */}
-   
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-800 to-blue-900 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:rotate-3 sm:rounded-3xl"></div>
+        <div className="absolute inset-0 bg-gradient-to-l from-red-800 to-red-900 shadow-lg transform skew-y-6 sm:skew-y-0 sm:-rotate-3 sm:rounded-3xl"></div>
 
 
         {/* Tarjeta de contenido real con fondo blanco, sombra y relleno */}
