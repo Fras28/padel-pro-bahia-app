@@ -73,7 +73,7 @@ function Clubs({ onSelectClub }) {
                         return (
                             <button
                                 key={club.id}
-                                className="flex items-center justify-center p-2 sm:p-3 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition duration-300 transform hover:scale-105 text-sm sm:text-base"
+                                className="flex items-center justify-center p-2 sm:p-3 bg-blue-900 text-white rounded-lg shadow-md hover:bg-blue-700 transition duration-300 transform hover:scale-105 text-sm sm:text-base"
                                 onClick={() => handleClubClick(club)} // Pass the full club object
                             >
                                 <img
