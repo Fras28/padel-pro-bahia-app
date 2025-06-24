@@ -130,7 +130,7 @@ function RankingGlobal() {
     };
 
     return (
-        <div className="bg-white rounded-xl shadow-md p-4 sm:p-6">
+        <div className="bg-white rounded-xl shadow-md ">
             <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6 text-center">Ranking Global por Categoría</h2>
             {loading ? (
                 <div className="text-center text-sm text-gray-600">Cargando rankings por categoría...</div>
