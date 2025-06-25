@@ -141,7 +141,7 @@ function CurrentMatches({ API_BASE }) {
                 </label>
                 <select
                     id="tournament-select"
-                       className="w-full px-4 py-2 border bg-slate-100 text-gray-400 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-200"
+                       className="w-full px-4 py-2 border bg-white text-gray-600 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-200"
                     value={selectedTournamentName}
                     onChange={handleTournamentSelectChange}
                     // Deshabilita el selector mientras carga la lista inicial de torneos
