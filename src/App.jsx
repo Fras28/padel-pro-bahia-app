@@ -48,7 +48,7 @@ const MobileNavBar = () => {
         <div className="fixed bottom-0 left-0 right-0 bg-white shadow-lg p-3 z-50 flex justify-around items-center border-t border-gray-200">
             <button
                 onClick={() => navigate('/')}
-                className="flex flex-col items-center text-gray-700 hover:text-blue-900 transition duration-300 text-xs"
+                className="flex flex-col items-center bg-slate-300 text-gray-700 hover:text-blue-900 transition duration-300 text-xs"
             >
                 <FontAwesomeIcon icon={faHome} className="text-lg mb-1" />
                 Inicio
