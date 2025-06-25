@@ -1,97 +1,91 @@
 // src/components/Clubs.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom"; 
 
-// Clubs component to display a list of padel clubs
-function Clubs({ onSelectClub }) {
-    // State to store clubs data
-    const [clubs, setClubs] = useState([]);
-    // State to manage loading status
-    const [loading, setLoading] = useState(true);
-    // State to store any error messages
-    const [error, setError] = useState(null);
-    const API_BASE = import.meta.env.VITE_API_BASE
-    // API URL for clubs - populate categories to pass them down
-    const CLUBS_API_URL = API_BASE+'api/clubs?populate=categorias&populate=logo';
+function Clubs() {
+  const [clubs, setClubs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const API_BASE = import.meta.env.VITE_API_BASE;
+    console.log(clubs[0]?.nombre ,"clubx ");
 
-    // Fetch clubs data on component mount
-    useEffect(() => {
-        const fetchClubs = async () => {
-            try {
-                const response = await fetch(CLUBS_API_URL);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                console.log("Datos de la API de Clubes:", data.data);
-                setClubs(data.data); // Set the clubs data
-            } catch (err) {
-                setError("Error al cargar los clubes. Inténtalo de nuevo más tarde."); // Set error message
-                console.error("Error fetching clubs:", err);
-            } finally {
-                setLoading(false); // Set loading to false regardless of success or failure
-            }
-        };
+  const navigate = useNavigate();
 
-        fetchClubs();
-    }, []); // Empty dependency array ensures this runs once on mount
+  const handleClubClick = (club) => {
+    navigate(`/clubs/${club.id}/categories`);
+  };
 
-    // Function to handle club button click
-    const handleClubClick = (club) => {
-        if (onSelectClub) {
-            onSelectClub(club); // Pass the whole club object to parent App.jsx
+  useEffect(() => {
+    const fetchClubs = async () => {
+      try {
+        // Asegúrate de que populate=logo esté bien escrito y la API esté configurada para devolverlo
+        const response = await fetch(API_BASE + "api/clubs?populate=logo");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
+        const data = await response.json();
+        console.log("Datos de la API (Clubes):", data.data);
+        if (data.data) {
+          setClubs(data.data);
+        } else {
+          setClubs([]);
+        }
+        setLoading(false);
+      } catch (e) {
+        console.error("Error fetching clubs:", e);
+        setError("Error al cargar los clubes. Inténtalo de nuevo más tarde.");
+        setLoading(false);
+      }
     };
 
-    if (loading) {
-        return (
-            <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 mb-8 text-center">
-                <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4">Selecciona un Club</h2>
-                <p className="text-gray-600">Cargando clubes...</p>
-            </div>
-        );
-    }
+    fetchClubs();
+  }, [API_BASE]);
 
-    if (error) {
-        return (
-            <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 mb-8 text-center">
-                <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4">Selecciona un Club</h2>
-                <p className="text-red-500">{error}</p>
-            </div>
-        );
-    }
+  if (loading) {
+    return <div className="text-center py-4 text-gray-500">Cargando clubes...</div>;
+  }
 
-    return (
-        <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 mb-8">
-            <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6 text-center">Selecciona un Club</h2>
-            {/* Responsive grid for club buttons */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-                {clubs.length > 0 ? (
-                    clubs.map(club => {
-                        const clubName = club.nombre;
-                        // Use a placeholder image if no logo URL is available
-                        const clubLogoUrl = club.logo && club.logo.url ? club.logo.url : 'https://placehold.co/60x60/cccccc/333333?text=No+Logo';
-                        return (
-                            <button
-                                key={club.id}
-                                className="flex items-center justify-center p-2 sm:p-3 bg-blue-900 text-white rounded-lg shadow-md hover:bg-blue-700 transition duration-300 transform hover:scale-105 text-sm sm:text-base"
-                                onClick={() => handleClubClick(club)} // Pass the full club object
-                            >
-                                <img
-                                    src={clubLogoUrl}
-                                    alt={`${clubName} Logo`}
-                                    className="w-10 h-10 sm:w-12 sm:h-12 object-contain rounded-md mr-2 sm:mr-3"
-                                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/60x60/cccccc/333333?text=No+Logo'; }} // Fallback image on error
-                                />
-                                <span className="font-bold">{clubName}</span>
-                            </button>
-                        );
-                    })
-                ) : (
-                    <p className="text-center text-gray-600 col-span-full">No se encontraron clubes.</p>
-                )}
-            </div>
-        </div>
-    );
+  if (error) {
+    return <div className="text-center py-4 text-red-500">Error: {error}</div>;
+  }
+
+  return (
+    <div className="bg-gray-50 p-4 sm:p-6 rounded-lg shadow-inner">
+      <h2 className="text-2xl font-semibold text-blue-900 mb-4 border-b-2 border-blue-200 pb-2">
+        Clubes Afiliados
+      </h2>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        {clubs.length > 0 ? (
+          clubs.map((club) => (
+          
+            <button
+              key={club.id}
+              onClick={() => handleClubClick(club)}
+              className="flex flex-col items-center p-4 bg-white rounded-lg shadow-md hover:shadow-xl transform hover:scale-105 transition-all duration-300 ease-in-out cursor-pointer border border-transparent hover:border-blue-500"
+            >
+              {/* Línea 67 - Mejora el acceso al logo con un valor predeterminado */}
+              <img
+                src={club?.logo?.url || "https://placehold.co/80x80/cccccc/333333?text=Logo"} // Proporciona una URL de fallback
+                alt={`Logo de ${club?.nombre}`}
+                className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2 rounded-full ring-2 ring-blue-200"
+                onError={(e) => {
+                  e.target.onerror = null; // Evita bucles infinitos en caso de error de carga
+                  e.target.src = "https://placehold.co/80x80/cccccc/333333?text=Logo"; // Fallback si la imagen no se carga
+                }}
+              />
+              <span className="text-center font-medium text-gray-800 text-sm sm:text-base">
+                {club?.nombre}
+              </span>
+            </button>
+          ))
+        ) : (
+          <p className="col-span-full text-center text-gray-600">
+            No se encontraron clubes afiliados.
+          </p>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default Clubs;

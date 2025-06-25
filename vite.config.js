@@ -27,17 +27,17 @@ export default defineConfig({
         icons: [
           // Aquí defines los íconos de tu PWA. Deben estar en la carpeta 'public'.
           {
-            src: './public/PadelProLogo.png',
+            src: './public/PadelProArg.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: './public/PadelProLogo.png',
+            src: './public/PadelProArg.png',
             sizes: '512x512',
             type: 'image/png'
           },
           {
-            src: './public/PadelProLogo.png',
+            src: './public/PadelProArg.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable' // Para íconos adaptativos en Android
