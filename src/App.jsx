@@ -1,6 +1,8 @@
 // src/App.jsx
 import React, { useEffect, useState } from "react";
-import { initializeApp } from "firebase/app";
+import {
+  initializeApp,
+} from "firebase/app";
 import {
   getAuth,
   signInAnonymously,
@@ -14,6 +16,7 @@ import InternalRanking from "./components/InternalRanking";
 import Tournaments from "./components/Tournaments";
 import TournamentMatches from "./components/TournamentMatches";
 import AllPlayers from "./components/AllPlayers";
+import CurrentMatches from "./components/CurrentMatches"; // Importa el nuevo componente CurrentMatches
 import SponsorBanner from "./components/SponsorBanner"; // Importa el nuevo componente SponsorBanner
 import "./index.css"; // Estilos globales, incluyendo directivas de Tailwind y estilos de fuente raíz
 import "./App.css"; // Estilos específicos de la aplicación, crucialmente incluyendo el estilo #root
@@ -40,6 +43,9 @@ function App() {
   const [selectedClub, setSelectedClub] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedTournament, setSelectedTournament] = useState(null);
+
+  // Define la URL base de la API aquí, donde import.meta.env es más estable
+  const API_BASE = import.meta.env.VITE_API_BASE || 'https://padelproback-ranking.onrender.com/';
 
   // Imágenes de patrocinadores de ejemplo para demostración.
   // Reemplaza estas URLs con las URLs reales de tus patrocinadores.
@@ -157,6 +163,15 @@ function App() {
     console.log("Navigating to matches for tournament:", tournament.nombre);
   };
 
+  // Nuevo manejador para navegar a la vista de partidos en curso
+  const handleViewCurrentMatches = () => {
+    setCurrentView("currentMatches");
+    setSelectedClub(null);
+    setSelectedCategory(null);
+    setSelectedTournament(null);
+    console.log("Navigating to current matches view.");
+  };
+
   // Manejador para volver a la vista de inicio (Clubes + Ranking Global)
   const handleBackToHome = () => {
     setSelectedClub(null);
@@ -179,6 +194,7 @@ function App() {
     setCurrentView("tournaments");
     console.log("Navigating back to tournaments list.");
   };
+
 
   // Renderizado condicional basado en el estado de autenticación y la vista actual
   const renderContent = () => {
@@ -243,6 +259,8 @@ function App() {
         );
       case "allPlayers":
         return <AllPlayers />;
+      case "currentMatches": // Nuevo caso para partidos en curso
+        return <CurrentMatches API_BASE={API_BASE} />; // Pasa API_BASE como prop
       default:
         return (
           <div className="text-center text-lg text-red-500">
@@ -302,6 +320,15 @@ function App() {
               >
                 Ver Jugadores
               </button>
+            )}
+            {/* Nuevo botón para ver partidos en curso */}
+            {currentView !== "currentMatches" && (
+                <button
+                    onClick={handleViewCurrentMatches}
+                    className="px-4 py-2 bg-purple-700 text-white rounded-lg shadow-md hover:bg-purple-600 transition duration-300 text-sm"
+                >
+                    Partidos en Curso
+                </button>
             )}
           </div>
 

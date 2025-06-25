@@ -9,14 +9,12 @@ import ENA from "../assets/ENA.avif";
 import ADN from "../assets/ADN.png";
 import SponsorBanner from './SponsorBanner';
 
-// We'll remove the GenderSwitch as categories will implicitly handle gender.
-
 function RankingGlobal() {
     // State to store the raw ranking data fetched
     const [rawRanking, setRawRanking] = useState([]);
     // State to store categories
     const [categories, setCategories] = useState([]);
-    // State to store the processed ranking, grouped by category and limited to top 10
+    // State to store the processed ranking, grouped by category
     const [categorizedRanking, setCategorizedRanking] = useState({});
     // State to manage loading status
     const [loading, setLoading] = useState(true);
@@ -41,6 +39,7 @@ function RankingGlobal() {
         { src: ENA, url: 'https://www.enasport.com/' },             // Replace with actual URL
         { src: ADN, url: 'https://www.adn.com.ar/' },              // Replace with actual URL
     ];
+
     useEffect(() => {
         const fetchAllData = async () => {
             try {
@@ -101,12 +100,13 @@ function RankingGlobal() {
                 }
             });
 
-            // Limit to top 10 players for each category
+            // No limit here, we will slice for display
             const finalCategorizedRanking = {};
             for (const categoryId in tempCategorizedRanking) {
                 finalCategorizedRanking[categoryId] = {
                     name: tempCategorizedRanking[categoryId].name,
-                    players: tempCategorizedRanking[categoryId].players.slice(0, 10) // Take top 10
+                    // Keep up to 16 players for potential display
+                    players: tempCategorizedRanking[categoryId].players.slice(0, 16) 
                 };
             }
             setCategorizedRanking(finalCategorizedRanking);
@@ -154,7 +154,8 @@ function RankingGlobal() {
                                             </tr>
                                         </thead>
                                         <tbody className="bg-white divide-y divide-gray-200">
-                                            {categoryData.players.map((entry, index) => {
+                                            {/* Display top 10 players */}
+                                            {categoryData.players.slice(0, 10).map((entry, index) => {
                                                 const player = entry.jugador; 
                                                 const playerName = player ? `${player.nombre[0] || ''}. ${player.apellido || ''}`.trim() : 'Desconocido';
                                                 const clubName = player && player.club ? player.club.nombre : 'N/A';
@@ -189,6 +190,57 @@ function RankingGlobal() {
                                 </div>
                             ) : (
                                 <p className="px-6 py-4 text-center text-sm text-gray-600">No se encontraron jugadores en esta categoría.</p>
+                            )}
+
+                            {/* Section for players 11-16 with scroll */}
+                            {categoryData.players.length > 10 && (
+                                <div className="mt-4 border-t pt-4">
+                                    <h4 className="text-md font-semibold text-gray-700 mb-2">Puestos 11-16</h4>
+                                    <div className="overflow-y-auto max-h-48 rounded-lg shadow-md border border-gray-200">
+                                        <table className="min-w-full divide-y divide-gray-200">
+                                            <thead className="bg-gray-50">
+                                                <tr>
+                                                    <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Posición</th>
+                                                    <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Club</th>
+                                                    <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jugador</th>
+                                                    <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Puntos</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="bg-white divide-y divide-gray-200">
+                                                {categoryData.players.slice(10, 16).map((entry, index) => {
+                                                    const player = entry.jugador; 
+                                                    const playerName = player ? `${player.nombre[0] || ''}. ${player.apellido || ''}`.trim() : 'Desconocido';
+                                                    const clubName = player && player.club ? player.club.nombre : 'N/A';
+                                                    const clubLogoUrl = player && player.club && player.club.logo && player.club.logo.url ? player.club.logo.url : 'https://placehold.co/32x32/cccccc/333333?text=Club';
+                                                    const globalPoints = entry.puntosGlobales || 0;
+
+                                                    return (
+                                                        <tr
+                                                            key={entry.id}
+                                                            className="hover:bg-gray-50 cursor-pointer transition-colors duration-200"
+                                                            onClick={() => openPlayerModal(player)}
+                                                        >
+                                                            <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm font-medium text-gray-900">{11 + index}</td>
+                                                            <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700">
+                                                                <div className="flex items-center">
+                                                                    <img
+                                                                        src={clubLogoUrl}
+                                                                        alt={`${clubName} Logo`}
+                                                                        className="w-6 h-6 sm:w-8 sm:h-8 object-contain rounded-full mr-1 sm:mr-2 shadow-sm"
+                                                                        onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/32x32/cccccc/333333?text=Club'; }} // Fallback image on error
+                                                                    />
+                                                                    <span>{clubName}</span>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700">{playerName}</td>
+                                                            <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700">{globalPoints}</td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             )}
                         </div>
                     ))
