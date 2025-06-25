@@ -1,3 +1,10 @@
+:root {
+  color-scheme: light;
+}
+body {
+  color-scheme: light;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
