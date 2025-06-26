@@ -21,7 +21,7 @@ function TournamentMatches({ API_BASE }) { // Now only expects API_BASE as a pro
             try {
                 // Construct the API URL using the tournamentId (which is documentId)
                 // Using populate=* to get all related data as per your API example
-                const TOURNAMENT_DETAIL_API_URL = `${API_BASE}api/torneos/${tournamentId}?populate=*`;
+                const TOURNAMENT_DETAIL_API_URL = `${API_BASE}api/torneos/${tournamentId}?populate=club.logo&populate=partidos.pareja1&populate=partidos.pareja2&populate=partidos.ganador&populate=parejas_inscritas&populate=categorias`;
                 const response = await fetch(TOURNAMENT_DETAIL_API_URL);
 
                 if (!response.ok) {
@@ -277,6 +277,7 @@ function TournamentMatches({ API_BASE }) { // Now only expects API_BASE as a pro
                             )
                             .map((match) => (
                                 <li key={match.id} className="mb-2">
+                                    
                                     <p className="font-medium text-black">
                                         Ronda: {match.ronda || "N/A"}
                                     </p>
@@ -285,7 +286,7 @@ function TournamentMatches({ API_BASE }) { // Now only expects API_BASE as a pro
                                             Parejas:{" "}
                                             <span
                                                 className={
-                                                    match.ganador?.id === match.pareja1.id // Compare by ID
+                                                    match.ganador?.documentId === match.pareja1.documentId // Compare by ID
                                                         ? "text-green-700 font-bold"
                                                         : ""
                                                 }
@@ -295,7 +296,7 @@ function TournamentMatches({ API_BASE }) { // Now only expects API_BASE as a pro
                                             vs{" "}
                                             <span
                                                 className={
-                                                    match.ganador?.id === match.pareja2.id // Compare by ID
+                                                    match.ganador?.documentId=== match.pareja2.documentId// Compare by ID
                                                         ? "text-green-700 font-bold"
                                                         : ""
                                                 }
