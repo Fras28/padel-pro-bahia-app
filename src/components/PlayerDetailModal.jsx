@@ -106,7 +106,7 @@ const PlayerDetailModal = ({ player, onClose }) => {
 
         {/* Player Name */}
         <h2 className={`text-2xl sm:text-3xl font-extrabold ${style.titleColor} mb-2 text-center z-10`}>
-          {player.nombre} {player.apellido}
+          {player.nombre}
         </h2>
 
         {/* Club Name */}

@@ -53,6 +53,7 @@ function InternalRanking() {
                 }
                 
                 const categoryName = categoryData.data.attributes.nombre; // Obtener el nombre de la categoría
+                console.log("Nombre de la categoría obtenida de la API:", categoryName); // Log agregado
 
                 // Luego, obtenemos el ranking interno para esa categoría y club
                 // Ajusta la URL de la API según cómo se expone el ranking interno en Strapi.
@@ -60,22 +61,27 @@ function InternalRanking() {
                 // Suponemos una API que permite filtrar por club y categoría.
                 const INTERNAL_RANKING_API_URL = `${API_BASE}api/jugadors?populate=club.logo&populate=estadisticas&filters[club][id][$eq]=${clubId}&filters[categorias][id][$eq]=${categoryId}&sort[0]=estadisticas.ranking_general:asc`;
 
+                console.log("URL de la API de jugadores:", INTERNAL_RANKING_API_URL); // Log agregado
                 const response = await fetch(INTERNAL_RANKING_API_URL);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
-                console.log(`Datos del Ranking Interno para club ${clubId}, categoría ${categoryId}:`, data.data);
+                console.log(`Datos del Ranking Interno para club ${clubId}, categoría ${categoryId}:`, data.data); // Log ya existente
 
                 if (data.data && Array.isArray(data.data)) {
                     // Filter players to ensure they have stats for the specific category
                     // (This might not be necessary if the API filter is precise)
-                    const filteredPlayers = data.data.filter(player => 
-                        player.attributes.estadisticas && 
-                        player.attributes.estadisticas.find(stat => 
-                            stat.categoria === categoryName && stat.club_id === parseInt(clubId)
-                        )
-                    ).map(player => {
+                    const filteredPlayers = data.data.filter(player => {
+                        console.log("Procesando jugador:", player.id, player.attributes.nombre, player.attributes.apellido); // Log agregado
+                        console.log("Estadísticas del jugador:", player.attributes.estadisticas); // Log agregado
+                        return player.attributes.estadisticas && 
+                               player.attributes.estadisticas.find(stat => {
+                                   console.log("  Comparando stat.categoria:", stat.categoria, "con categoryName:", categoryName); // Log agregado
+                                   console.log("  Comparando stat.club_id:", stat.club_id, "con parseInt(clubId):", parseInt(clubId)); // Log agregado
+                                   return stat.categoria === categoryName && stat.club_id === parseInt(clubId);
+                               });
+                    }).map(player => {
                         const categoryStats = player.attributes.estadisticas.find(stat => 
                             stat.categoria === categoryName && stat.club_id === parseInt(clubId)
                         );
@@ -89,6 +95,7 @@ function InternalRanking() {
                             // Add other player details if needed for the modal
                         };
                     });
+                    console.log("Jugadores filtrados finales:", filteredPlayers); // Log agregado
                     setPlayers(filteredPlayers);
                 } else {
                     setPlayers([]);
@@ -146,7 +153,7 @@ function InternalRanking() {
                             {players.map((player, index) => {
                                 const clubName = player.club || 'N/A';
                                 const clubLogo = player.clubLogo;
-                                const playerName = `${player.nombre} ${player.apellido}`;
+                                const playerName = `${player.nombre}`;
                                 const rankingGeneral = player.ranking_general;
 
                                 return (

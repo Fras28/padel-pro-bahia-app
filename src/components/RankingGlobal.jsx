@@ -157,7 +157,18 @@ function RankingGlobal() {
                                             {/* Display top 10 players */}
                                             {categoryData.players.slice(0, 10).map((entry, index) => {
                                                 const player = entry.jugador; 
-                                                const playerName = player ? `${player.nombre[0] || ''}. ${player.apellido || ''}`.trim() : 'Desconocido';
+                                                const playerName = player ? (() => {
+                                                    const fullName = player.nombre || ''; // Asegurarse de que fullName no sea undefined
+                                                    const parts = fullName.split(' '); // Dividir la cadena por espacios
+                                                
+                                                    if (parts.length > 0) {
+                                                        const nombreInicial = parts[0] ? `${parts[0][0]}.` : ''; // Primera letra del primer elemento (nombre)
+                                                        const apellido = parts.slice(1).join(' '); // El resto de los elementos son el apellido
+                                                
+                                                        return `${nombreInicial} ${apellido}`.trim();
+                                                    }
+                                                    return 'Desconocido';
+                                                })() : 'Desconocido';
                                                 const clubName = player && player.club ? player.club.nombre : 'N/A';
                                                 const clubLogoUrl = player && player.club && player.club.logo && player.club.logo.url ? player.club.logo.url : 'https://placehold.co/32x32/cccccc/333333?text=Club';
                                                 const globalPoints = entry.puntosGlobales || 0;
@@ -209,7 +220,18 @@ function RankingGlobal() {
                                             <tbody className="bg-white divide-y divide-gray-200">
                                                 {categoryData.players.slice(10, 16).map((entry, index) => {
                                                     const player = entry.jugador; 
-                                                    const playerName = player ? `${player.nombre[0] || ''}. ${player.apellido || ''}`.trim() : 'Desconocido';
+                                                    const playerName = player ? (() => {
+                                                        const fullName = player.nombre || ''; // Asegurarse de que fullName no sea undefined
+                                                        const parts = fullName.split(' '); // Dividir la cadena por espacios
+                                                    
+                                                        if (parts.length > 0) {
+                                                            const nombreInicial = parts[0] ? `${parts[0][0]}.` : ''; // Primera letra del primer elemento (nombre)
+                                                            const apellido = parts.slice(1).join(' '); // El resto de los elementos son el apellido
+                                                    
+                                                            return `${nombreInicial} ${apellido}`.trim();
+                                                        }
+                                                        return 'Desconocido';
+                                                    })() : 'Desconocido';
                                                     const clubName = player && player.club ? player.club.nombre : 'N/A';
                                                     const clubLogoUrl = player && player.club && player.club.logo && player.club.logo.url ? player.club.logo.url : 'https://placehold.co/32x32/cccccc/333333?text=Club';
                                                     const globalPoints = entry.puntosGlobales || 0;
