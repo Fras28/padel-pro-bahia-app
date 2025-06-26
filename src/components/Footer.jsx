@@ -10,7 +10,7 @@ const Footer = () => {
                     Desarrollado por:
                 </p>
                 <a
-                    href="https://www.morton.com.ar/" // Replace with the actual Morton website if different
+                    href="https://morton-solutions.vercel.app/" // Replace with the actual Morton website if different
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-center space-x-2 mb-2"
