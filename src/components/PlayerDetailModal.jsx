@@ -77,6 +77,7 @@ const PlayerDetailModal = ({ player, onClose }) => {
     partidosGanados: 0,
     torneosJugados: 0,
     torneosGanados: 0,
+    partidosCuartosRonda: 0,
   };
 
   const {
@@ -84,6 +85,7 @@ const PlayerDetailModal = ({ player, onClose }) => {
     partidosGanados,
     torneosJugados,
     torneosGanados,
+    partidosCuartosRonda,
   } = stats; // Now destructure from 'stats' which is guaranteed not null.
 
   // Calculate win rate safely
@@ -181,7 +183,7 @@ const PlayerDetailModal = ({ player, onClose }) => {
             { label: 'Partidos Jugados', value: partidosJugados },
             { label: 'Partidos Ganados', value: partidosGanados },
             { label: 'Torneos Jugados', value: torneosJugados },
-            { label: 'Partidos Cuartos', value: quarterFinalsCount }, // New stat for Cuartos matches
+            { label: 'Cuartos', value: partidosCuartosRonda }, // New stat for Cuartos matches
             { label: 'Torneos Ganados', value: torneosGanados },
           ].map(stat => (
             <div
