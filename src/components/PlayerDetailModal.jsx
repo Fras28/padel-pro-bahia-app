@@ -66,18 +66,19 @@ const clubStyles = {
 
 // PlayerDetailModal component to display player statistics in a customized card
 const PlayerDetailModal = ({ player, onClose }) => {
-  // **AÑADE ESTA LÍNEA CRÍTICA AQUÍ**
+  // Add this critical line here for early exit
   if (!player) {
     return null;
   }
 
   // Access stats safely, providing an empty object as fallback if null
+  // This ensures 'stats' is always an object with default numeric values
   const stats = player?.estadisticas || {
     partidosJugados: 0,
     partidosGanados: 0,
     torneosJugados: 0,
     torneosGanados: 0,
-    partidosCuartosRonda: 0,
+    partidosCuartosRonda: 0, // Ensure this new field is part of the fallback
   };
 
   const {
@@ -85,8 +86,8 @@ const PlayerDetailModal = ({ player, onClose }) => {
     partidosGanados,
     torneosJugados,
     torneosGanados,
-    partidosCuartosRonda,
-  } = stats; // Now destructure from 'stats' which is guaranteed not null.
+    partidosCuartosRonda, // Destructure the new stat directly from 'stats'
+  } = stats;
 
   // Calculate win rate safely
   const winRate = partidosJugados > 0 ? ((partidosGanados / partidosJugados) * 100).toFixed(2) : '0.00';
@@ -94,36 +95,8 @@ const PlayerDetailModal = ({ player, onClose }) => {
   // Get styles based on player's club ID, defaulting if not found
   const style = clubStyles[player.club?.id] || clubStyles.default;
 
-  // --- Logic for Cuartos Matches in PlayerDetailModal ---
-  let allPlayerMatches = [];
-
-  // Collect matches from pareja relation
-  if (player.pareja) {
-    if (player.pareja.partidos_ganados) {
-      player.pareja.partidos_ganados.forEach(match => allPlayerMatches.push({ ...match, won: true }));
-    }
-    if (player.pareja.partidos_perdidos) {
-      player.pareja.partidos_perdidos.forEach(match => allPlayerMatches.push({ ...match, won: false }));
-    }
-  }
-
-  // Collect matches from pareja1 relation
-  if (player.pareja1) {
-    if (player.pareja1.partidos_ganados) {
-      player.pareja1.partidos_ganados.forEach(match => allPlayerMatches.push({ ...match, won: true }));
-    }
-    if (player.pareja1.partidos_perdidos) {
-      player.pareja1.partidos_perdidos.forEach(match => allPlayerMatches.push({ ...match, won: false }));
-    }
-  }
-
-  let quarterFinalsCount = 0;
-  allPlayerMatches.forEach(match => {
-    if (match.ronda === "Cuartos") {
-      quarterFinalsCount++;
-    }
-  });
-  // --- End of Logic ---
+  // The logic for 'allPlayerMatches' and 'quarterFinalsCount' is removed
+  // as the 'partidosCuartosRonda' from player.estadisticas is now authoritative.
 
   return (
     <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm bg-black bg-opacity-70`} onClick={onClose}>
@@ -147,23 +120,23 @@ const PlayerDetailModal = ({ player, onClose }) => {
           {player?.nombre}
         </h2>
 
-{/* Club Logo OR Name */}
-{player?.club ? ( // Verifica si el objeto club existe
-            player.club.logo?.url ? ( // Si existe el club, verifica si tiene una URL de logo
-                <div className="mb-4 flex justify-center z-10"> {/* Contenedor para centrar el logo */}
-                    <img
-                        src={player.club.logo.url}
-                        alt={`${player.club.nombre} Logo`}
-                        className="h-16 w-16 sm:h-20 sm:w-20 object-contain rounded-full shadow-md" // Ajusta el tamaño y estilo del logo visible
-                        onError={(e) => { e.currentTarget.style.display = 'none'; }} // Oculta la imagen si falla la carga
-                    />
-                </div>
-            ) : ( // Si no hay URL de logo, pero el objeto club existe, muestra el nombre
-                <p className={`text-lg ${style.clubNameColor} mb-4 text-center z-10`}>
-                    Club: {player.club.nombre}
-                </p>
-            )
-        ) : null} {/* Si no hay objeto club, no renderiza nada */}
+        {/* Club Logo OR Name */}
+        {player?.club ? ( // Checks if the club object exists
+          player.club.logo?.url ? ( // If club exists, checks if it has a logo URL
+            <div className="mb-4 flex justify-center z-10"> {/* Container to center the logo */}
+              <img
+                src={player.club.logo.url}
+                alt={`${player.club.nombre} Logo`}
+                className="h-16 w-16 sm:h-20 sm:w-20 object-contain rounded-full shadow-md" // Adjust logo size and visible style
+                onError={(e) => { e.currentTarget.style.display = 'none'; }} // Hides image if load fails
+              />
+            </div>
+          ) : ( // If no logo URL, but club object exists, display the name
+            <p className={`text-lg ${style.clubNameColor} mb-4 text-center z-10`}>
+              Club: {player.club.nombre}
+            </p>
+          )
+        ) : null} {/* If no club object, nothing is rendered */}
 
         {/* Ranking General & Win Rate Block */}
         <div className="grid grid-cols-2 gap-3 w-full text-center mb-6 z-10">
@@ -177,19 +150,19 @@ const PlayerDetailModal = ({ player, onClose }) => {
           </div>
         </div>
 
-          {/* Stats Blocks (Partidos Jugados, Ganados, Torneos) */}
-          <div className="grid grid-cols-2 gap-3 w-full text-center mt-auto z-10">
+        {/* Stats Blocks (Partidos Jugados, Ganados, Torneos) */}
+        <div className="grid grid-cols-2 gap-3 w-full text-center mt-auto z-10">
           {[
             { label: 'Partidos Jugados', value: partidosJugados },
             { label: 'Partidos Ganados', value: partidosGanados },
             { label: 'Torneos Jugados', value: torneosJugados },
-            { label: 'Cuartos', value: partidosCuartosRonda }, // New stat for Cuartos matches
+            { label: 'Cuartos', value: partidosCuartosRonda }, // Display the new stat
             { label: 'Torneos Ganados', value: torneosGanados },
           ].map(stat => (
             <div
               key={stat.label}
               className={`p-2 rounded-lg ${style.statBlockBg} ${style.statBlockBorder} border shadow-inner ${
-                stat.label === 'Torneos Ganados' ? 'col-span-2' : '' // <--- ¡CAMBIO AQUÍ!
+                stat.label === 'Torneos Ganados' ? 'col-span-2' : ''
               }`}
             >
               <p className={`text-sm sm:text-base font-medium ${style.textColor}`}>{stat.label}</p>
