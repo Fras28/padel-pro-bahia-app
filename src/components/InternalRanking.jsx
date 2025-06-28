@@ -1,7 +1,7 @@
 // src/components/InternalRanking.jsx
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom'; // Importa useParams y useNavigate
-import PlayerDetailModal from './PlayerDetailModal'; 
+import PlayerDetailModal from './PlayerDetailModal';
 
 function InternalRanking() {
     const { clubId, categoryId } = useParams(); // Obtiene clubId y categoryId de la URL
@@ -29,6 +29,8 @@ function InternalRanking() {
 
     useEffect(() => {
         const fetchInternalRanking = async () => {
+            console.log("clubId recibido:", clubId);
+            console.log("categoryId recibido:", categoryId);
             if (!clubId || !categoryId) {
                 setError("No se han proporcionado todos los parámetros necesarios (ID de club o categoría).");
                 setLoading(false);
@@ -37,142 +39,99 @@ function InternalRanking() {
 
             setLoading(true);
             setError(null);
-
             try {
-                // Primero, obtenemos la categoría para asegurarnos de que existe y obtener su nombre si es necesario
-                const categoryResponse = await fetch(`${API_BASE}api/categorias/${categoryId}`);
-                if (!categoryResponse.ok) {
-                    throw new Error(`HTTP error! status: ${categoryResponse.status} for category ${categoryId}`);
-                }
-                const categoryData = await categoryResponse.json();
-                
-                if (!categoryData.data) {
-                    setError(`Categoría con ID ${categoryId} no encontrada.`);
-                    setLoading(false);
-                    return;
-                }
-                
-                const categoryName = categoryData.data.attributes.nombre; // Obtener el nombre de la categoría
-                console.log("Nombre de la categoría obtenida de la API:", categoryName); // Log agregado
+                // URL for internal ranking data - filters by club and category, and sorts by ranking_general
+                // MODIFICACIÓN: Cambiado filters[club][id] a filters[club][documentId]
+                const INTERNAL_RANKING_API_URL = `${API_BASE}api/jugadors?populate=club.logo&populate=estadisticas&populate=categoria&filters[club][documentId][$eq]=${clubId}&filters[categoria][id][$eq]=${categoryId}&sort[0]=estadisticas.ranking_general:asc`;
 
-                // Luego, obtenemos el ranking interno para esa categoría y club
-                // Ajusta la URL de la API según cómo se expone el ranking interno en Strapi.
-                // Si el ranking está anidado bajo categoría o club, la consulta será diferente.
-                // Suponemos una API que permite filtrar por club y categoría.
-                const INTERNAL_RANKING_API_URL = `${API_BASE}api/jugadors?populate=club.logo&populate=estadisticas&filters[club][id][$eq]=${clubId}&filters[categorias][id][$eq]=${categoryId}&sort[0]=estadisticas.ranking_general:asc`;
-
-                console.log("URL de la API de jugadores:", INTERNAL_RANKING_API_URL); // Log agregado
                 const response = await fetch(INTERNAL_RANKING_API_URL);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
-                console.log(`Datos del Ranking Interno para club ${clubId}, categoría ${categoryId}:`, data.data); // Log ya existente
 
-                if (data.data && Array.isArray(data.data)) {
-                    // Filter players to ensure they have stats for the specific category
-                    // (This might not be necessary if the API filter is precise)
-                    const filteredPlayers = data.data.filter(player => {
-                        console.log("Procesando jugador:", player.id, player.attributes.nombre, player.attributes.apellido); // Log agregado
-                        console.log("Estadísticas del jugador:", player.attributes.estadisticas); // Log agregado
-                        return player.attributes.estadisticas && 
-                               player.attributes.estadisticas.find(stat => {
-                                   console.log("  Comparando stat.categoria:", stat.categoria, "con categoryName:", categoryName); // Log agregado
-                                   console.log("  Comparando stat.club_id:", stat.club_id, "con parseInt(clubId):", parseInt(clubId)); // Log agregado
-                                   return stat.categoria === categoryName && stat.club_id === parseInt(clubId);
-                               });
-                    }).map(player => {
-                        const categoryStats = player.attributes.estadisticas.find(stat => 
-                            stat.categoria === categoryName && stat.club_id === parseInt(clubId)
-                        );
-                        return {
-                            id: player.id,
-                            nombre: player.attributes.nombre,
-                            apellido: player.attributes.apellido,
-                            ranking_general: categoryStats ? categoryStats.ranking_general : 'N/A',
-                            club: player.attributes.club?.data?.attributes?.nombre || 'N/A',
-                            clubLogo: player.attributes.club?.data?.attributes?.logo?.data?.attributes?.url || null,
-                            // Add other player details if needed for the modal
-                        };
-                    });
-                    console.log("Jugadores filtrados finales:", filteredPlayers); // Log agregado
-                    setPlayers(filteredPlayers);
-                } else {
-                    setPlayers([]);
-                }
+                // Assuming data.data contains the array of players directly
+                // Filter and sort should already be handled by the API, but adding a fallback sort for safety
+                const sortedPlayers = data.data
+                    .map(player => ({
+                        id: player.id,
+                        ...player.attributes,
+                        club: player.attributes.club?.data?.attributes, // Flatten club data
+                        categoria: player.attributes.categoria?.data?.attributes, // Flatten categoria data
+                    }))
+                    .sort((a, b) => (a.estadisticas?.ranking_general || Infinity) - (b.estadisticas?.ranking_general || Infinity));
+
+                setPlayers(sortedPlayers);
+
             } catch (e) {
                 console.error("Error fetching internal ranking:", e);
-                setError("Error al cargar el ranking interno. Inténtalo de nuevo más tarde.");
+                setError(`Error al cargar el ranking interno: ${e.message}`);
             } finally {
                 setLoading(false);
             }
         };
 
         fetchInternalRanking();
-    }, [clubId, categoryId, API_BASE]); // Dependencias: clubId, categoryId, API_BASE
+    }, [clubId, categoryId, API_BASE]); // Dependencias del useEffect
 
     if (loading) {
-        return <div className="text-center py-4 text-gray-500">Cargando ranking interno...</div>;
+        return <div className="text-center py-4 text-gray-600">Cargando ranking...</div>;
     }
 
     if (error) {
-        return <div className="text-center py-4 text-red-500">Error: {error}</div>;
+        return <div className="text-center py-4 text-red-600">Error: {error}</div>;
     }
 
+    const categoryName = players.length > 0 ? players[0].categoria?.nombre : 'Categoría Desconocida';
+
     return (
-        <div className="bg-gray-50 p-4 sm:p-6 rounded-lg shadow-inner mt-6">
-            <h2 className="text-2xl font-semibold text-blue-900 mb-4 border-b-2 border-blue-200 pb-2">
-                Ranking Interno
-                {/* Opcional: mostrar nombre del club y categoría si se han obtenido */}
-                {clubId && categoryId && (
-                    <span className="text-lg font-normal text-gray-700 block mt-1">
-                        Club ID: {clubId}, Categoría ID: {categoryId}
-                    </span>
-                )}
-            </h2>
+        <div className="container mx-auto p-4 sm:p-6 lg:p-8">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-6 text-center">
+                Ranking Interno: {categoryName}
+            </h1>
+
             {players.length > 0 ? (
-                <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200 shadow-md rounded-lg overflow-hidden">
-                        <thead className="bg-blue-800 text-white">
+                <div className="bg-white shadow-lg rounded-lg overflow-hidden">
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
                             <tr>
-                                <th scope="col" className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium uppercase tracking-wider">
+                                <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sm:px-6">
                                     Posición
                                 </th>
-                                <th scope="col" className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium uppercase tracking-wider">
+                                <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sm:px-6">
                                     Club
                                 </th>
-                                <th scope="col" className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium uppercase tracking-wider">
+                                <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sm:px-6">
                                     Jugador
                                 </th>
-                                <th scope="col" className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium uppercase tracking-wider">
+                                <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sm:px-6">
                                     Puntos
                                 </th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
                             {players.map((player, index) => {
-                                const clubName = player.club || 'N/A';
-                                const clubLogo = player.clubLogo;
-                                const playerName = `${player.nombre}`;
-                                const rankingGeneral = player.ranking_general;
+                                const clubLogoUrl = player.club?.logo?.url;
+                                const clubName = player.club?.nombre || 'N/A';
+                                const playerName = `${player.nombre} ${player.apellido}`;
+                                const rankingGeneral = player.estadisticas?.ranking_general || 'N/A';
 
                                 return (
-                                    <tr
-                                        key={player.id}
-                                        onClick={() => openPlayerModal(player)}
-                                        className="hover:bg-gray-50 cursor-pointer transition-colors duration-150 ease-in-out"
-                                    >
+                                    <tr key={player.id} className="hover:bg-gray-100 cursor-pointer" onClick={() => openPlayerModal(player)}>
                                         <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                             {index + 1}
                                         </td>
                                         <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
                                             <div className="flex items-center">
-                                                {clubLogo && (
+                                                {clubLogoUrl && (
                                                     <img
-                                                        src={clubLogo}
-                                                        alt={`${clubName} Logo`}
-                                                        className="w-8 h-8 rounded-full mr-1 sm:mr-2 shadow-sm"
-                                                        onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/32x32/cccccc/333333?text=Club'; }}
+                                                        className="h-8 w-8 rounded-full object-contain mr-2"
+                                                        src={clubLogoUrl}
+                                                        alt={`${clubName} logo`}
+                                                        onError={(e) => {
+                                                            e.target.onerror = null;
+                                                            e.target.src = "https://placehold.co/32x32/cccccc/333333?text=Club";
+                                                        }}
                                                     />
                                                 )}
                                                 <span>{clubName}</span>

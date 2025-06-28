@@ -12,7 +12,7 @@ function Clubs() {
   const navigate = useNavigate();
 
   const handleClubClick = (club) => {
-    navigate(`/clubs/${club.id}/categories`);
+    navigate(`/clubs/${club.documentId}/categories`);
   };
 
   useEffect(() => {
@@ -59,15 +59,15 @@ function Clubs() {
           clubs.map((club) => (
           
             <button
-              key={club.id}
+              key={club.documentId}
               onClick={() => handleClubClick(club)}
-              className="flex flex-col items-center p-4 bg-white rounded-lg shadow-md hover:shadow-xl transform hover:scale-105 transition-all duration-300 ease-in-out cursor-pointer border border-transparent hover:border-blue-500"
+              className="flex flex-col items-center p-4 bg-white rounded-lg shadow-md hover:shadow-xl transform hover:scale-105 transition-all duration-300 ease-in-out cursor-pointer border border-transparent hover:border-blue-500 bg"
             >
               {/* Línea 67 - Mejora el acceso al logo con un valor predeterminado */}
               <img
                 src={club?.logo?.url || "https://placehold.co/80x80/cccccc/333333?text=Logo"} // Proporciona una URL de fallback
                 alt={`Logo de ${club?.nombre}`}
-                className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2 rounded-full ring-2 ring-blue-200"
+                className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2 rounded-full  bg-black"
                 onError={(e) => {
                   e.target.onerror = null; // Evita bucles infinitos en caso de error de carga
                   e.target.src = "https://placehold.co/80x80/cccccc/333333?text=Logo"; // Fallback si la imagen no se carga
