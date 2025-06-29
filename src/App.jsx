@@ -159,7 +159,7 @@ function App() {
 
     const sponsorImages = [
       { src: Dternera, url: "https://www.deternera.com.ar/", blurred: false },
-      { src: DonAlf, url: "https://www.donalf.com.ar/", blurred: false},
+      { src: DonAlf, url: "https://www.instagram.com/donalfredocentro/", blurred: false},
       { src: Morton, url: "https://www.morton.com.ar/", blurred: false },
       { src: Rucca, url: "https://www.ruccabahia.com/", blurred: false },
       // { src: ENA, url: "https://www.enasport.com/", blurred: true  },
