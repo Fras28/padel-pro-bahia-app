@@ -1,5 +1,5 @@
 // src/components/RankingGlobal.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react"; // Importa useRef
 import PlayerDetailModal from "./PlayerDetailModal";
 import Dternera from "../assets/DeTernera.png";
 import DonAlf from "../assets/donalf.jpg";
@@ -8,7 +8,8 @@ import Rucca from "../assets/ruca.png";
 import ENA from "../assets/ENA.avif";
 import ADN from "../assets/ADN.png";
 import SponsorBanner from "./SponsorBanner";
-import CountUp from "react-countup"; // Importa el componente CountUp
+import CountUp from "react-countup";
+import { useInView } from "react-intersection-observer"; // Importa useInView
 
 function RankingGlobal() {
   // State to store the raw ranking data fetched
@@ -25,14 +26,12 @@ function RankingGlobal() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   // State to store selected player data for the modal
   const [selectedPlayer, setSelectedPlayer] = useState(null);
-  // Nuevo estado para controlar si la animación ya se mostró
-  const [hasAnimated, setHasAnimated] = useState(false);
+
+  // Ya no necesitamos hasAnimated globalmente, cada CountUp lo manejará individualmente
+  // const [hasAnimated, setHasAnimated] = useState(false);
 
   const API_BASE = import.meta.env.VITE_API_BASE;
-  // URL for global ranking data - ensures all necessary data is populated
-  // Expanded populate to include partidos_ganados and partidos_perdidos for both pareja and pareja1
   const RANKING_API_URL = `${API_BASE}api/ranking-global?populate=entradasRankingGlobal.jugador.estadisticas&populate=entradasRankingGlobal.jugador.club.logo&populate=entradasRankingGlobal.jugador.categoria&populate=entradasRankingGlobal.jugador.pareja.partidos_ganados&populate=entradasRankingGlobal.jugador.pareja.partidos_perdidos&populate=entradasRankingGlobal.jugador.pareja1.partidos_ganados&populate=entradasRankingGlobal.jugador.pareja1.partidos_perdidos`;
-  // URL for categories
   const CATEGORIES_API_URL = `${API_BASE}api/categorias`;
 
   const sponsorImages = [
@@ -47,7 +46,6 @@ function RankingGlobal() {
   useEffect(() => {
     const fetchAllData = async () => {
       try {
-        // Fetch categories first
         const categoriesResponse = await fetch(CATEGORIES_API_URL);
 
         if (!categoriesResponse.ok) {
@@ -59,7 +57,6 @@ function RankingGlobal() {
         setCategories(categoriesData.data || []);
         console.log("Categorias fetched:", categoriesData.data);
 
-        // Then fetch global ranking
         const rankingResponse = await fetch(RANKING_API_URL);
         if (!rankingResponse.ok) {
           throw new Error(
@@ -70,13 +67,11 @@ function RankingGlobal() {
         console.log("Raw API data (Global Ranking):", rankingData);
 
         if (rankingData.data && rankingData.data.entradasRankingGlobal) {
-          // Sort the raw ranking by global points in descending order
           const sortedRanking = rankingData.data.entradasRankingGlobal.sort(
             (a, b) => b.puntosGlobales - a.puntosGlobales
           );
-          setRawRanking(sortedRanking); // Save the raw, sorted ranking
-          // Marca que la animación puede ejecutarse ya que los datos se cargaron por primera vez
-          setHasAnimated(true);
+          setRawRanking(sortedRanking);
+          // Ya no necesitamos setHasAnimated(true) aquí
         } else {
           setRawRanking([]);
           console.warn(
@@ -96,20 +91,17 @@ function RankingGlobal() {
     fetchAllData();
   }, []);
 
-  // Process the raw ranking data when it changes or categories are loaded
   useEffect(() => {
     const processRankingByCategories = () => {
       const tempCategorizedRanking = {};
 
       categories.forEach((category) => {
-        // Initialize an empty array for each category
         tempCategorizedRanking[category.id] = {
           name: category.nombre,
           players: [],
         };
       });
 
-      // Populate the temporary categorized ranking
       rawRanking.forEach((entry) => {
         const player = entry.jugador;
         if (
@@ -125,7 +117,6 @@ function RankingGlobal() {
       for (const categoryId in tempCategorizedRanking) {
         finalCategorizedRanking[categoryId] = {
           name: tempCategorizedRanking[categoryId].name,
-          // Keep up to 16 players for potential display
           players: tempCategorizedRanking[categoryId].players.slice(0, 16),
         };
       }
@@ -137,16 +128,42 @@ function RankingGlobal() {
     }
   }, [rawRanking, categories]);
 
-  // Function to open the player details modal
   const openPlayerModal = (playerData) => {
     setSelectedPlayer(playerData);
     setIsModalOpen(true);
   };
 
-  // Function to close the player details modal
   const closePlayerModal = () => {
     setIsModalOpen(false);
     setSelectedPlayer(null);
+  };
+
+  // Componente para los puntos con animación condicional (interno al renderizado)
+  // Esto permite que cada celda de puntos tenga su propio observer y su estado de animación.
+  const AnimatedPoints = ({ points }) => {
+    // ref se adjuntará al elemento que queremos observar
+    // inView será true cuando el elemento esté en el viewport
+    // entry contiene información detallada sobre la intersección
+    const { ref, inView } = useInView({
+      triggerOnce: true, // La animación solo se disparará una vez cuando entre en vista
+      threshold: 0.5,    // Cuánto del elemento debe estar visible (50% en este caso)
+    });
+
+    return (
+      <span ref={ref}>
+        {inView ? ( // Si está en vista, ejecuta la animación
+          <CountUp
+            end={points}
+            duration={2.5}
+            separator="."
+            decimals={0}
+          />
+        ) : (
+          // Si no está en vista aún, muestra los puntos directamente (sin animación)
+          points
+        )}
+      </span>
+    );
   };
 
   return (
@@ -192,7 +209,6 @@ function RankingGlobal() {
                       {/* Display top 10 players */}
                       {categoryData.players.slice(0, 10).map((entry, index) => {
                         const player = entry.jugador;
-
                         const playerName = player
                           ? (() => {
                               const fullName = player.nombre || "";
@@ -219,10 +235,7 @@ function RankingGlobal() {
                             : "https://placehold.co/32x32/cccccc/333333?text=Club";
                         const globalPoints = entry.puntosGlobales || 0;
 
-                        // --- Logic for Recent Wins ---
                         let allPlayerMatches = [];
-
-                        // Collect matches from pareja relation
                         if (player.pareja) {
                           if (player.pareja.partidos_ganados) {
                             player.pareja.partidos_ganados.forEach((match) =>
@@ -235,8 +248,6 @@ function RankingGlobal() {
                             );
                           }
                         }
-
-                        // Collect matches from pareja1 relation
                         if (player.pareja1) {
                           if (player.pareja1.partidos_ganados) {
                             player.pareja1.partidos_ganados.forEach((match) =>
@@ -249,17 +260,12 @@ function RankingGlobal() {
                             );
                           }
                         }
-
-                        // Sort all matches by date in descending order
                         allPlayerMatches.sort(
                           (a, b) =>
                             new Date(b.fechaPartido) - new Date(a.fechaPartido)
                         );
-
                         let lastThreeWins = true;
-
                         if (allPlayerMatches.length >= 3) {
-                          // Check if the last 3 *played* matches were all wins
                           for (let i = 0; i < 3; i++) {
                             if (!allPlayerMatches[i].won) {
                               lastThreeWins = false;
@@ -267,9 +273,8 @@ function RankingGlobal() {
                             }
                           }
                         } else {
-                          lastThreeWins = false; // Not enough matches to determine a 3-win streak
+                          lastThreeWins = false;
                         }
-                        // --- End of Logic ---
 
                         return (
                           <tr
@@ -283,11 +288,11 @@ function RankingGlobal() {
                                 {lastThreeWins ? (
                                   <span className="text-green-500 ml-1 text-base leading-none">
                                     &#x25B2;
-                                  </span> // Flecha verde
+                                  </span>
                                 ) : (
                                   <span className="text-gray-400 ml-1 text-base leading-none">
                                     &#x2022;
-                                  </span> // Punto gris (código HTML para punto: &#x2022;)
+                                  </span>
                                 )}
                               </div>
                             </td>
@@ -309,17 +314,7 @@ function RankingGlobal() {
                               {playerName}
                             </td>
                             <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700 text-center">
-                              {/* Aplica CountUp solo si hasAnimated es true */}
-                              {hasAnimated ? (
-                                <CountUp
-                                  end={globalPoints}
-                                  duration={4} // Duración de la animación en segundos
-                                  separator="." // Separador de miles si es necesario
-                                  decimals={0} // Sin decimales para puntos de ranking
-                                />
-                              ) : (
-                                globalPoints // Muestra el valor directamente si no se ha animado
-                              )}
+                              <AnimatedPoints points={globalPoints} /> {/* Usa el nuevo componente */}
                             </td>
                           </tr>
                         );
@@ -362,7 +357,6 @@ function RankingGlobal() {
                           .slice(10, 16)
                           .map((entry, index) => {
                             const player = entry.jugador;
-
                             const playerName = player
                               ? (() => {
                                   const fullName = player.nombre || "";
@@ -391,9 +385,7 @@ function RankingGlobal() {
                                 : "https://placehold.co/32x32/cccccc/333333?text=Club";
                             const globalPoints = entry.puntosGlobales || 0;
 
-                            // --- Logic for Recent Wins (duplicated for this section) ---
                             let allPlayerMatches = [];
-
                             if (player.pareja) {
                               if (player.pareja.partidos_ganados) {
                                 player.pareja.partidos_ganados.forEach(
@@ -414,7 +406,6 @@ function RankingGlobal() {
                                 );
                               }
                             }
-
                             if (player.pareja1) {
                               if (player.pareja1.partidos_ganados) {
                                 player.pareja1.partidos_ganados.forEach(
@@ -435,15 +426,12 @@ function RankingGlobal() {
                                 );
                               }
                             }
-
                             allPlayerMatches.sort(
                               (a, b) =>
                                 new Date(b.fechaPartido) -
                                 new Date(a.fechaPartido)
                             );
-
                             let lastThreeWins = true;
-
                             if (allPlayerMatches.length >= 3) {
                               for (let i = 0; i < 3; i++) {
                                 if (!allPlayerMatches[i].won) {
@@ -454,7 +442,6 @@ function RankingGlobal() {
                             } else {
                               lastThreeWins = false;
                             }
-                            // --- End of Logic ---
 
                             return (
                               <tr
@@ -468,11 +455,11 @@ function RankingGlobal() {
                                 {lastThreeWins ? (
                                   <span className="text-green-500 ml-1 text-base leading-none">
                                     &#x25B2;
-                                  </span> // Flecha verde
+                                  </span>
                                 ) : (
                                   <span className="text-gray-400 ml-1 text-base leading-none">
                                     &#x2022;
-                                  </span> // Punto gris (código HTML para punto: &#x2022;)
+                                  </span>
                                 )}
                               </div>
                             </td>
@@ -494,17 +481,7 @@ function RankingGlobal() {
                                   {playerName}
                                 </td>
                                 <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700">
-                                  {/* Aplica CountUp solo si hasAnimated es true */}
-                                  {hasAnimated ? (
-                                    <CountUp
-                                      end={globalPoints}
-                                      duration={4}
-                                      separator="."
-                                      decimals={0}
-                                    />
-                                  ) : (
-                                    globalPoints
-                                  )}
+                                  <AnimatedPoints points={globalPoints} /> {/* Usa el nuevo componente */}
                                 </td>
                               </tr>
                             );
@@ -522,7 +499,6 @@ function RankingGlobal() {
         </p>
       )}
 
-      {/* Player Detail Modal component rendered conditionally */}
       {isModalOpen && selectedPlayer && (
         <PlayerDetailModal player={selectedPlayer} onClose={closePlayerModal} />
       )}
