@@ -8,6 +8,7 @@ import Rucca from "../assets/ruca.png";
 import ENA from "../assets/ENA.avif";
 import ADN from "../assets/ADN.png";
 import SponsorBanner from "./SponsorBanner";
+import CountUp from "react-countup"; // Importa el componente CountUp
 
 function RankingGlobal() {
   // State to store the raw ranking data fetched
@@ -24,6 +25,8 @@ function RankingGlobal() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   // State to store selected player data for the modal
   const [selectedPlayer, setSelectedPlayer] = useState(null);
+  // Nuevo estado para controlar si la animación ya se mostró
+  const [hasAnimated, setHasAnimated] = useState(false);
 
   const API_BASE = import.meta.env.VITE_API_BASE;
   // URL for global ranking data - ensures all necessary data is populated
@@ -72,6 +75,8 @@ function RankingGlobal() {
             (a, b) => b.puntosGlobales - a.puntosGlobales
           );
           setRawRanking(sortedRanking); // Save the raw, sorted ranking
+          // Marca que la animación puede ejecutarse ya que los datos se cargaron por primera vez
+          setHasAnimated(true);
         } else {
           setRawRanking([]);
           console.warn(
@@ -304,7 +309,17 @@ function RankingGlobal() {
                               {playerName}
                             </td>
                             <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700 text-center">
-                              {globalPoints}
+                              {/* Aplica CountUp solo si hasAnimated es true */}
+                              {hasAnimated ? (
+                                <CountUp
+                                  end={globalPoints}
+                                  duration={4} // Duración de la animación en segundos
+                                  separator="." // Separador de miles si es necesario
+                                  decimals={0} // Sin decimales para puntos de ranking
+                                />
+                              ) : (
+                                globalPoints // Muestra el valor directamente si no se ha animado
+                              )}
                             </td>
                           </tr>
                         );
@@ -479,7 +494,17 @@ function RankingGlobal() {
                                   {playerName}
                                 </td>
                                 <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700">
-                                  {globalPoints}
+                                  {/* Aplica CountUp solo si hasAnimated es true */}
+                                  {hasAnimated ? (
+                                    <CountUp
+                                      end={globalPoints}
+                                      duration={4}
+                                      separator="."
+                                      decimals={0}
+                                    />
+                                  ) : (
+                                    globalPoints
+                                  )}
                                 </td>
                               </tr>
                             );

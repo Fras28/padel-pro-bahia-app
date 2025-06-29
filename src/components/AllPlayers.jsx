@@ -12,37 +12,51 @@ function AllPlayers() {
     const [selectedPlayer, setSelectedPlayer] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const API_BASE = import.meta.env.VITE_API_BASE || 'https://padelproback-ranking.onrender.com/'; 
+    const API_BASE = import.meta.env.VITE_API_BASE || 'https://padelproback-ranking.onrender.com/';
 
     // useCallback to memoize the fetch function and prevent unnecessary re-renders
     const fetchPlayers = useCallback(async (page, term) => {
         setLoading(true);
         setError(null);
         try {
+            // Create an array of populate parameters
+            const populateParams = [
+                'club.logo',
+                'estadisticas',
+                'categoria',
+                'torneos',
+                'pareja',
+                'pareja1'
+            ];
+    
             // Construct the API URL with pagination and search filters
             const queryParams = new URLSearchParams({
-                'populate': '*', // Keep populate=* as it already provides the logo data
                 'pagination[page]': page,
                 'pagination[pageSize]': 25,
             });
-
+    
+            // Append each populate parameter individually
+            populateParams.forEach(param => {
+                queryParams.append('populate', param);
+            });
+    
             if (term) {
                 // Add filters for name and apellido (case-insensitive)
                 // Using $or to search in either nombre or apellido
                 queryParams.append('filters[$or][0][nombre][$containsi]', term);
                 queryParams.append('filters[$or][1][apellido][$containsi]', term);
             }
-
+    
             const PLAYERS_API_URL = `${API_BASE}api/jugadors?${queryParams.toString()}`;
             console.log("Fetching URL:", PLAYERS_API_URL);
-
+    
             const response = await fetch(PLAYERS_API_URL);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
             console.log("Fetched players data:", data);
-
+    
             if (data.data) {
                 setPlayers(data.data);
                 setTotalPages(data.meta.pagination.pageCount);
@@ -52,12 +66,12 @@ function AllPlayers() {
                 console.warn("API data structure not as expected (missing data.data).");
             }
         } catch (err) {
-            setError("Error al cargar los jugadores. Inténtalo de nuevo más tarde."); 
+            setError("Error al cargar los jugadores. Inténtalo de nuevo más tarde.");
             console.error("Error fetching players:", err);
         } finally {
-            setLoading(false); 
+            setLoading(false);
         }
-    }, [API_BASE]); 
+    }, [API_BASE]);
 
     // Effect to fetch players on component mount or when search term/page changes
     useEffect(() => {
@@ -118,6 +132,7 @@ function AllPlayers() {
                             
                             // Safely access club name
                             const clubName = player.club?.nombre || 'N/A'; 
+                            const category = player.categoria?.nombre || 'N/A'; 
                             const rankingGeneral = player.rankingGeneral || 0; 
                             const clubLogoUrl = player.club?.logo?.url || 'https://placehold.co/32x32/cccccc/333333?text=Club'; 
 
@@ -128,23 +143,27 @@ function AllPlayers() {
                                     onClick={() => openPlayerModal(player)} // Pass the 'player' (flattened object) to openPlayerModal
                                 >
                                     <div>
-                                        <h3 className="text-lg font-semibold text-gray-800">{player.nombre} {player.apellido}</h3>
-                                        <p className="text-sm text-gray-600">Club: {clubName}</p>
+                                        <h3 className="text-lg font-semibold text-gray-800">{player.nombre}</h3>
+                                        <p className="text-sm text-gray-600 text-left pl-3">Club: {clubName}</p>
+                                        <div className='flex  justify-between'>
+                                        {/* Display Club Logo */}
+                                        <p className="text-sm text-gray-600 text-left pl-3">Categoria: {category}</p>   {clubLogoUrl !== 'https://placehold.co/32x32/cccccc/333333?text=Club' && (
+                                   
+                                            <img
+                                                src={clubLogoUrl}
+                                                alt={`${clubName} Logo`}
+                                                className="w-8 h-8 object-contain rounded-full shadow-sm bg-black"
+                                                onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/32x32/cccccc/333333?text=Club'; }}
+                                            />
+                                  
+                                    )}
+                                        </div>
                                     </div>
                                     <div className="mt-2 text-right">
                                         <span className="text-md font-bold text-green-600">Puntos: {rankingGeneral}</span>
                                     </div>
-                                    {/* Display Club Logo */}
-                                    {clubLogoUrl !== 'https://placehold.co/32x32/cccccc/333333?text=Club' && (
-                                        <div className="mt-2 flex justify-end">
-                                            <img
-                                                src={clubLogoUrl}
-                                                alt={`${clubName} Logo`}
-                                                className="w-8 h-8 object-contain rounded-full shadow-sm"
-                                                onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/32x32/cccccc/333333?text=Club'; }}
-                                            />
-                                        </div>
-                                    )}
+                                
+                                  
                                 </div>
                             );
                         })}

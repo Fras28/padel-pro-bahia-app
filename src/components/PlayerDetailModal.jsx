@@ -111,9 +111,9 @@ const PlayerDetailModal = ({ player, onClose }) => {
         </button>
 
         {/* Player Initials Circle */}
-        <div className={`w-24 h-24 rounded-full flex items-center justify-center text-4xl font-bold mb-4 ${style.initialBg} ${style.titleColor} z-10 border-2 ${style.cardBorder}`}>
+        {/* <div className={`w-24 h-24 rounded-full flex items-center justify-center text-4xl font-bold mb-4 ${style.initialBg} ${style.titleColor} z-10 border-2 ${style.cardBorder}`}>
           {getInitials(player?.nombre, player?.apellido)}
-        </div>
+        </div> */}
 
         {/* Player Name */}
         <h2 className={`text-2xl sm:text-3xl font-extrabold ${style.titleColor} mb-2 text-center z-10`}>
@@ -122,18 +122,18 @@ const PlayerDetailModal = ({ player, onClose }) => {
 
         {/* Club Logo OR Name */}
         {player?.club ? ( // Checks if the club object exists
-          player.club.logo?.url ? ( // If club exists, checks if it has a logo URL
+          player.club?.logo?.url ? ( // If club exists, checks if it has a logo URL
             <div className="mb-4 flex justify-center z-10"> {/* Container to center the logo */}
               <img
-                src={player.club.logo.url}
-                alt={`${player.club.nombre} Logo`}
-                className="h-16 w-16 sm:h-20 sm:w-20 object-contain rounded-full shadow-md" // Adjust logo size and visible style
+                src={player?.club?.logo?.url}
+                alt={`${player?.club?.nombre} Logo`}
+                className="h-16 w-16 sm:h-20 sm:w-20 object-contain rounded-full shadow-md bg-black" // Adjust logo size and visible style
                 onError={(e) => { e.currentTarget.style.display = 'none'; }} // Hides image if load fails
               />
             </div>
           ) : ( // If no logo URL, but club object exists, display the name
             <p className={`text-lg ${style.clubNameColor} mb-4 text-center z-10`}>
-              Club: {player.club.nombre}
+              Club: {player?.club?.nombre}
             </p>
           )
         ) : null} {/* If no club object, nothing is rendered */}
@@ -156,7 +156,7 @@ const PlayerDetailModal = ({ player, onClose }) => {
             { label: 'Partidos Jugados', value: partidosJugados },
             { label: 'Partidos Ganados', value: partidosGanados },
             { label: 'Torneos Jugados', value: torneosJugados },
-            { label: 'Cuartos', value: partidosCuartosRonda }, // Display the new stat
+            { label: 'Cuartos', value: partidosCuartosRonda || 0 }, // Display the new stat
             { label: 'Torneos Ganados', value: torneosGanados },
           ].map(stat => (
             <div
