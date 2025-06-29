@@ -35,13 +35,13 @@ function RankingGlobal() {
   const CATEGORIES_API_URL = `${API_BASE}api/categorias`;
 
   const sponsorImages = [
-    { src: Dternera, url: "https://www.deternera.com.ar/" },
-    { src: DonAlf, url: "https://www.donalf.com.ar/" },
-    { src: Morton, url: "https://www.morton.com.ar/" },
-    { src: Rucca, url: "https://www.ruccabahia.com/" },
-    { src: ENA, url: "https://www.enasport.com/" },
-    { src: ADN, url: "https://www.adn.com.ar/" },
-  ];
+    { src: Dternera, url: "https://www.deternera.com.ar/", blurred: false },
+    { src: DonAlf, url: "https://www.donalf.com.ar/", blurred: false },
+    { src: Morton, url: "https://www.morton.com.ar/", blurred: false },
+    { src: Rucca, url: "https://www.ruccabahia.com/", blurred: false },
+    // { src: ENA, url: "https://www.enasport.com/", blurred: true },
+    // { src: ADN, url: "https://www.adn.com.ar/", blurred: true },
+    ];
 
   useEffect(() => {
     const fetchAllData = async () => {
