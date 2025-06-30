@@ -157,7 +157,7 @@ function InternalRanking() {
                 </button>
             </div>
             {rankingEntries.length > 0 ? (
-                <div ref={tableRef} className="overflow-x-auto p-4 bg-white rounded-lg shadow-md">
+                <div ref={tableRef} className="overflow-x-auto  bg-white rounded-lg shadow-md">
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                             <tr>
