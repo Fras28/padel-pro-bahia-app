@@ -6,7 +6,8 @@ import React from 'react';
  * Muestra una marquesina desplazable en todas las pantallas (escritorio y móvil/tableta).
  *
  * @param {object} props - Las propiedades del componente.
- * @param {Array<object>} props.sponsorImages - Un array de objetos, donde cada objeto tiene { src: string, url: string }.
+ * @param {Array<object>} props.sponsorImages - Un array de objetos, donde cada objeto tiene
+ * { src: string, url: string, blurred: boolean }.
  */
 const SponsorBanner = ({ sponsorImages }) => {
     // Duplicar las imágenes para crear un efecto de desplazamiento continuo en la marquesina.
@@ -17,48 +18,55 @@ const SponsorBanner = ({ sponsorImages }) => {
         <div className="mb-6">
             {/* Marquesina para todas las pantallas */}
             <div className="bg-gradient-to-r from-gray-100 to-gray-200 py-4 rounded-lg shadow-inner overflow-hidden">
-                {/* Estilos CSS específicos para la animación de la marquesina.
-                    Se usa un <style jsx> para encapsular estos estilos dentro del componente. */}
+                {/* Estilos CSS específicos para la animación de la marquesina. */}
                 <style jsx>{`
                     /* Define la animación de desplazamiento de la marquesina */
                     @keyframes marquee {
-                        0% { transform: translateX(0); } /* Comienza en la posición original */
-                        100% { transform: translateX(-50%); } /* Se desplaza la mitad del contenido duplicado para un bucle */
+                        0% { transform: translateX(0); }
+                        100% { transform: translateX(-50%); }
                     }
                     /* Contenedor principal de la marquesina */
                     .marquee-container {
-                        display: flex; /* Permite que los elementos se alineen horizontalmente */
-                        width: fit-content; /* El ancho se ajusta al contenido */
-                        animation: marquee 30s linear infinite; /* Aplica la animación: 30s de duración, lineal, infinito */
-                        will-change: transform; /* Sugerencia al navegador para optimizar la animación */
+                        display: flex;
+                        width: fit-content;
+                        animation: marquee 30s linear infinite;
+                        will-change: transform;
                     }
                     /* Estilo para cada elemento de la marquesina (cada imagen) */
                     .marquee-item {
-                        flex-shrink: 0; /* Evita que las imágenes se encojan */
-                        margin-right: 2rem; /* Espaciado entre imágenes */
+                        flex-shrink: 0;
+                        margin-right: 2rem;
                     }
                     .marquee-item img {
-                        height: 60px; /* Altura ajustada para ser visible en mobile y no tan grande en desktop */
-                        width: auto; /* Mantiene la relación de aspecto */
-                        object-fit: contain; /* Asegura que la imagen quepa dentro de sus dimensiones */
+                        height: 60px;
+                        width: auto;
+                        object-fit: contain;
                         filter: grayscale(100%); /* Opcional: convierte los logos a escala de grises */
-                        transition: filter 0.3s ease-in-out; /* Transición suave para el efecto hover */
+                        transition: filter 0.3s ease-in-out; /* Transición suave para el efecto hover y blur */
                     }
+
+                    /* Clase para aplicar el efecto de desenfoque */
+                    .marquee-item img.blurred {
+                        filter: blur(5px) grayscale(100%); /* Aplica blur y mantiene grayscale */
+                    }
+                    /* NOTA: Se ha eliminado la regla .marquee-item img.blurred:hover
+                             para que el blur no se desactive con el hover. */
+
 
                     /* Ajustes para pantallas pequeñas (móviles) */
-                    @media (max-width: 768px) { /* Por ejemplo, hasta 768px para considerar móvil/tableta */
+                    @media (max-width: 768px) {
                         .marquee-item {
-                            margin-right: 1rem; /* Menor espaciado en pantallas pequeñas */
+                            margin-right: 1rem;
                         }
                         .marquee-item img {
-                            height: 40px; /* Altura más pequeña para pantallas móviles */
+                            height: 40px;
                         }
                         .marquee-container {
-                            animation-duration: 20s; /* Animación más rápida en pantallas pequeñas */
+                            animation-duration: 20s;
                         }
                     }
 
-                    .marquee-item img:hover {
+                    .marquee-item img:hover:not(.blurred) { /* Solo aplica el hover si NO está blureado inicialmente */
                         filter: grayscale(0%); /* Vuelve al color original al pasar el ratón */
                     }
                 `}</style>
@@ -70,9 +78,10 @@ const SponsorBanner = ({ sponsorImages }) => {
                                 <img
                                     src={sponsor.src}
                                     alt={`Sponsor ${index}`}
+                                    // Aplica la clase 'blurred' si sponsor.blurred es true
+                                    className={`rounded-md ${sponsor.blurred ? 'blurred' : ''}`}
                                     // Manejo de errores si la imagen no se carga
                                     onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/100x50/CCCCCC/666666?text=Error'; }}
-                                    className="rounded-md"
                                 />
                             </a>
                         </div>

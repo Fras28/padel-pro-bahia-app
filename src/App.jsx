@@ -157,14 +157,14 @@ function App() {
     import.meta.env.VITE_API_BASE ||
     "https://padelproback-ranking.onrender.com/";
 
-  const sponsorImages = [
-    { src: Dternera, url: "https://www.deternera.com.ar/" },
-    { src: DonAlf, url: "https://www.donalf.com.ar/" },
-    { src: Morton, url: "https://www.morton.com.ar/" },
-    { src: Rucca, url: "https://www.ruccabahia.com/" },
-    { src: ENA, url: "https://www.enasport.com/" },
-    { src: ADN, url: "https://www.adn.com.ar/" },
-  ];
+    const sponsorImages = [
+      { src: Dternera, url: "https://www.deternera.com.ar/", blurred: false },
+      { src: DonAlf, url: "https://www.instagram.com/donalfredocentro/", blurred: false},
+      { src: Morton, url: "https://www.morton.com.ar/", blurred: false },
+      { src: Rucca, url: "https://www.ruccabahia.com/", blurred: false },
+      // { src: ENA, url: "https://www.enasport.com/", blurred: true  },
+      // { src: ADN, url: "https://www.adn.com.ar/", blurred: true  },
+      ];
 
   useEffect(() => {
     const initializeFirebaseAndAuth = async () => {
@@ -263,33 +263,10 @@ function App() {
                   </>
                 }
               />
-              <Route
-                path="/clubs/:clubId/categories"
-                element={
-                  <>
-                    {selectedClub ? (
-                      <Categories
-                        club={selectedClub}
-                        onSelectCategory={setSelectedCategory}
-                      />
-                    ) : (
-                      <p>Cargando club o club no encontrado.</p>
-                    )}
-                    <RankingGlobal />
-                  </>
-                }
-              />
+         <Route path="/clubs/:clubId/categories" element={<Categories />} />
               <Route
                 path="/clubs/:clubId/categories/:categoryId/ranking"
-                element={
-                  <>
-                    {selectedClub && selectedCategory ? (
-                      <InternalRanking category={selectedCategory} />
-                    ) : (
-                      <p>Cargando ranking o información no encontrada.</p>
-                    )}
-                  </>
-                }
+                element={<InternalRanking />}
               />
               <Route path="/tournaments" element={<Tournaments />} />
               <Route
