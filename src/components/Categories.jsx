@@ -7,6 +7,7 @@ function Categories() {
     const navigate = useNavigate();
 
     const [categories, setCategories] = useState([]);
+    const [clubData, setClubData] = useState(null); // New state to store club details (name, logo)
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const API_BASE = import.meta.env.VITE_API_BASE;
@@ -16,7 +17,7 @@ function Categories() {
     }, [clubId, navigate]);
 
     useEffect(() => {
-        const fetchCategories = async () => {
+        const fetchClubAndCategories = async () => {
             if (!clubId) {
                 setError("No se ha proporcionado un ID de club en la URL.");
                 setLoading(false);
@@ -27,33 +28,41 @@ function Categories() {
             setError(null);
 
             try {
-                // MODIFIED: Fetch from the 'api/categorias' endpoint, filtering by clubId
-                const response = await fetch(`${API_BASE}api/categorias?filters[club][documentId][$eq]=${clubId}`);
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                // 1. Fetch Club Details (including logo)
+                const clubResponse = await fetch(`${API_BASE}api/clubs?filters[documentId][$eq]=${clubId}&populate=logo`);
+                if (!clubResponse.ok) {
+                    throw new Error(`HTTP error! status: ${clubResponse.status} fetching club data`);
                 }
-                const data = await response.json();
-                console.log("Datos de categorías para club", clubId, ":", data.data); // Log data.data directly
-
-                if (data.data && Array.isArray(data.data)) {
-                    setCategories(data.data); // data.data should directly be the array of categories
+                const clubDataRes = await clubResponse.json();
+                if (clubDataRes.data && clubDataRes.data.length > 0) {
+                    setClubData(clubDataRes.data[0]); // Assuming the first item is the correct club
                 } else {
-                    setCategories([]);
+                    setError("No se encontró información para el club.");
                 }
-                setLoading(false);
+
+                // 2. Fetch Categories for the Club
+                const categoriesResponse = await fetch(`${API_BASE}api/categorias?filters[club][documentId][$eq]=${clubId}`);
+                if (!categoriesResponse.ok) {
+                    throw new Error(`HTTP error! status: ${categoriesResponse.status} fetching categories`);
+                }
+                const categoriesData = await categoriesResponse.json();
+                setCategories(categoriesData.data);
+
             } catch (e) {
-                console.error("Error fetching categories:", e);
-                setError("Error al cargar las categorías. Inténtalo de nuevo más tarde.");
+                console.error("Error fetching data:", e);
+                setError("Error al cargar la información del club o las categorías. Inténtalo de nuevo más tarde.");
+            } finally {
                 setLoading(false);
             }
         };
-        fetchCategories();
+        fetchClubAndCategories();
     }, [API_BASE, clubId]);
 
     if (loading) {
         return (
-            <div className="text-center py-4 text-gray-600">Cargando categorías...</div>
+            <div className="text-center py-4 text-gray-600">
+                Cargando categorías...
+            </div>
         );
     }
 
@@ -67,22 +76,35 @@ function Categories() {
 
     return (
         <div className="container mx-auto p-4">
-            <h2 className="text-2xl font-semibold text-blue-900 mb-4 border-b-2 border-blue-200 pb-2">
-                Categorías del Club {clubId}
+            {/* Display Club Logo and Name */}
+            <h2 className="text-2xl font-semibold text-blue-900 mb-4 border-b-2 border-blue-200 pb-2 flex items-center justify-center sm:justify-start">
+                {clubData?.logo?.url && (
+                    <img
+                        src={clubData.logo.url}
+                        alt={`${clubData.nombre || 'Club'} Logo`}
+                        className="h-10 w-10 mr-3 object-contain rounded-full bg-black"
+                        onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "https://placehold.co/40x40?text=Club"; // Fallback image
+                        }}
+                    />
+                )}
+             Categorías
             </h2>
+
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {categories.length > 0 ? (
                     categories.map((category) => (
                         <button
                             key={category.id}
-                            onClick={() => handleCategoryClick(category.documentId)} // Pass documentId if routing by it
+                            onClick={() => handleCategoryClick(category.documentId)}
                             className="p-4 bg-white rounded-lg shadow-md hover:shadow-xl transform hover:scale-105 transition-all duration-300 ease-in-out text-center font-medium text-gray-800 border border-transparent hover:border-blue-500"
                         >
                             {category?.nombre}
                         </button>
                     ))
                 ) : (
-                    <p className="px-6 py-4 text-center text-sm text-gray-600">No se encontraron categorías para este club.</p>
+                    <p className="px-6 py-4 text-center text-sm text-gray-600 col-span-full">No se encontraron categorías para este club.</p>
                 )}
             </div>
             <div className="mt-6 flex justify-center">

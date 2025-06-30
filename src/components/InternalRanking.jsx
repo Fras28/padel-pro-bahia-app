@@ -68,11 +68,7 @@ function InternalRanking() {
             setLoading(true);
             setError(null);
             try {
-                // Modified API request to populate club, category, and player data for the ranking entries.
-                // NOTE: If you want 'estadisticas' (stats) in PlayerDetailModal to work fully,
-                // you might need to adjust your API to also populate 'estadisticas' within 'jugador',
-                // e.g., &populate=entradasRanking.jugador.estadisticas, if your API supports it.
-                const response = await fetch(`${API_BASE}api/ranking-categorias?populate=club&populate=categoria&populate=entradasRanking.jugador.estadisticas&filters[club][documentId][$eq]=${clubId}&filters[categoria][documentId][$eq]=${categoryId}`);
+                const response = await fetch(`${API_BASE}api/ranking-categorias?populate=club.logo&populate=categoria&populate=entradasRanking.jugador&filters[club][documentId][$eq]=${clubId}&filters[categoria][documentId][$eq]=${categoryId}`);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -80,22 +76,21 @@ function InternalRanking() {
                 const responseData = await response.json();
                 console.log("Datos de la API (InternalRanking):", responseData.data);
 
-                // Assuming data.data will now contain an array with either one matching ranking entry or none
-                // Directly access the first element, as the API request should be filtered enough.
                 const foundRanking = responseData.data[0];
 
                 if (foundRanking) {
-                    // Access category name directly from 'categoria' object
                     setCategoryName(foundRanking.categoria?.nombre || 'Categoría Desconocida');
                     
-                    // Access 'entradasRanking' directly from 'foundRanking'
+                    // Get the club's logo URL from the foundRanking object
+                    const clubLogoUrl = foundRanking.club?.logo?.url;
+
                     const sortedEntries = foundRanking.entradasRanking
                         .map(entry => {
-                            const player = entry.jugador; // Get the full player object from the entry
+                            const player = entry.jugador;
                             let formattedName = "Desconocido";
 
                             if (player && player.nombre) {
-                                const fullName = player.nombre; // Use player.nombre for formatting
+                                const fullName = player.nombre;
                                 const parts = fullName.split(" ");
                                 
                                 if (parts.length > 0) {
@@ -106,13 +101,14 @@ function InternalRanking() {
                             }
                            
                             return {
-                                ...entry, // Keep all properties from the entry (like id, puntos, posicion)
-                                jugador: player, // Pass the original player object for the modal
-                                nombreJugadorTabla: formattedName.toUpperCase(), // Formatted name for table display
+                                ...entry,
+                                jugador: player,
+                                nombreJugadorTabla: formattedName.toUpperCase(),
                                 puntos: entry.puntos,
+                                clubLogoUrl: clubLogoUrl, // Add the club logo URL to each entry
                             };
                         })
-                        .sort((a, b) => b.puntos - a.puntos); // Sort by points descending
+                        .sort((a, b) => b.puntos - a.puntos);
                     
                     setRankingEntries(sortedEntries);
                 } else {
@@ -152,9 +148,15 @@ function InternalRanking() {
             <h2 className="text-2xl font-semibold text-blue-900 mb-4 border-b-2 border-blue-200 pb-2">
                 Ranking Interno: {categoryName}
             </h2>
-
+            <div className="mt-6 flex justify-center">
+                <button
+                    onClick={() => navigate(`/clubs/${clubId}/categories`)}
+                    className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg shadow-md hover:bg-gray-300 transition duration-300 text-sm"
+                >
+                    Volver a Categorías
+                </button>
+            </div>
             {rankingEntries.length > 0 ? (
-                // Attach the main table ref here
                 <div ref={tableRef} className="overflow-x-auto p-4 bg-white rounded-lg shadow-md">
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
@@ -174,33 +176,28 @@ function InternalRanking() {
                             {rankingEntries.map((entry, playerIndex) => (
                                 <tr 
                                     key={entry.id} 
-                                    onClick={() => handlePlayerClick(entry.jugador)} // Pass the full player object
-                                    className="cursor-pointer hover:bg-gray-100" // Add hover effect to indicate clickability
+                                    onClick={() => handlePlayerClick(entry.jugador)}
+                                    className="cursor-pointer hover:bg-gray-100"
                                 >
                                     <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                         {playerIndex + 1}
                                     </td>
                                     <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700">
                                         <div className="flex items-center">
-                                            {/* Note: PlayerDetailModal.jsx expects player?.club?.logo?.url for the logo,
-                                                but InternalRanking's API call for jugador doesn't seem to include club info.
-                                                If you want the logo to show in the modal, you'll need to adjust the API populate.
-                                                For now, using a placeholder or checking for entry.jugador?.fotoPerfil?.url directly
-                                                for the table if available. */}
+                                            {/* Display the club logo here */}
                                             <img
-                                                src={entry.jugador?.fotoPerfil?.url || "https://placehold.co/32x32/cccccc/333333?text=Jugador"}
-                                                alt={entry.nombreJugadorTabla}
-                                                className="h-8 w-8 rounded-full mr-2 object-cover"
+                                                src={entry.clubLogoUrl || "https://placehold.co/32x32/cccccc/333333?text=Club"} // Use clubLogoUrl
+                                                alt={entry.jugador?.nombre || "Club Logo"} // Alt text for accessibility
+                                                className="h-6 w-6 rounded-full mr-2 object-cover bg-black p-1 "
                                                 onError={(e) => {
                                                     e.target.onerror = null;
-                                                    e.target.src = "https://placehold.co/32x32/cccccc/333333?text=Jugador";
+                                                    e.target.src = "https://placehold.co/32x32/cccccc/333333?text=Club";
                                                 }}
                                             />
                                             {entry.nombreJugadorTabla}
                                         </div>
                                     </td>
                                     <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700">
-                                        {/* Use the new AnimatedPoints component */}
                                         <AnimatedPoints points={entry.puntos} />
                                     </td>
                                 </tr>
@@ -221,7 +218,6 @@ function InternalRanking() {
                 </button>
             </div>
 
-            {/* Render PlayerDetailModal conditionally */}
             {isModalOpen && selectedPlayer && (
                 <PlayerDetailModal player={selectedPlayer} onClose={handleCloseModal} />
             )}
