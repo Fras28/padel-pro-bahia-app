@@ -68,7 +68,7 @@ function InternalRanking() {
             setLoading(true);
             setError(null);
             try {
-                const response = await fetch(`${API_BASE}api/ranking-categorias?populate=club.logo&populate=categoria&populate=entradasRanking.jugador&filters[club][documentId][$eq]=${clubId}&filters[categoria][documentId][$eq]=${categoryId}`);
+                const response = await fetch(`${API_BASE}api/ranking-categorias?populate=club.logo&populate=categoria&populate=entradasRanking.jugador.estadisticas&filters[club][documentId][$eq]=${clubId}&filters[categoria][documentId][$eq]=${categoryId}`);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
