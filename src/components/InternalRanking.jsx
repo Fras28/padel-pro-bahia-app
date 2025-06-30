@@ -68,7 +68,7 @@ function InternalRanking() {
             setLoading(true);
             setError(null);
             try {
-                const response = await fetch(`${API_BASE}api/ranking-categorias?populate=club.logo&populate=categoria&populate=entradasRanking.jugador&filters[club][documentId][$eq]=${clubId}&filters[categoria][documentId][$eq]=${categoryId}`);
+                const response = await fetch(`${API_BASE}api/ranking-categorias?populate=club.logo&populate=categoria&populate=entradasRanking.jugador.estadisticas&filters[club][documentId][$eq]=${clubId}&filters[categoria][documentId][$eq]=${categoryId}`);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -157,7 +157,7 @@ function InternalRanking() {
                 </button>
             </div>
             {rankingEntries.length > 0 ? (
-                <div ref={tableRef} className="overflow-x-auto p-4 bg-white rounded-lg shadow-md">
+                <div ref={tableRef} className="overflow-x-auto  bg-white rounded-lg shadow-md">
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                             <tr>
