@@ -1,13 +1,12 @@
 // src/components/Clubs.jsx
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 
 function Clubs() {
   const [clubs, setClubs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const API_BASE = import.meta.env.VITE_API_BASE;
-    console.log(clubs[0]?.nombre ,"clubx ");
 
   const navigate = useNavigate();
 
@@ -18,13 +17,11 @@ function Clubs() {
   useEffect(() => {
     const fetchClubs = async () => {
       try {
-        // Asegúrate de que populate=logo esté bien escrito y la API esté configurada para devolverlo
         const response = await fetch(API_BASE + "api/clubs?populate=logo");
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        console.log("Datos de la API (Clubes):", data.data);
         if (data.data) {
           setClubs(data.data);
         } else {
@@ -37,40 +34,43 @@ function Clubs() {
         setLoading(false);
       }
     };
-
     fetchClubs();
-  }, [API_BASE]);
+  }, [API_BASE]); // Added API_BASE to dependency array for useEffect
 
   if (loading) {
-    return <div className="text-center py-4 text-gray-500">Cargando clubes...</div>;
+    return (
+      <div className="text-center py-4 text-gray-600">Cargando clubes...</div>
+    );
   }
 
   if (error) {
-    return <div className="text-center py-4 text-red-500">Error: {error}</div>;
+    return (
+      <div className="text-center py-4 text-red-600">
+        {error}
+      </div>
+    );
   }
 
   return (
-    <div className="bg-gray-50 p-4 sm:p-6 rounded-lg shadow-inner">
+    <div className="container mx-auto p-4">
       <h2 className="text-2xl font-semibold text-blue-900 mb-4 border-b-2 border-blue-200 pb-2">
-        Clubes Afiliados
+        Clubes Disponibles
       </h2>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
         {clubs.length > 0 ? (
           clubs.map((club) => (
-          
             <button
               key={club.documentId}
               onClick={() => handleClubClick(club)}
               className="flex flex-col items-center p-4 bg-white rounded-lg shadow-md hover:shadow-xl transform hover:scale-105 transition-all duration-300 ease-in-out cursor-pointer border border-transparent hover:border-blue-500 bg"
             >
-              {/* Línea 67 - Mejora el acceso al logo con un valor predeterminado */}
               <img
-                src={club?.logo?.url || "https://placehold.co/80x80/cccccc/333333?text=Logo"} // Proporciona una URL de fallback
+                src={club?.logo?.url || "https://placehold.co/80x80/cccccc/333333?text=Logo"}
                 alt={`Logo de ${club?.nombre}`}
                 className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2 rounded-full  bg-black"
                 onError={(e) => {
-                  e.target.onerror = null; // Evita bucles infinitos en caso de error de carga
-                  e.target.src = "https://placehold.co/80x80/cccccc/333333?text=Logo"; // Fallback si la imagen no se carga
+                  e.target.onerror = null;
+                  e.target.src = "https://placehold.co/80x80/cccccc/333333?text=Logo";
                 }}
               />
               <span className="text-center font-medium text-gray-800 text-sm sm:text-base">
@@ -79,9 +79,7 @@ function Clubs() {
             </button>
           ))
         ) : (
-          <p className="col-span-full text-center text-gray-600">
-            No se encontraron clubes afiliados.
-          </p>
+          <p className="px-6 py-4 text-center text-sm text-gray-600">No se encontraron clubes.</p>
         )}
       </div>
     </div>

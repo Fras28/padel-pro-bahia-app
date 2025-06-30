@@ -263,33 +263,10 @@ function App() {
                   </>
                 }
               />
-              <Route
-                path="/clubs/:clubId/categories"
-                element={
-                  <>
-                    {selectedClub ? (
-                      <Categories
-                        club={selectedClub}
-                        onSelectCategory={setSelectedCategory}
-                      />
-                    ) : (
-                      <p>Cargando club o club no encontrado.</p>
-                    )}
-                    <RankingGlobal />
-                  </>
-                }
-              />
+         <Route path="/clubs/:clubId/categories" element={<Categories />} />
               <Route
                 path="/clubs/:clubId/categories/:categoryId/ranking"
-                element={
-                  <>
-                    {selectedClub && selectedCategory ? (
-                      <InternalRanking category={selectedCategory} />
-                    ) : (
-                      <p>Cargando ranking o información no encontrada.</p>
-                    )}
-                  </>
-                }
+                element={<InternalRanking />}
               />
               <Route path="/tournaments" element={<Tournaments />} />
               <Route
