@@ -7,7 +7,7 @@ function Categories() {
     const navigate = useNavigate();
 
     const [categories, setCategories] = useState([]);
-    const [clubData, setClubData] = useState(null); // New state to store club details (name, logo)
+    const [clubData, setClubData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const API_BASE = import.meta.env.VITE_API_BASE;
@@ -35,18 +35,42 @@ function Categories() {
                 }
                 const clubDataRes = await clubResponse.json();
                 if (clubDataRes.data && clubDataRes.data.length > 0) {
-                    setClubData(clubDataRes.data[0]); // Assuming the first item is the correct club
+                    setClubData(clubDataRes.data[0]);
                 } else {
                     setError("No se encontró información para el club.");
                 }
 
-                // 2. Fetch Categories for the Club
-                const categoriesResponse = await fetch(`${API_BASE}api/categorias?filters[club][documentId][$eq]=${clubId}`);
+                // 2. Fetch Categories for the Club using the CORRECTED API endpoint
+                // Note the change from 'api/categorias' to 'api/ranking-categorias' and added populate
+                const categoriesResponse = await fetch(`${API_BASE}api/ranking-categorias?populate=categoria&filters[club][documentId][$eq]=${clubId}`);
                 if (!categoriesResponse.ok) {
                     throw new Error(`HTTP error! status: ${categoriesResponse.status} fetching categories`);
                 }
                 const categoriesData = await categoriesResponse.json();
-                setCategories(categoriesData.data);
+                console.log("Categories fetched from ranking-categorias:", categoriesData.data); // Added log
+
+                // Extract unique categories from ranking-categorias response
+                const uniqueCategories = [];
+                const categoryIds = new Set();
+
+                if (categoriesData.data) {
+                    categoriesData.data.forEach(rankingEntry => {
+                        if (rankingEntry.categoria && !categoryIds.has(rankingEntry.categoria.id)) {
+                            uniqueCategories.push(rankingEntry.categoria);
+                            categoryIds.add(rankingEntry.categoria.id);
+                        }
+                    });
+                }
+
+
+                // Sort categories by 'nombre' before setting them in state
+                const sortedCategories = uniqueCategories.sort((a, b) => {
+                    if (a.nombre && b.nombre) {
+                        return a.nombre.localeCompare(b.nombre);
+                    }
+                    return 0;
+                });
+                setCategories(sortedCategories);
 
             } catch (e) {
                 console.error("Error fetching data:", e);
@@ -76,7 +100,6 @@ function Categories() {
 
     return (
         <div className="container mx-auto p-4">
-            {/* Display Club Logo and Name */}
             <h2 className="text-2xl font-semibold text-blue-900 mb-4 border-b-2 border-blue-200 pb-2 flex items-center justify-center sm:justify-start">
                 {clubData?.logo?.url && (
                     <img
@@ -85,7 +108,7 @@ function Categories() {
                         className="h-10 w-10 mr-3 object-contain rounded-full bg-black"
                         onError={(e) => {
                             e.target.onerror = null;
-                            e.target.src = "https://placehold.co/40x40?text=Club"; // Fallback image
+                            e.target.src = "https://placehold.co/40x40?text=Club";
                         }}
                     />
                 )}
