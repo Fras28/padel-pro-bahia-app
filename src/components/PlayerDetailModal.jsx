@@ -104,7 +104,7 @@ const PlayerDetailModal = ({ player, onClose }) => {
         className={`relative ${style.cardBg} ${style.cardBorder} border-4 rounded-xl shadow-2xl p-6 w-full max-w-sm sm:max-w-md mx-auto flex flex-col items-center justify-between overflow-hidden`}
         onClick={(e) => e.stopPropagation()} // Prevent click inside card from closing modal
       >
-        <button onClick={onClose} className={`absolute top-4 right-4 text-gray-400 hover:text-white transition-colors duration-200`}>
+        <button onClick={onClose} className={`absolute top-4 right-4 text-gray-400 hover:text-white transition-colors duration-200 z-50`}>
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
@@ -116,7 +116,7 @@ const PlayerDetailModal = ({ player, onClose }) => {
         </div> */}
 
         {/* Player Name */}
-        <h2 className={`text-2xl sm:text-3xl font-extrabold ${style.titleColor} mb-2 text-center z-10`}>
+        <h2 className={`text-2xl sm:text-2xl font-extrabold ${style.titleColor} mb-2 text-left z-10 mt-4`}>
           {player?.nombre}
         </h2>
 
@@ -132,7 +132,7 @@ const PlayerDetailModal = ({ player, onClose }) => {
               />
             </div>
           ) : ( // If no logo URL, but club object exists, display the name
-            <p className={`text-lg ${style.clubNameColor} mb-4 text-center z-10`}>
+            <p className={`text-base ${style.clubNameColor} mb-4 text-center z-10`}>
               Club: {player?.club?.nombre}
             </p>
           )

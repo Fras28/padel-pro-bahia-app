@@ -72,7 +72,7 @@ function InternalRanking() {
                 // NOTE: If you want 'estadisticas' (stats) in PlayerDetailModal to work fully,
                 // you might need to adjust your API to also populate 'estadisticas' within 'jugador',
                 // e.g., &populate=entradasRanking.jugador.estadisticas, if your API supports it.
-                const response = await fetch(`${API_BASE}api/ranking-categorias?populate=club&populate=categoria&populate=entradasRanking.jugador&filters[club][documentId][$eq]=${clubId}&filters[categoria][documentId][$eq]=${categoryId}`);
+                const response = await fetch(`${API_BASE}api/ranking-categorias?populate=club&populate=categoria&populate=entradasRanking.jugador.estadisticas&filters[club][documentId][$eq]=${clubId}&filters[categoria][documentId][$eq]=${categoryId}`);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
