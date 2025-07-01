@@ -179,7 +179,16 @@ function RankingGlobal() {
         <div className="text-center text-sm text-red-500">{error}</div>
       ) : Object.values(categorizedRanking).length > 0 ? (
         Object.values(categorizedRanking)
-          .sort((a, b) => a.name.localeCompare(b.name))
+          .sort((a, b) => {
+            // Custom sort to put "AJPP" first
+            if (a.name === "AJPP" && b.name !== "AJPP") {
+              return -1; // AJPP comes before b
+            }
+            if (a.name !== "AJPP" && b.name === "AJPP") {
+              return 1; // AJPP comes after a
+            }
+            return a.name.localeCompare(b.name); // Alphabetical sort for others
+          })
           .map((categoryData, catIndex) => (
             <div key={catIndex} className="mb-8">
               <SponsorBanner sponsorImages={sponsorImages} />

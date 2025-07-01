@@ -67,7 +67,7 @@ function Clubs() {
               <img
                 src={club?.logo?.url || "https://placehold.co/80x80/cccccc/333333?text=Logo"}
                 alt={`Logo de ${club?.nombre}`}
-                className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2 rounded-full  bg-black"
+                className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2 rounded-full  "
                 onError={(e) => {
                   e.target.onerror = null;
                   e.target.src = "https://placehold.co/80x80/cccccc/333333?text=Logo";
@@ -76,6 +76,21 @@ function Clubs() {
               <span className="text-center font-medium text-gray-800 text-sm sm:text-base">
                 {club?.nombre}
               </span>
+              {club.Instagram && ( // Conditionally render Instagram link
+                <a
+                  href={club.Instagram}
+                  target="_blank" // Opens in a new tab
+                  rel="noopener noreferrer" // Recommended for security when using target="_blank"
+                  onClick={(e) => e.stopPropagation()} // Prevents the club button's onClick from firing
+                  className="mt-2"
+                >
+                  <img
+                    src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" // Replace with your Instagram icon path
+                    alt="Instagram"
+                    className="w-6 h-6 object-contain"
+                  />
+                </a>
+              )}
             </button>
           ))
         ) : (
