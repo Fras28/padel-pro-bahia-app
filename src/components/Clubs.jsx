@@ -85,7 +85,7 @@ function Clubs() {
                   className="mt-2"
                 >
                   <img
-                    src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" // Replace with your Instagram icon path
+                    src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" 
                     alt="Instagram"
                     className="w-6 h-6 object-contain"
                   />

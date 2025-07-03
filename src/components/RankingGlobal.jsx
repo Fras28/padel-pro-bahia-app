@@ -460,7 +460,7 @@ function RankingGlobal() {
                               >
                               <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                               <div className="flex items-center justify-center">
-                                <span>{index + 1}</span>
+                                <span>1{index + 1}</span>
                                 {lastThreeWins ? (
                                   <span className="text-green-500 ml-1 text-base leading-none">
                                     &#x25B2;
