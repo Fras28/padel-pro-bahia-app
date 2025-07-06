@@ -418,7 +418,7 @@ function App() {
           </div>
         </div>
       </div>
-      {isAltNavBarActive ? <MobileNavBarAlt /> : <MobileNavBar />} {/* Conditional rendering */}
+      {isAltNavBarActive ? <MobileNavBar />:<MobileNavBarAlt /> } {/* Conditional rendering */}
       <Footer />
     </Router>
   );
