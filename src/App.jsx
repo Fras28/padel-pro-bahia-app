@@ -343,6 +343,7 @@ function App() {
                 path="/clubs/:clubId/categories/:categoryId/ranking"
                 element={<InternalRanking />}
               />
+               <Route path="/global-ranking/categories/:categoryId" element={<RankingGlobal />} />
               <Route path="/tournaments" element={<Tournaments />} />
               <Route
                 path="/tournaments/:tournamentId/matches"
