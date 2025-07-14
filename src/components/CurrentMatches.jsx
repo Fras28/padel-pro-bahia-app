@@ -181,7 +181,7 @@ function CurrentMatches({ API_BASE }) {
                             </p>
                             <p className="text-sm text-gray-600">Ronda: {match.ronda}</p>
                             <p className="text-sm text-gray-600">Cancha: {match.cancha}</p>
-                            <p className="text-sm text-gray-600">Fecha: {new Date(match.fechaPartido).toLocaleString()}</p>
+                            <p className="text-sm text-gray-600">Fecha: {new Date(match.fechaPartido).toLocaleString('es-AR')}</p>
                             <p className="text-sm font-bold mt-2" style={{ color: match.estado === "En Curso" ? '#10B981' : '#F59E0B' }}>
                                 Estado: {match.estado}
                             </p>
