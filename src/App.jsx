@@ -14,6 +14,7 @@ import {
   Link,
   useNavigate,
   NavLink,
+  // Removed: useLocation, // No longer import useLocation here
 } from "react-router-dom";
 
 // Importaciones de Font Awesome
@@ -38,6 +39,7 @@ import CurrentMatches from "./components/CurrentMatches";
 import SponsorBanner from "./components/SponsorBanner";
 import Help from "./components/Help"; // Importa el nuevo componente Help
 import Pelota from "./assets/Group 267.svg";
+import ScrollToTop from "./components/ScrollToTop"; // Import the new ScrollToTop component
 
 // Archivos CSS
 import "./index.css";
@@ -294,6 +296,15 @@ function App() {
     initializeFirebaseAndAuth();
   }, []);
 
+  // Removed: Get the current location object
+  // Removed: const location = useLocation();
+
+  // Removed: Scroll to top on route change
+  // Removed: useEffect(() => {
+  // Removed:   window.scrollTo(0, 0);
+  // Removed: }, [location.pathname]);
+
+
   if (!isAuthReady) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -312,6 +323,7 @@ function App() {
 
   return (
     <Router>
+      <ScrollToTop /> {/* Render the new ScrollToTop component here */}
       <div className="min-h-screen bg-gray-100 py-6 flex flex-col items-center justify-center sm:py-12 pb-20">
         <div className="relative py-3 w-full sm:max-w-xl md:max-w-2xl lg:max-w-4xl mx-auto">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-100 to-blue-300 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:rotate-3 sm:rounded-3xl"></div>
