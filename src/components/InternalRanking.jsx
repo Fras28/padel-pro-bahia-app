@@ -167,7 +167,7 @@ function InternalRanking() {
                                                     e.target.src = `https://placehold.co/32x32/cccccc/333333?text=Club`;
                                                 }}
                                             />
-                                            {entry.nombreJugadorTabla}
+                                            <p className='text-black'>{entry.nombreJugadorTabla}</p> 
                                         </div>
                                     </td>
                                     <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700">
