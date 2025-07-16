@@ -47,6 +47,7 @@ import Register from "./components/Auth/Register";
 import Login from "./components/Auth/Login";
 import ForgotPassword from "./components/Auth/ForgotPassword";
 import Profile from "./components/Auth/Profile"; // Importación del componente Profile
+import EmailConfirmation from "./components/Auth/EmailConfirmation"; // Importa el nuevo componente de confirmación de email
 
 // Archivos CSS
 import "./index.css";
@@ -414,6 +415,8 @@ const MobileNavBarAlt = ({ user }) => {
               <Route path="/forgot-password" element={<ForgotPassword API_BASE={API_BASE} />} />
               {/* Profile ya no recibe onLogout directamente */}
               <Route path="/profile" element={<Profile API_BASE={API_BASE} user={user} setUser={setUser} />} />
+              {/* Nueva ruta para la confirmación de email */}
+              <Route path="/confirm-email" element={<EmailConfirmation API_BASE={API_BASE} />} />
 
               <Route
                 path="*"
@@ -429,10 +432,10 @@ const MobileNavBarAlt = ({ user }) => {
       </div>
 
       {/* Botón de Ayuda flotante */}
-      <div className="fixed bottom-20 right-4 z-50"> {/* Ajusta 'bottom' para que esté encima del nav */}
+      <div className="fixed bottom-24 right-4 z-50"> {/* Ajusta 'bottom' para que esté encima del nav */}
         <button
           onClick={() => navigate("/help")}
-          className="flex flex-col items-center justify-center p-3 bg-blue-600 hover:bg-blue-700 rounded-full shadow-lg text-white transition duration-300 text-xs w-12 h-12"
+          className="flex flex-col items-center justify-center p-3 bg-blue-600 hover:bg-blue-700 rounded-full shadow-lg text-white transition duration-300 text-xs w-20 h-20"
         >
           <FontAwesomeIcon icon={faQuestionCircle} className="text-lg" />
           <span className="whitespace-nowrap">Ayuda</span>

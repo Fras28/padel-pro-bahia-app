@@ -9,6 +9,7 @@ const Register = ({ API_BASE }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [showModal, setShowModal] = useState(false); // Nuevo estado para controlar la visibilidad de la modal
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -37,11 +38,9 @@ const Register = ({ API_BASE }) => {
       const data = await response.json();
 
       if (response.ok) {
-        setSuccess('¡Registro exitoso! Por favor, inicia sesión.');
-        // Opcional: Redirigir al usuario al login después de un registro exitoso
-        setTimeout(() => {
-          navigate('/login');
-        }, 2000);
+        setSuccess('¡Registro exitoso!');
+        setShowModal(true); // Mostrar la modal al registrarse exitosamente
+        // No redirigimos automáticamente aquí, la modal se encarga de la información
       } else {
         setError(data.error?.message || 'Error en el registro.');
       }
@@ -49,6 +48,28 @@ const Register = ({ API_BASE }) => {
       setError('Error de red. Inténtalo de nuevo más tarde.');
       console.error('Error de registro:', err);
     }
+  };
+
+  // Componente Modal simple
+  const ConfirmationModal = ({ email, onClose }) => {
+    return (
+      <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
+        <div className="bg-white p-8 rounded-lg shadow-xl max-w-sm w-full text-center transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+          <h3 className="text-2xl font-bold text-blue-800 mb-4">¡Registro Exitoso!</h3>
+          <p className="text-gray-700 mb-6">
+            Por favor, revisa tu casilla de correo electrónico
+            <span className="font-semibold text-blue-600"> {email} </span>
+            para confirmar tu cuenta y activarla.
+          </p>
+          <button
+            onClick={onClose}
+            className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition duration-300"
+          >
+            Entendido
+          </button>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -124,9 +145,19 @@ const Register = ({ API_BASE }) => {
           </Link>
         </p>
       </div>
+
+      {/* Modal de Confirmación */}
+      {showModal && (
+        <ConfirmationModal
+          email={email} // Pasa el email para mostrarlo en la modal
+          onClose={() => {
+            setShowModal(false);
+            navigate('/login'); // Redirige al login al cerrar la modal
+          }}
+        />
+      )}
     </div>
   );
 };
 
 export default Register;
-
