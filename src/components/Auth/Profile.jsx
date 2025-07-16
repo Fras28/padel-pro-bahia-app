@@ -319,12 +319,12 @@ const Profile = ({ API_BASE, user, setUser }) => {
     <ul className="list-disc list-inside text-gray-700">
       {playerData.pareja_drive && (
         <li className="mb-1">
-          Pareja (posición de Drive): {playerData.pareja_drive.drive?.nombre} {playerData.pareja_drive.drive?.apellido} con {playerData.pareja_drive.revez?.nombre} {playerData.pareja_drive.revez?.apellido}
+         <b>Pareja (posición tu como Drive):</b>  {playerData.pareja_drive.drive?.nombre}  con {playerData.pareja_drive.revez?.nombre} 
         </li>
       )}
       {playerData.pareja_revez && (
         <li className="mb-1">
-          Pareja (posición de Revés): {playerData.pareja_revez.drive?.nombre} {playerData.pareja_revez.drive?.apellido} con {playerData.pareja_revez.revez?.nombre} {playerData.pareja_revez.revez?.apellido}
+        <b>Pareja (posición de Revés):</b>   {playerData.pareja_revez.drive?.nombre} {playerData.pareja_revez.drive?.apellido} con {playerData.pareja_revez.revez?.nombre} {playerData.pareja_revez.revez?.apellido}
         </li>
       )}
     </ul>
@@ -338,6 +338,15 @@ const Profile = ({ API_BASE, user, setUser }) => {
             <p>No hay un perfil de jugador asociado a esta cuenta.</p>
           </div>
         )}
+        <div className='flex gap-2 '>
+
+                <button
+            onClick={() => navigate("/create-pair")} // La ruta a tu componente CreatePair
+            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-300 ease-in-out transform hover:-translate-y-1"
+          >
+     
+           + Crear Parejas
+          </button>
 
         {/* Botón de Logout */}
         <button
@@ -346,6 +355,7 @@ const Profile = ({ API_BASE, user, setUser }) => {
         >
           Cerrar Sesión
         </button>
+        </div>
       </div>
     </div>
   );
