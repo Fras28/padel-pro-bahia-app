@@ -435,7 +435,7 @@ const MobileNavBarAlt = ({ user }) => {
       <div className="fixed bottom-24 right-4 z-50"> {/* Ajusta 'bottom' para que esté encima del nav */}
         <button
           onClick={() => navigate("/help")}
-          className="flex flex-col items-center justify-center p-3 bg-blue-600 hover:bg-blue-700 rounded-full shadow-lg text-white transition duration-300 text-xs w-20 h-20"
+          className="flex flex-col items-center justify-center p-3 bg-blue-600 hover:bg-blue-700 rounded-full shadow-lg text-white transition duration-300 text-xs w-12 h-12"
         >
           <FontAwesomeIcon icon={faQuestionCircle} className="text-lg" />
           <span className="whitespace-nowrap">Ayuda</span>
