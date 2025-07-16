@@ -25,8 +25,8 @@ function AllPlayers() {
                 'estadisticas',
                 'categoria',
                 'torneos',
-                'pareja',
-                'pareja1'
+                'pareja_drive',
+                'pareja_revez'
             ];
     
             // Construct the API URL with pagination and search filters

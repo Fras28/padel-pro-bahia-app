@@ -97,16 +97,16 @@ const Profile = ({ API_BASE, user, setUser }) => {
 
       try {
         // Construcción de la URL de populación para incluir todas las relaciones necesarias del jugador
-        // Se populan estadísticas, categoría, club, torneos, y ambas relaciones de pareja (jugador1 y jugador2)
+        // Se populan estadísticas, categoría, club, torneos, y ambas relaciones de pareja (drive y revez)
         const populateQuery = [
           'populate[jugador][populate][estadisticas]=*',
           'populate[jugador][populate][categoria]=*',
           'populate[jugador][populate][club][populate]=logo', // Popula el logo del club
           'populate[jugador][populate][torneos]=*',
-          'populate[jugador][populate][pareja][populate][jugador1]=*', // Popula jugador1 de la pareja
-          'populate[jugador][populate][pareja][populate][jugador2]=*', // Popula jugador2 de la pareja
-          'populate[jugador][populate][pareja1][populate][jugador1]=*', // Popula jugador1 de la pareja1
-          'populate[jugador][populate][pareja1][populate][jugador2]=*', // Popula jugador2 de la pareja1
+          'populate[jugador][populate][pareja_drive][populate][drive]=*', // Popula drive del jugador en posición de drive
+          'populate[jugador][populate][pareja_drive][populate][revez]=*', // Popula revez del jugador en posición de drive (si aplica)
+          'populate[jugador][populate][pareja_revez][populate][drive]=*', // Popula drive del jugador en posición de revez (si aplica)
+          'populate[jugador][populate][pareja_revez][populate][revez]=*', // Popula revez del jugador en posición de revez
         ].join('&');
 
         const userResponse = await fetch(`${API_BASE}api/users/me?${populateQuery}`, {
@@ -314,24 +314,24 @@ const Profile = ({ API_BASE, user, setUser }) => {
 
             {/* Información de Parejas */}
             <div className="mb-6 pb-4">
-              <h3 className="text-2xl font-semibold text-gray-800 mb-4">Parejas</h3>
-              {playerData.pareja || playerData.pareja1 ? (
-                <ul className="list-disc list-inside text-gray-700">
-                  {playerData.pareja && (
-                    <li className="mb-1">
-                      Pareja (Jugador 1): {playerData.pareja.jugador1?.nombre} {playerData.pareja.jugador1?.apellido} con {playerData.pareja.jugador2?.nombre} {playerData.pareja.jugador2?.apellido}
-                    </li>
-                  )}
-                  {playerData.pareja1 && (
-                    <li className="mb-1">
-                      Pareja (Jugador 2): {playerData.pareja1.jugador1?.nombre} {playerData.pareja1.jugador1?.apellido} con {playerData.pareja1.jugador2?.nombre} {playerData.pareja1.jugador2?.apellido}
-                    </li>
-                  )}
-                </ul>
-              ) : (
-                <p className="text-gray-600">No tienes parejas registradas.</p>
-              )}
-            </div>
+  <h3 className="text-2xl font-semibold text-gray-800 mb-4">Parejas</h3>
+  {playerData.pareja_drive || playerData.pareja_revez ? (
+    <ul className="list-disc list-inside text-gray-700">
+      {playerData.pareja_drive && (
+        <li className="mb-1">
+          Pareja (posición de Drive): {playerData.pareja_drive.drive?.nombre} {playerData.pareja_drive.drive?.apellido} con {playerData.pareja_drive.revez?.nombre} {playerData.pareja_drive.revez?.apellido}
+        </li>
+      )}
+      {playerData.pareja_revez && (
+        <li className="mb-1">
+          Pareja (posición de Revés): {playerData.pareja_revez.drive?.nombre} {playerData.pareja_revez.drive?.apellido} con {playerData.pareja_revez.revez?.nombre} {playerData.pareja_revez.revez?.apellido}
+        </li>
+      )}
+    </ul>
+  ) : (
+    <p className="text-gray-600">No tienes parejas registradas.</p>
+  )}
+</div>
           </>
         ) : (
           <div className="mb-6 text-center text-gray-600">

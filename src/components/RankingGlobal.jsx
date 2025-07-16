@@ -31,7 +31,7 @@ function RankingGlobal() {
   // const [hasAnimated, setHasAnimated] = useState(false);
 
   const API_BASE = import.meta.env.VITE_API_BASE;
-  const RANKING_API_URL = `${API_BASE}api/ranking-global?populate=entradasRankingGlobal.jugador.estadisticas&populate=entradasRankingGlobal.jugador.club.logo&populate=entradasRankingGlobal.jugador.categoria&populate=entradasRankingGlobal.jugador.pareja.partidos_ganados&populate=entradasRankingGlobal.jugador.pareja.partidos_perdidos&populate=entradasRankingGlobal.jugador.pareja1.partidos_ganados&populate=entradasRankingGlobal.jugador.pareja1.partidos_perdidos`;
+  const RANKING_API_URL = `${API_BASE}api/ranking-global?populate=entradasRankingGlobal.jugador.estadisticas&populate=entradasRankingGlobal.jugador.club.logo&populate=entradasRankingGlobal.jugador.categoria&populate=entradasRankingGlobal.jugador.pareja_drive.partidos_ganados&populate=entradasRankingGlobal.jugador.pareja_drive.partidos_perdidos&populate=entradasRankingGlobal.jugador.pareja_revez.partidos_ganados&populate=entradasRankingGlobal.jugador.pareja_revez.partidos_perdidos`;
   const CATEGORIES_API_URL = `${API_BASE}api/categorias`;
 
   const sponsorImages = [
@@ -245,26 +245,26 @@ function RankingGlobal() {
                         const globalPoints = entry.puntosGlobales || 0;
 
                         let allPlayerMatches = [];
-                        if (player.pareja) {
-                          if (player.pareja.partidos_ganados) {
-                            player.pareja.partidos_ganados.forEach((match) =>
+                        if (player.pareja_revez) {
+                          if (player.pareja_revez.partidos_ganados) {
+                            player.pareja_revez.partidos_ganados.forEach((match) =>
                               allPlayerMatches.push({ ...match, won: true })
                             );
                           }
-                          if (player.pareja.partidos_perdidos) {
-                            player.pareja.partidos_perdidos.forEach((match) =>
+                          if (player.pareja_revez.partidos_perdidos) {
+                            player.pareja_revez.partidos_perdidos.forEach((match) =>
                               allPlayerMatches.push({ ...match, won: false })
                             );
                           }
                         }
-                        if (player.pareja1) {
-                          if (player.pareja1.partidos_ganados) {
-                            player.pareja1.partidos_ganados.forEach((match) =>
+                        if (player.pareja_revez) {
+                          if (player.pareja_revez.partidos_ganados) {
+                            player.pareja_revez.partidos_ganados.forEach((match) =>
                               allPlayerMatches.push({ ...match, won: true })
                             );
                           }
-                          if (player.pareja1.partidos_perdidos) {
-                            player.pareja1.partidos_perdidos.forEach((match) =>
+                          if (player.pareja_revez.partidos_perdidos) {
+                            player.pareja_revez.partidos_perdidos.forEach((match) =>
                               allPlayerMatches.push({ ...match, won: false })
                             );
                           }
@@ -395,9 +395,9 @@ function RankingGlobal() {
                             const globalPoints = entry.puntosGlobales || 0;
 
                             let allPlayerMatches = [];
-                            if (player.pareja) {
-                              if (player.pareja.partidos_ganados) {
-                                player.pareja.partidos_ganados.forEach(
+                            if (player.pareja_revez) {
+                              if (player.pareja_revez.partidos_ganados) {
+                                player.pareja_revez.partidos_ganados.forEach(
                                   (match) =>
                                     allPlayerMatches.push({
                                       ...match,
@@ -405,8 +405,8 @@ function RankingGlobal() {
                                     })
                                 );
                               }
-                              if (player.pareja.partidos_perdidos) {
-                                player.pareja.partidos_perdidos.forEach(
+                              if (player.pareja_revez.partidos_perdidos) {
+                                player.pareja_revez.partidos_perdidos.forEach(
                                   (match) =>
                                     allPlayerMatches.push({
                                       ...match,
@@ -415,9 +415,9 @@ function RankingGlobal() {
                                 );
                               }
                             }
-                            if (player.pareja1) {
-                              if (player.pareja1.partidos_ganados) {
-                                player.pareja1.partidos_ganados.forEach(
+                            if (player.pareja_revez) {
+                              if (player.pareja_revez.partidos_ganados) {
+                                player.pareja_revez.partidos_ganados.forEach(
                                   (match) =>
                                     allPlayerMatches.push({
                                       ...match,
@@ -425,8 +425,8 @@ function RankingGlobal() {
                                     })
                                 );
                               }
-                              if (player.pareja1.partidos_perdidos) {
-                                player.pareja1.partidos_perdidos.forEach(
+                              if (player.pareja_revez.partidos_perdidos) {
+                                player.pareja_revez.partidos_perdidos.forEach(
                                   (match) =>
                                     allPlayerMatches.push({
                                       ...match,

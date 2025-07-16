@@ -174,10 +174,10 @@ function CurrentMatches({ API_BASE }) {
                                 Torneo: {match.torneo?.nombre || 'N/A'}
                             </h3>
                             <p className="text-sm text-gray-600">
-                                <span className="font-semibold">Pareja 1:</span> {match.pareja1?.nombrePareja || 'N/A'}
+                                <span className="font-semibold">Pareja 1:</span> {match.pareja_drive?.nombrePareja || 'N/A'}
                             </p>
                             <p className="text-sm text-gray-600 mb-2">
-                                <span className="font-semibold">Pareja 2:</span> {match.pareja2?.nombrePareja || 'N/A'}
+                                <span className="font-semibold">Pareja 2:</span> {match.pareja_revez?.nombrePareja || 'N/A'}
                             </p>
                             <p className="text-sm text-gray-600">Ronda: {match.ronda}</p>
                             <p className="text-sm text-gray-600">Cancha: {match.cancha}</p>
