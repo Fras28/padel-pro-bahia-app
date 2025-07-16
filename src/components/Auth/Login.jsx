@@ -78,7 +78,7 @@ const Login = ({ API_BASE, onLoginSuccess }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-100 to-blue-300 p-4">
+    <div className="min-h-screen flex items-start justify-center bg-gradient-to-r from-blue-100 to-blue-300 p-4 pt-6 rounded-lg" >
       <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md transform transition duration-500 hover:scale-105">
         <h2 className="text-3xl font-extrabold text-center text-blue-800 mb-8">Iniciar Sesión</h2>
         <form onSubmit={handleSubmit} className="space-y-6">
