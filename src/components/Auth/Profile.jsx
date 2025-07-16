@@ -232,7 +232,7 @@ const Profile = ({ API_BASE, user, setUser }) => {
                 </div>
               )}
               <p className="text-gray-700 mb-2">
-                <span className="font-medium">Nombre:</span> {playerData.nombre} {playerData.apellido}
+                <span className="font-medium">Nombre:</span> {playerData.nombre}
               </p>
               <p className="text-gray-700 mb-2">
                 <span className="font-medium">Teléfono:</span> {playerData.telefono || 'N/A'}
@@ -324,7 +324,7 @@ const Profile = ({ API_BASE, user, setUser }) => {
       )}
       {playerData.pareja_revez && (
         <li className="mb-1">
-        <b>Pareja (posición de Revés):</b>   {playerData.pareja_revez.drive?.nombre} {playerData.pareja_revez.drive?.apellido} con {playerData.pareja_revez.revez?.nombre} {playerData.pareja_revez.revez?.apellido}
+        <b>Pareja (posición de Revés):</b>   {playerData.pareja_revez.drive?.nombre} {playerData.pareja_revez.drive?.apellido} con {playerData.pareja_revez.revez?.nombre} 
         </li>
       )}
     </ul>
