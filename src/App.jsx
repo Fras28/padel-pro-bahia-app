@@ -283,7 +283,7 @@ function App() {
           >
             <FontAwesomeIcon icon={faUserCircle} className="text-lg" />
             <span className={baseTextClasses}>
-              {user.jugador?.nombre || user.username} {/* Muestra nombre del jugador o username */}
+              {user.jugador?.nombre.split(' ')[0] || user.username.split(' ')[0]} {/* Muestra nombre del jugador o username */}
             </span>
           </button>
         ) : (
@@ -341,7 +341,7 @@ const MobileNavBarAlt = ({ user }) => {
           className="flex flex-col items-center bg-slate-100 text-gray-700 hover:text-blue-900 transition duration-300 text-xs"
         >
           <FontAwesomeIcon icon={faUserCircle} className="text-lg mb-1" />
-          {user.jugador?.nombre || user.username} {/* Muestra nombre del jugador o username */}
+          {user.jugador?.nombre.split(' ')[0] || user.username.split(' ')[0]} {/* Muestra nombre del jugador o username */}
         </button>
       ) : (
         <button
