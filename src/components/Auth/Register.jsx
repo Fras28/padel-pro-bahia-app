@@ -63,7 +63,7 @@ const Register = ({ API_BASE }) => {
             <input
               type="text"
               id="username"
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-300 ease-in-out"
+              className="mt-1 block text-black w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-300 ease-in-out"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
@@ -76,7 +76,7 @@ const Register = ({ API_BASE }) => {
             <input
               type="email"
               id="email"
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-300 ease-in-out"
+              className="mt-1 block text-black  w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-300 ease-in-out"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -89,7 +89,7 @@ const Register = ({ API_BASE }) => {
             <input
               type="password"
               id="password"
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-300 ease-in-out"
+              className="mt-1 block text-black  w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-300 ease-in-out"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -102,7 +102,7 @@ const Register = ({ API_BASE }) => {
             <input
               type="password"
               id="confirmPassword"
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-300 ease-in-out"
+              className="mt-1 block text-black  w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-300 ease-in-out"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required

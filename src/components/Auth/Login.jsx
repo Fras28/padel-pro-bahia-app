@@ -53,7 +53,7 @@ const Login = ({ API_BASE, onLoginSuccess }) => {
             <input
               type="text"
               id="identifier"
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-300 ease-in-out"
+              className="mt-1 block w-full text-black px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-300 ease-in-out"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
               required
@@ -66,7 +66,7 @@ const Login = ({ API_BASE, onLoginSuccess }) => {
             <input
               type="password"
               id="password"
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-300 ease-in-out"
+              className="mt-1 block w-full px-4 py-2 text-black border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-300 ease-in-out"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required

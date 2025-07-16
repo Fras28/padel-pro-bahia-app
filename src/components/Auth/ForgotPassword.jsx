@@ -46,7 +46,7 @@ const ForgotPassword = ({ API_BASE }) => {
             <input
               type="email"
               id="email"
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-300 ease-in-out"
+              className="mt-1 text-black  block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-300 ease-in-out"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
