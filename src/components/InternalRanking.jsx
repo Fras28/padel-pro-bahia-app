@@ -146,7 +146,7 @@ function InternalRanking() {
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {rankingEntries.map((entry, playerIndex) => (
+                            {rankingEntries?.map((entry, playerIndex) => (
                                 <tr
                                     key={entry?.jugador?.id}
                                     onClick={() => handlePlayerClick(entry?.jugador)}
@@ -160,7 +160,7 @@ function InternalRanking() {
                                             {/* Usa el logo del club de la entrada del ranking */}
                                             <img
                                                 className="h-8 w-8 rounded-full object-cover mr-2"
-                                                src={entry.jugador.club?.logo?.url || `https://placehold.co/32x32/cccccc/333333?text=Club`}
+                                                src={entry.jugador?.club?.logo?.url || `https://placehold.co/32x32/cccccc/333333?text=Club`}
                                                 alt={entry.club?.nombre || "Club Logo"}
                                                 onError={(e) => {
                                                     e.target.onerror = null;
