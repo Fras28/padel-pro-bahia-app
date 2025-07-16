@@ -1,12 +1,26 @@
 // src/components/Login.jsx
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom'; // Importa useLocation
 
 const Login = ({ API_BASE, onLoginSuccess }) => {
   const [identifier, setIdentifier] = useState(''); // Puede ser email o username
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false); // Nuevo estado para la modal
+  const [registeredEmail, setRegisteredEmail] = useState(''); // Para mostrar el email en la modal
   const navigate = useNavigate();
+  const location = useLocation(); // Hook para acceder al estado de la navegación
+
+  // Efecto para verificar si se viene de un registro exitoso
+  useEffect(() => {
+    if (location.state?.showConfirmationModal) {
+      setShowConfirmationModal(true);
+      setRegisteredEmail(location.state.registeredEmail || '');
+      // Limpiar el estado para que la modal no se muestre de nuevo al refrescar
+      // navigate(location.pathname, { replace: true, state: {} }); // Esto puede causar un bucle si no se maneja bien
+      // Una forma más segura es simplemente no volver a mostrarla si ya se mostró
+    }
+  }, [location.state]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -39,6 +53,28 @@ const Login = ({ API_BASE, onLoginSuccess }) => {
       setError('Error de red. Inténtalo de nuevo más tarde.');
       console.error('Error de inicio de sesión:', err);
     }
+  };
+
+  // Componente Modal simple (replicado de Register.jsx)
+  const ConfirmationModal = ({ email, onClose }) => {
+    return (
+      <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
+        <div className="bg-white p-8 rounded-lg shadow-xl max-w-sm w-full text-center transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+          <h3 className="text-2xl font-bold text-blue-800 mb-4">¡Registro Exitoso!</h3>
+          <p className="text-gray-700 mb-6">
+            Por favor, revisa tu casilla de correo electrónico
+            <span className="font-semibold text-blue-600"> {email} </span>
+            para confirmar tu cuenta y activarla.
+          </p>
+          <button
+            onClick={onClose}
+            className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition duration-300"
+          >
+            Entendido
+          </button>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -92,6 +128,14 @@ const Login = ({ API_BASE, onLoginSuccess }) => {
           </p>
         </div>
       </div>
+
+      {/* Modal de Confirmación (mostrada en Login.jsx) */}
+      {showConfirmationModal && (
+        <ConfirmationModal
+          email={registeredEmail}
+          onClose={() => setShowConfirmationModal(false)}
+        />
+      )}
     </div>
   );
 };
