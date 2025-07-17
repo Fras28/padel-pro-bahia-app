@@ -35,7 +35,7 @@ const MobileNavBarAlt = ({ user }) => {
         Torneos
       </button>
       <button
-        onClick={() => navigate("/all-players")}
+        onClick={() => navigate("/players")}
         className="flex flex-col items-center bg-slate-100 text-gray-700 hover:text-blue-900 transition duration-300 text-xs py-2 px-3 rounded-lg"
       >
         <FontAwesomeIcon icon={faUsers} className="text-lg mb-1 w-4" />
