@@ -119,17 +119,21 @@ const CreatePair = ({ API_BASE, user }) => {
       
       console.log("Datos de la API para la búsqueda de jugadores:", data.data);
 
-      const players = data.data.map(item => ({ id: item.id, ...item.attributes }));
+      const players = data.data.map(item => ({ id: id, ...item }));
+    
 
       const processedPlayers = players.map(player => ({
         ...player,
-        nombre: player.nombre || 'Nombre Desconocido',
-        apellido: player.apellido || '',
-        email: player.email || 'email@desconocido.com'
+        nombre: player?.nombre || 'Nombre Desconocido', // Fallback si el nombre es null/undefined
+        apellido: player?.apellido || '', // Fallback si el apellido es null/undefined
+        email: player.email || 'email@desconocido.com' // Fallback si el email es null/undefined
       }));
+
 
       // Filter out the current logged-in player from search results
       const filteredPlayers = processedPlayers.filter(p => p.id !== playerData.id);
+      console.log("filteredPlayers" , processedPlayers);
+      
 
       setSearchResults(filteredPlayers);
       if (filteredPlayers.length === 0) {
@@ -298,7 +302,7 @@ const CreatePair = ({ API_BASE, user }) => {
               <input
                 type="text"
                 placeholder="Buscar compañero por nombre, apellido o email..."
-                className="flex-grow p-3 text-black border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                className="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 required
@@ -320,7 +324,7 @@ const CreatePair = ({ API_BASE, user }) => {
                       className="p-3 hover:bg-blue-50 cursor-pointer flex items-center justify-between"
                       onClick={() => handleSelectPartner(player)}
                     >
-                      <span>{player.nombre} {player.apellido} ({player.email})</span>
+                      <span> {player?.nombre} ({player.email})</span>
                       <FontAwesomeIcon icon={faUserPlus} className="text-blue-500" />
                     </li>
                   ))}
@@ -333,7 +337,7 @@ const CreatePair = ({ API_BASE, user }) => {
             <h3 className="text-lg font-semibold text-blue-800 mb-3">Compañero Seleccionado:</h3>
             <div className="flex items-center justify-between mb-4 bg-white p-3 rounded-md shadow-sm border border-blue-200">
               <span className="text-gray-800 font-medium">
-                {selectedPartner.nombre} {selectedPartner.apellido} ({selectedPartner.email})
+                {selectedPartner.nombre} ({selectedPartner.email})
               </span>
               <button
                 onClick={handleRemovePartner}
