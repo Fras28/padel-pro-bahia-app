@@ -18,9 +18,8 @@ export default defineConfig({
         // Configuración del manifiesto de la aplicación
         name: 'Padel Pro Ranking', // Nombre completo de tu aplicación
         short_name: 'PadelPro Ranking',    // Nombre corto para la pantalla de inicio
-        description: 'Segui los torneos, tus estadisticas y mucho mas con nosotros',
-        theme_color: '#ffffff',  // Color de la barra de título/tema
-        background_color: '#0a3d73', // Color de fondo al cargar
+        description: 'Segui los torneos, tus estadisticas y mucho mas con nosotros', // Color de la barra de título/tema
+        background_color: '#75B9E4', // Color de fondo al cargar
         display: 'standalone',   // Cómo se muestra (fullscreen, standalone, minimal-ui, browser)
         scope: '/',              // Alcance de la PWA
         start_url: '/',          // URL de inicio
