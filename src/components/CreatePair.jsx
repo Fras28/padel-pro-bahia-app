@@ -267,7 +267,6 @@ const CreatePair = ({ API_BASE, user }) => {
   return (
     <div className="container mx-auto p-4 sm:p-6 lg:p-8 max-w-2xl bg-white rounded-lg shadow-xl mt-8">
       <h1 className="text-3xl font-bold text-center text-blue-700 mb-6">Gestionar Parejas</h1>
-
       {playerData && (
         <div className="mb-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
           <h2 className="text-xl font-semibold text-blue-800 mb-3">Tus Parejas Actuales:</h2>

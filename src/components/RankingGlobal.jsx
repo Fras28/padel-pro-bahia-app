@@ -193,10 +193,10 @@ function RankingGlobal() {
             <div key={catIndex} className="mb-8">
               <SponsorBanner sponsorImages={sponsorImages} />
               <h3 className="text-lg sm:text-xl font-semibold text-gray-700 mb-4 border-b pb-2">
-                {categoryData.name}
+                {categoryData.name} 
               </h3>
               {categoryData.players.length > 0 ? (
-                <div className="overflow-x-auto rounded-lg shadow-md border border-gray-200">
+                <div className="m-4 overflow-x-auto rounded-lg shadow-md border border-gray-200">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
