@@ -301,7 +301,7 @@ const CreatePair = ({ API_BASE, user }) => {
               <input
                 type="text"
                 placeholder="Buscar compañero por nombre, apellido o email..."
-                className="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                className="flex-grow p-3 text-black border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 required

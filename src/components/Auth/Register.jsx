@@ -1,6 +1,7 @@
 // src/components/Register.jsx
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { FaEye, FaEyeSlash } from 'react-icons/fa'; // Import eye icons
 
 const Register = ({ API_BASE }) => {
   const [username, setUsername] = useState('');
@@ -9,6 +10,8 @@ const Register = ({ API_BASE }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // New state for password visibility
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // New state for confirm password visibility
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -38,7 +41,6 @@ const Register = ({ API_BASE }) => {
 
       if (response.ok) {
         setSuccess('¡Registro exitoso!');
-        // Redirigir a la página de login y pasar el email y un indicador para mostrar la modal
         navigate('/login', { state: { registeredEmail: email, showConfirmationModal: true } });
       } else {
         setError(data.error?.message || 'Error en el registro.');
@@ -80,31 +82,51 @@ const Register = ({ API_BASE }) => {
               required
             />
           </div>
-          <div>
+          <div className="relative"> {/* Added relative for icon positioning */}
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="password">
               Contraseña
             </label>
             <input
-              type="password"
+              type={showPassword ? 'text' : 'password'} 
               id="password"
-              className="mt-1 block text-black  w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-300 ease-in-out"
+              className="mt-1 block text-black  w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-300 ease-in-out pr-10" // Added pr-10 for icon space
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+            <span
+              className="absolute inset-y-0 right-0 top-6 pr-3 flex items-center cursor-pointer" // Icon positioning
+              onClick={() => setShowPassword(!showPassword)} // Toggle function
+            >
+              {showPassword ? (
+                <FaEyeSlash className="h-5 w-5 text-gray-500" />
+              ) : (
+                <FaEye className="h-5 w-5 text-gray-500" />
+              )}
+            </span>
           </div>
-          <div>
+          <div className="relative"> {/* Added relative for icon positioning */}
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="confirmPassword">
               Confirmar Contraseña
             </label>
             <input
-              type="password"
+              type={showConfirmPassword ? 'text' : 'password'} 
               id="confirmPassword"
-              className="mt-1 block text-black  w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-300 ease-in-out"
+              className="mt-1 block text-black  w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-300 ease-in-out pr-10" // Added pr-10 for icon space
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
             />
+            <span
+              className="absolute inset-y-0 right-0 top-6 pr-3 flex items-center cursor-pointer" // Icon positioning
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)} // Toggle function
+            >
+              {showConfirmPassword ? (
+                <FaEyeSlash className="h-5 w-5 text-gray-500" />
+              ) : (
+                <FaEye className="h-5 w-5 text-gray-500" />
+              )}
+            </span>
           </div>
           {error && <p className="text-red-600 text-sm text-center">{error}</p>}
           {success && <p className="text-green-600 text-sm text-center">{success}</p>}

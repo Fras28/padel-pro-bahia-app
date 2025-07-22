@@ -1,24 +1,22 @@
 // src/components/Login.jsx
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom'; // Importa useLocation
+import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { FaEye, FaEyeSlash } from 'react-icons/fa'; // Import eye icons
 
 const Login = ({ API_BASE, onLoginSuccess }) => {
-  const [identifier, setIdentifier] = useState(''); // Puede ser email o username
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [showConfirmationModal, setShowConfirmationModal] = useState(false); // Nuevo estado para la modal
-  const [registeredEmail, setRegisteredEmail] = useState(''); // Para mostrar el email en la modal
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // New state for password visibility
   const navigate = useNavigate();
-  const location = useLocation(); // Hook para acceder al estado de la navegación
+  const location = useLocation();
 
-  // Efecto para verificar si se viene de un registro exitoso
   useEffect(() => {
     if (location.state?.showConfirmationModal) {
       setShowConfirmationModal(true);
       setRegisteredEmail(location.state.registeredEmail || '');
-      // Limpiar el estado para que la modal no se muestre de nuevo al refrescar
-      // navigate(location.pathname, { replace: true, state: {} }); // Esto puede causar un bucle si no se maneja bien
-      // Una forma más segura es simplemente no volver a mostrarla si ya se mostró
     }
   }, [location.state]);
 
@@ -41,11 +39,10 @@ const Login = ({ API_BASE, onLoginSuccess }) => {
       const data = await response.json();
 
       if (response.ok) {
-        // Almacenar el token JWT en localStorage
         localStorage.setItem('jwt', data.jwt);
         localStorage.setItem('user', JSON.stringify(data.user));
-        onLoginSuccess(data.user); // Notificar al componente App sobre el inicio de sesión
-        navigate('/'); // Redirigir a la página principal
+        onLoginSuccess(data.user);
+        navigate('/');
       } else {
         setError(data.error?.message || 'Credenciales inválidas.');
       }
@@ -55,7 +52,6 @@ const Login = ({ API_BASE, onLoginSuccess }) => {
     }
   };
 
-  // Componente Modal simple (replicado de Register.jsx)
   const ConfirmationModal = ({ email, onClose }) => {
     return (
       <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
@@ -95,18 +91,28 @@ const Login = ({ API_BASE, onLoginSuccess }) => {
               required
             />
           </div>
-          <div>
+          <div className="relative"> {/* Added relative for icon positioning */}
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="password">
               Contraseña
             </label>
             <input
-              type="password"
+              type={showPassword ? 'text' : 'password'} 
               id="password"
-              className="mt-1 block w-full px-4 py-2 text-black border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-300 ease-in-out"
+              className="mt-1 block w-full px-4 py-2 text-black border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-300 ease-in-out pr-10" // Added pr-10 for icon space
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+            <span
+              className="absolute inset-y-0 right-0 top-6 pr-3 flex items-center cursor-pointer" // Icon positioning
+              onClick={() => setShowPassword(!showPassword)} // Toggle function
+            >
+              {showPassword ? (
+                <FaEyeSlash className="h-5 w-5 text-gray-500" />
+              ) : (
+                <FaEye className="h-5 w-5 text-gray-500" />
+              )}
+            </span>
           </div>
           {error && <p className="text-red-600 text-sm text-center">{error}</p>}
           <button
@@ -129,7 +135,6 @@ const Login = ({ API_BASE, onLoginSuccess }) => {
         </div>
       </div>
 
-      {/* Modal de Confirmación (mostrada en Login.jsx) */}
       {showConfirmationModal && (
         <ConfirmationModal
           email={registeredEmail}
