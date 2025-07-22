@@ -343,7 +343,7 @@ function RankingGlobal() {
                   <h4 className="text-md font-semibold text-gray-700 mb-2">
                     Puestos 11-16
                   </h4>
-                  <div className="overflow-y-auto max-h-48 rounded-lg shadow-md border border-gray-200">
+                  <div className="overflow-y-auto max-h-48 rounded-lg shadow-md border border-gray-200 m-4">
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
