@@ -345,7 +345,7 @@ const Profile = ({ API_BASE, user, setUser }) => {
             className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-300 ease-in-out transform hover:-translate-y-1 flex-nowrap"
           >
      
-           + Crear Parejas
+           Crear Parejas
           </button>
 
         {/* Botón de Logout */}
