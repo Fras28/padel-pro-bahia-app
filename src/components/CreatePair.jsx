@@ -119,7 +119,7 @@ const CreatePair = ({ API_BASE, user }) => {
       
       console.log("Datos de la API para la búsqueda de jugadores:", data.data);
 
-      const players = data.data.map(item => ({ id: id, ...item }));
+      const players = data.data.map(item => ({ id: item.id, ...item }));
     
 
       const processedPlayers = players.map(player => ({
