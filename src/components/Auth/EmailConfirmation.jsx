@@ -22,10 +22,10 @@ const EmailConfirmation = ({ API_BASE }) => {
       try {
         const response = await fetch(`${API_BASE}api/auth/email-confirmation?confirmation=${confirmationToken}`);
 
-        // **IMPORTANTE:** Si Strapi redirige en éxito, 'response.json()' fallará.
-        // Aquí asumimos éxito si el estado HTTP es 2xx, sin necesidad de parsear JSON para el éxito.
+        // ****** ESTE ES EL CAMBIO CLAVE: YA NO INTENTAMOS PARSEAR response.json() AQUÍ *****
+        // ****** Si response.ok es true, asumimos éxito y procedemos a la redirección. *****
 
-        if (response.ok) { // Si el estado HTTP es 2xx (200, 201, etc.)
+        if (response.ok) { // Si el estado HTTP es 2xx (200, 201, 204, o una redirección 3xx seguida exitosamente)
           setMessage('¡Tu correo electrónico ha sido confirmado exitosamente! Ahora puedes iniciar sesión.');
           setIsError(false);
           
@@ -34,25 +34,26 @@ const EmailConfirmation = ({ API_BASE }) => {
             navigate('/login');
           }, 3000);
 
-        } else { // Si el estado HTTP NO es 2xx (hay un error del lado del servidor, ej. 400, 500)
+        } else { // Si el estado HTTP NO es 2xx (esto indica un error explícito del servidor, ej. 400, 500)
           let errorData = null;
           try {
-            // Intenta parsear JSON solo si el Content-Type de la respuesta es JSON
+            // Intentar parsear JSON solo si el encabezado Content-Type de la respuesta es 'application/json'
             const contentType = response.headers.get("content-type");
             if (contentType && contentType.includes("application/json")) {
               errorData = await response.json();
             }
           } catch (jsonParseError) {
-            console.warn("No se pudo parsear la respuesta de error como JSON. La respuesta puede no ser JSON o estar vacía:", jsonParseError);
+            // Esto ocurre si la respuesta de error NO es JSON, o está vacía.
+            console.warn("No se pudo parsear la respuesta de error como JSON. La respuesta de error puede no ser JSON o estar vacía:", jsonParseError);
           }
           
-          // Usa el mensaje de error de Strapi si está disponible, o un mensaje genérico
+          // Usar el mensaje de error que venga de Strapi, o uno genérico si no hay JSON o es un error inesperado
           setMessage(errorData?.error?.message || 'Error al confirmar el correo electrónico. Por favor, intenta nuevamente.');
           setIsError(true);
         }
       } catch (error) {
-        // Este bloque captura errores de red reales (ej. no hay conexión, CORS)
-        // o fallos muy tempranos en la petición `fetch`.
+        // Este bloque 'catch' maneja errores de red puros (ej. no hay conexión, error de CORS antes de recibir respuesta)
+        // o problemas que impiden que la solicitud HTTP se complete.
         setMessage('Error de red al intentar confirmar el correo electrónico.');
         setIsError(true);
         console.error('Error durante la confirmación del correo electrónico:', error);
@@ -60,7 +61,7 @@ const EmailConfirmation = ({ API_BASE }) => {
     };
 
     confirmEmail();
-  }, [location.search, API_BASE, navigate]); // Añadir navigate a las dependencias del useEffect
+  }, [location.search, API_BASE, navigate]); // Asegúrate de que todas las dependencias estén aquí
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-100 to-blue-300 p-4">
