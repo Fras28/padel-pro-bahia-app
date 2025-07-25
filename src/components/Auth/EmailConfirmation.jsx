@@ -21,28 +21,46 @@ const EmailConfirmation = ({ API_BASE }) => {
 
       try {
         const response = await fetch(`${API_BASE}api/auth/email-confirmation?confirmation=${confirmationToken}`);
-        const data = await response.json();
 
-        if (response.ok) {
+        // **IMPORTANTE:** Si Strapi redirige en éxito, 'response.json()' fallará.
+        // Aquí asumimos éxito si el estado HTTP es 2xx, sin necesidad de parsear JSON para el éxito.
+
+        if (response.ok) { // Si el estado HTTP es 2xx (200, 201, etc.)
           setMessage('¡Tu correo electrónico ha sido confirmado exitosamente! Ahora puedes iniciar sesión.');
           setIsError(false);
-          // Opcional: Redirigir al login después de un breve retraso
+          
+          // Redirigir al login después de un breve retraso
           setTimeout(() => {
             navigate('/login');
           }, 3000);
-        } else {
-          setMessage(data.error?.message || 'Error al confirmar el correo electrónico.');
+
+        } else { // Si el estado HTTP NO es 2xx (hay un error del lado del servidor, ej. 400, 500)
+          let errorData = null;
+          try {
+            // Intenta parsear JSON solo si el Content-Type de la respuesta es JSON
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+              errorData = await response.json();
+            }
+          } catch (jsonParseError) {
+            console.warn("No se pudo parsear la respuesta de error como JSON. La respuesta puede no ser JSON o estar vacía:", jsonParseError);
+          }
+          
+          // Usa el mensaje de error de Strapi si está disponible, o un mensaje genérico
+          setMessage(errorData?.error?.message || 'Error al confirmar el correo electrónico. Por favor, intenta nuevamente.');
           setIsError(true);
         }
       } catch (error) {
+        // Este bloque captura errores de red reales (ej. no hay conexión, CORS)
+        // o fallos muy tempranos en la petición `fetch`.
         setMessage('Error de red al intentar confirmar el correo electrónico.');
         setIsError(true);
-        console.error('Error during email confirmation:', error);
+        console.error('Error durante la confirmación del correo electrónico:', error);
       }
     };
 
     confirmEmail();
-  }, [location.search, API_BASE, navigate]);
+  }, [location.search, API_BASE, navigate]); // Añadir navigate a las dependencias del useEffect
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-100 to-blue-300 p-4">
@@ -59,9 +77,9 @@ const EmailConfirmation = ({ API_BASE }) => {
         {isError && (
           <button
             onClick={() => navigate('/login')}
-            className="mt-4 py-2 px-4 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition duration-300"
+            className="mt-6 px-6 py-3 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition duration-300"
           >
-            Ir a Iniciar Sesión
+            Ir a Inicio de Sesión
           </button>
         )}
       </div>
