@@ -12,6 +12,7 @@ const Register = ({ API_BASE }) => {
   const [success, setSuccess] = useState('');
   const [showPassword, setShowPassword] = useState(false); // New state for password visibility
   const [showConfirmPassword, setShowConfirmPassword] = useState(false); // New state for confirm password visibility
+  const [acceptNotifications, setAcceptNotifications] = useState(true); // Nuevo estado para aceptar notificaciones, por defecto true
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -34,6 +35,8 @@ const Register = ({ API_BASE }) => {
           username,
           email,
           password,
+          // Incluir el estado de acceptNotifications en el body
+          notifications_opt_in: acceptNotifications,
         }),
       });
 
@@ -87,7 +90,7 @@ const Register = ({ API_BASE }) => {
               Contraseña
             </label>
             <input
-              type={showPassword ? 'text' : 'password'} 
+              type={showPassword ? 'text' : 'password'}
               id="password"
               className="mt-1 block text-black  w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-300 ease-in-out pr-10" // Added pr-10 for icon space
               value={password}
@@ -110,7 +113,7 @@ const Register = ({ API_BASE }) => {
               Confirmar Contraseña
             </label>
             <input
-              type={showConfirmPassword ? 'text' : 'password'} 
+              type={showConfirmPassword ? 'text' : 'password'}
               id="confirmPassword"
               className="mt-1 block text-black  w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-300 ease-in-out pr-10" // Added pr-10 for icon space
               value={confirmPassword}
@@ -128,6 +131,31 @@ const Register = ({ API_BASE }) => {
               )}
             </span>
           </div>
+
+          {/* Checkbox para aceptar notificaciones */}
+          <div className="flex items-center">
+            <input
+              id="acceptNotifications"
+              name="acceptNotifications"
+              type="checkbox"
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              checked={acceptNotifications}
+              onChange={(e) => setAcceptNotifications(e.target.checked)}
+            />
+            <label htmlFor="acceptNotifications" className="ml-2 block text-sm text-gray-900">
+              Acepto recibir notificaciones por correo electrónico sobre mis partidos y torneos.
+            </label>
+          </div>
+
+          {/* Enlace a la política de privacidad */}
+          <p className="text-center text-sm text-gray-600">
+            Al registrarte, aceptas nuestros{' '}
+            <Link to="/privacy-policy" className="font-medium text-blue-600 hover:text-blue-500">
+              Términos de Servicio y Política de Privacidad
+            </Link>
+            .
+          </p>
+
           {error && <p className="text-red-600 text-sm text-center">{error}</p>}
           {success && <p className="text-green-600 text-sm text-center">{success}</p>}
           <button

@@ -128,7 +128,7 @@ function Categories() {
                         <button
                             key={category.id}
                             onClick={() => handleCategoryClick(category.documentId)}
-                            className="p-4 bg-white rounded-lg shadow-md hover:shadow-xl transform hover:scale-105 transition-all duration-300 ease-in-out text-center font-medium text-gray-800 border border-transparent hover:border-blue-500"
+                            className="p-4 bg-white rounded-lg shadow-md hover:shadow-xl transform transition-all duration-300 ease-in-out text-center font-medium text-gray-800 border border-transparent hover:border-blue-500"
                         >
                             {category?.nombre}
                         </button>

@@ -55,6 +55,7 @@ import Rucca from "./assets/ruca.png";
 import PadelPro from "./assets/PadelProArg.png";
 import CreatePair from "./components/CreatePair";
 import MobileNavBarAlt from "./components/NavBar/MobileNavBarAlt";
+import PrivacyPolicy from "./components/Auth/PrivacyPolicy";
 
 // Componente principal de la aplicación
 function App() {
@@ -498,6 +499,7 @@ function App() {
                   </div>
                 }
               />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             </Routes>
           </div>
         </div>
@@ -514,7 +516,7 @@ function App() {
           <span className="whitespace-nowrap">Ayuda</span>
         </button>
       </div>
-        <MobileNavBarAlt user={user} />
+      <MobileNavBarAlt user={user} />
       <Footer />
     </>
   );
