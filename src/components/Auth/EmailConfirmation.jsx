@@ -26,7 +26,7 @@ const EmailConfirmation = ({ API_BASE }) => {
         // ****** Si response.ok es true, asumimos éxito y procedemos a la redirección. *****
 
         if (response.ok) { // Si el estado HTTP es 2xx (200, 201, 204, o una redirección 3xx seguida exitosamente)
-          setMessage('¡Tu correo electrónico ha sido confirmado exitosamente! Ahora puedes iniciar sesión.');
+          setMessage('¡Tu correo electrónico ha sido confirmado exitosamente! ✅ Ahora puedes iniciar sesión.');
           setIsError(false);
           
           // Redirigir al login después de un breve retraso
@@ -67,7 +67,7 @@ const EmailConfirmation = ({ API_BASE }) => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-100 to-blue-300 p-4">
       <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md text-center">
         <h2 className="text-2xl font-bold mb-4 text-blue-800">Confirmación de Correo</h2>
-        <p className={`text-lg ${isError ? 'text-red-600' : 'text-gray-700'}`}>
+        <p className={`text-lg ${isError ? 'text-red-600' : 'text-green-600'}`}>
           {message}
         </p>
         {!isError && (
