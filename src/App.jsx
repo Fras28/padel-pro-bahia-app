@@ -71,8 +71,7 @@ function App() {
   const [selectedCategory, setSelectedCategory] = useState(null);
 
   const API_BASE =
-    import.meta.env.VITE_API_BASE ||
-    "https://padelproback-ranking.onrender.com/";
+    import.meta.env.VITE_API_BASE ;
 
   const sponsorImages = [
     { src: Dternera, url: "https://www.deternera.com.ar/", blurred: false },

@@ -12,7 +12,7 @@ function AllPlayers() {
     const [selectedPlayer, setSelectedPlayer] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const API_BASE = import.meta.env.VITE_API_BASE || 'https://padelproback-ranking.onrender.com/';
+    const API_BASE = import.meta.env.VITE_API_BASE ;
 
     // useCallback to memoize the fetch function and prevent unnecessary re-renders
     const fetchPlayers = useCallback(async (page, term) => {

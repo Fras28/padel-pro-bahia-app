@@ -13,10 +13,10 @@ function Tournaments() { // Ya no recibe onViewMatches como prop
 
     const navigate = useNavigate(); // Hook para la navegación programática
 
-    const API_BASE = import.meta.env.VITE_API_BASE || 'https://padelproback-ranking.onrender.com/';
+    const API_BASE = import.meta.env.VITE_API_BASE ;
     // API URL for tournaments - Using the new API URL provided by the user
     // Se ha modificado populate para que sea más específico si populate=* es muy pesado
-    const TOURNAMENTS_API_URL = `${API_BASE}api/torneos?populate=club.logo&populate=partidos.pareja1&populate=partidos.pareja2&populate=partidos.ganador&populate=parejas_inscritas&populate=categorias`;
+    const TOURNAMENTS_API_URL = `${API_BASE}api/torneos?populate=club.logo&populate=partidos.pareja1&populate=partidos.pareja2&populate=partidos.ganador&populate=parejas_inscritas&populate=categoria`;
 
     // Fetch tournaments data on component mount
     useEffect(() => {
