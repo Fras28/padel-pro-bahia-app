@@ -16,6 +16,7 @@ function Categories() {
         navigate(`/clubs/${clubId}/categories/${categoryId}/ranking`);
     }, [clubId, navigate]);
 
+
     useEffect(() => {
         const fetchClubAndCategories = async () => {
             if (!clubId) {

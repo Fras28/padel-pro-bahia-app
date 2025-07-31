@@ -28,6 +28,7 @@ function InternalRanking() {
     const [categoryName, setCategoryName] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [clubOwnerLogoUrl, setClubOwnerLogoUrl] = useState(''); // Nuevo estado para el logo del club dueño del ranking
 
     const [selectedPlayer, setSelectedPlayer] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -58,20 +59,23 @@ function InternalRanking() {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
-                console.log(data, "data");
-                
+                console.log(data?.data[0].club.logo.url, "data para el logo"); //
+
 
                 if (data.data && data.data.length > 0) {
                     const rankingData = data.data[0]; // Assuming there's only one ranking per club/category pair
                     setCategoryName(rankingData.categoria?.nombre || 'Categoría Desconocida');
+
+                    // Guarda la URL del logo del club dueño del ranking
+                    setClubOwnerLogoUrl(rankingData.club?.logo?.url || `https://placehold.co/32x32/cccccc/333333?text=Club`);
 
                     // Sort the entries based on points (descending)
                     const sortedEntries = rankingData.entradasRanking.sort((a, b) => b.puntos - a.puntos);
 
                     // Format player names for display and assign rank
                     const formattedEntries = sortedEntries.map(entry => {
-                        console.log(entry, "entry");
-                        
+                        console.log(entry, "entry"); //
+
                         let formattedName = "Desconocido";
                         if (entry.jugador && entry.jugador.nombre) {
                             const fullName = entry.jugador.nombre;
@@ -157,17 +161,17 @@ function InternalRanking() {
                                     </td>
                                     <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
                                         <div className="flex items-center">
-                                            {/* Usa el logo del club de la entrada del ranking */}
+                                            {/* Usa el logo del club dueño del ranking */}
                                             <img
                                                 className="h-8 w-8 rounded-full object-cover mr-2"
-                                                src={entry.jugador?.club?.logo?.url || `https://placehold.co/32x32/cccccc/333333?text=Club`}
+                                                src={clubOwnerLogoUrl}
                                                 alt={entry.club?.nombre || "Club Logo"}
                                                 onError={(e) => {
                                                     e.target.onerror = null;
                                                     e.target.src = `https://placehold.co/32x32/cccccc/333333?text=Club`;
                                                 }}
                                             />
-                                            <p className='text-black'>{entry.nombreJugadorTabla}</p> 
+                                            <p className='text-black'>{entry.nombreJugadorTabla}</p>
                                         </div>
                                     </td>
                                     <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700">

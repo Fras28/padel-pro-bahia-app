@@ -21,7 +21,7 @@ function TournamentMatches({ API_BASE }) { // Now only expects API_BASE as a pro
             try {
                 // Construct the API URL using the tournamentId (which is documentId)
                 // Using populate=* to get all related data as per your API example
-                const TOURNAMENT_DETAIL_API_URL = `${API_BASE}api/torneos/${tournamentId}?populate=club.logo&populate=partidos.pareja1&populate=partidos.pareja2&populate=partidos.ganador&populate=parejas_inscritas&populate=categorias`;
+                const TOURNAMENT_DETAIL_API_URL = `${API_BASE}api/torneos/${tournamentId}?populate=club.logo&populate=partidos.pareja1&populate=partidos.pareja2&populate=partidos.ganador&populate=parejas_inscritas&populate=categoria`;
                 const response = await fetch(TOURNAMENT_DETAIL_API_URL);
 
                 if (!response.ok) {

@@ -1,6 +1,8 @@
 // src/components/Profile.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Lanyard from './Lanyard'; // Import Lanyard component
+import PlayerCardContent from './PlayerCardContent'; // Import the new component
 
 // Helper function to get player initials (from PlayerDetailModal)
 const getInitials = (nombre, apellido) => {
@@ -73,7 +75,9 @@ const Profile = ({ API_BASE, user, setUser }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isEditingPlayer, setIsEditingPlayer] = useState(false);
-  const [editablePlayer, setEditablePlayer] = useState({ nombre: '', apellido: '', telefono: '', fechaNacimiento: '', sexo: '' }); // All fields editable
+  // Añadimos 'club' con un valor inicial nulo o el ID del club actual
+  const [editablePlayer, setEditablePlayer] = useState({ nombre: '', apellido: '', telefono: '', fechaNacimiento: '', sexo: '', club: null });
+  const [clubs, setClubs] = useState([]); // Nuevo estado para almacenar los clubes
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -89,7 +93,7 @@ const Profile = ({ API_BASE, user, setUser }) => {
       setLoading(true);
       setError('');
       const jwt = localStorage.getItem('jwt');
-      console.log("Profile.jsx: JWT retrieved from localStorage (first 10 chars):", jwt ? jwt.substring(0, 10) + "..." : "No JWT found");
+      console.log("Profile.jsx: JWT retrieved from localStorage (first 10 chars):", jwt ? jwt.substring(0, 10) + "..." : "No JWT found"); //
 
       if (!jwt) {
         setError('No hay token de autenticación. Por favor, inicia sesión para ver tu perfil completo.');
@@ -117,8 +121,8 @@ const Profile = ({ API_BASE, user, setUser }) => {
           },
         });
         const data = await userResponse.json();
-        console.log("Profile.jsx: Raw API response status:", userResponse.status);
-        console.log("Profile.jsx: Raw API response data:", data);
+        console.log("Profile.jsx: Raw API response status:", userResponse.status); //
+        console.log("Profile.jsx: Raw API response data:", data); //
 
         if (userResponse.ok) {
           setUserData(data);
@@ -130,12 +134,13 @@ const Profile = ({ API_BASE, user, setUser }) => {
               telefono: data.jugador.telefono || '',
               fechaNacimiento: data.jugador.fechaNacimiento ? new Date(data.jugador.fechaNacimiento).toISOString().split('T')[0] : '',
               sexo: data.jugador.sexo || '',
+              club: data.jugador.club?.id || null, // Preselecciona el ID del club del jugador
             });
-            console.log("Valor de sexo recibido del backend:", data.jugador.sexo); // ¡Añade esta línea para depurar!
+            console.log("Valor de sexo recibido del backend:", data.jugador.sexo); //
           }
-          console.log("Profile.jsx: User data loaded successfully:", data);
+          console.log("Profile.jsx: User data loaded successfully:", data); //
         } else {
-          console.error("Profile.jsx: Error response from API:", userResponse.status, data.error?.message);
+          console.error("Profile.jsx: Error response from API:", userResponse.status, data.error?.message); //
           if (userResponse.status === 401 || userResponse.status === 403) {
             setError('Tu sesión ha expirado o es inválida. Por favor, haz clic en "Cerrar Sesión" para iniciar sesión de nuevo.');
           } else {
@@ -144,13 +149,35 @@ const Profile = ({ API_BASE, user, setUser }) => {
         }
       } catch (err) {
         setError('Error de red al cargar el perfil. Inténtalo de nuevo más tarde.');
-        console.error('Profile.jsx: Error fetching profile:', err);
+        console.error('Profile.jsx: Error fetching profile:', err); //
       } finally {
         setLoading(false);
       }
     };
 
+    // Función para obtener la lista de clubes
+    const fetchClubs = async () => {
+      try {
+        const response = await fetch(`${API_BASE}api/clubs?populate=logo`); // Asume que esta ruta devuelve todos los clubes
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        // Mapear los datos para que sean útiles para el select
+        const fetchedClubs = data.data.map(item => ({
+          id: item.id,
+          nombre: item.nombre, // Assuming 'nombre' is under 'attributes'
+          logo: item.logo.url // Assuming logo is also under 'attributes'
+        }));
+        setClubs(fetchedClubs);
+      } catch (err) {
+        console.error('Error fetching clubs:', err);
+        setError('Error al cargar la lista de clubes.');
+      }
+    };
+
     fetchProfileData();
+    fetchClubs(); // Llama a la función para obtener los clubes
   }, [API_BASE, navigate, setUser]);
 
   const handleEditPlayerToggle = () => {
@@ -163,6 +190,7 @@ const Profile = ({ API_BASE, user, setUser }) => {
         telefono: playerData.telefono || '',
         fechaNacimiento: playerData.fechaNacimiento ? new Date(playerData.fechaNacimiento).toISOString().split('T')[0] : '',
         sexo: playerData.sexo || '',
+        club: playerData.club?.id || null, // Restablece el ID del club
       });
     }
   };
@@ -190,23 +218,33 @@ const Profile = ({ API_BASE, user, setUser }) => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${jwt}`,
         },
-        body: JSON.stringify({ data: editablePlayer }), // Send all editable fields
+        // Asegúrate de que el campo 'club' en el body sea el ID del club seleccionado
+        body: JSON.stringify({ data: { ...editablePlayer, club: editablePlayer.club } }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        // Update local state with new data
-        setPlayerData(prev => ({ ...prev, ...data.data.attributes }));
+        // Actualiza el estado local con los nuevos datos
+        // Nota: Strapi devuelve el ID del club directamente en data.data.club si se populó el club
+        // o solo el ID si no se populó en la respuesta del PUT.
+        // Para asegurar que `playerData.club` tenga el objeto completo, podrías volver a llamar `fetchProfileData`
+        // o reconstruir el objeto `club` en `playerData` si la API del `PUT` no lo devuelve completo.
+        setPlayerData(prev => ({
+          ...prev,
+          ...data.data,
+          // If the PUT returns only the club ID, find the complete object in your list of clubs
+          club: clubs.find(c => c.id === data.data.club) || prev.club
+        }));
         setIsEditingPlayer(false);
-        console.log("Player data updated successfully:", data);
+        console.log("Player data updated successfully:", data); //
       } else {
-        console.error("Error updating player data:", response.status, data.error?.message);
+        console.error("Error updating player data:", response.status, data.error?.message); //
         setError(data.error?.message || 'Error al actualizar los datos del jugador.');
       }
     } catch (err) {
       setError('Error de red al actualizar el perfil del jugador.');
-      console.error('Error saving player profile:', err);
+      console.error('Error saving player profile:', err); //
     } finally {
       setLoading(false);
     }
@@ -242,7 +280,7 @@ const Profile = ({ API_BASE, user, setUser }) => {
     ? clubStyles[playerData.club.id]
     : clubStyles.default;
 
-  console.log("Profile.jsx: Calculated style:", style);
+  console.log("Profile.jsx: Calculated style:", style); //
 
 
 
@@ -268,8 +306,21 @@ const Profile = ({ API_BASE, user, setUser }) => {
 
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-100 to-blue-300 p-4">
-      <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md transform transition duration-500 hover:scale-105">
+    <div className="relative min-h-screen flex flex-col lg:flex-row items-center justify-center bg-gradient-to-r from-blue-100 to-blue-300 p-4 overflow-hidden">
+      {/* Lanyard component (3D) - Rendered as a background element */}
+      <div className="absolute top-0 left-0 w-full h-full z-0 pointer-events-none">
+        <Lanyard position={[0, 0, 30]} gravity={[0, -40, 0]} />
+      </div>
+
+      {/* PlayerCardContent - Rendered as an overlay on top of the Lanyard card */}
+      {playerData && (
+        <div className="absolute z-10" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)', pointerEvents: 'none' }}>
+          <PlayerCardContent playerData={playerData} style={style} />
+        </div>
+      )}
+
+      {/* Profile content (2D) */}
+      <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md transform transition duration-500 z-20 relative">
         <h2 className="text-3xl font-extrabold text-center text-blue-800 mb-8">Mi Perfil</h2>
 
         {error && (
@@ -314,7 +365,7 @@ const Profile = ({ API_BASE, user, setUser }) => {
                 )}
               </h3>
 
-              {/* Player Initials Circle - Condicionalmente renderizado si 'style' es válido */}
+              {/* Player Initials Circle - Conditionally rendered if 'style' is valid */}
               {style && (
                 <div className={`w-24 h-24 rounded-full flex items-center justify-center text-4xl font-bold mb-4 ${style.initialBg} ${style.titleColor} z-10 border-2 ${style.cardBorder} mx-auto`}>
                   {getInitials(playerData?.nombre, playerData?.apellido)}
@@ -334,6 +385,7 @@ const Profile = ({ API_BASE, user, setUser }) => {
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
                   </div>
+                  
                   {/* Apellido field is editable but not displayed below it in view mode */}
                   {/* <div>
                     <label htmlFor="apellido" className="block text-sm font-medium text-gray-700">Apellido:</label>
@@ -383,13 +435,29 @@ const Profile = ({ API_BASE, user, setUser }) => {
                       <option value="Otro">Otro</option>
                     </select>
                   </div>
+                  <div>
+                    <label htmlFor="club" className="block text-sm font-medium text-gray-700">Club:</label>
+                    <select
+                      id="club"
+                      name="club"
+                      value={editablePlayer.club || ''} // Usar el ID del club
+                      onChange={handlePlayerInputChange}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    >
+                      <option value="">Seleccionar Club</option>
+                      {clubs.map(club => (
+                        <option key={club.id} value={club.id}>
+                          {club.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               ) : (
                 <>
                   <p className="text-gray-700 mb-2">
-                    <span className="font-medium">Nombre:</span> {playerData.nombre}
+                    <span className="font-medium">Nombre:</span> {playerData.nombre} {playerData.apellido}
                   </p>
-                  {/* Apellido is explicitly not displayed here */}
                   <p className="text-gray-700 mb-2">
                     <span className="font-medium">Teléfono:</span> {playerData.telefono || 'N/A'}
                   </p>
@@ -403,12 +471,12 @@ const Profile = ({ API_BASE, user, setUser }) => {
                     <span className="font-medium">Ranking General:</span> {playerData.rankingGeneral !== undefined ? playerData.rankingGeneral : 'N/A'}
                   </p>
                   {playerData?.club && (
-                  <div className='flex  items-center justify-center gap-2'>
-                    <p className="text-gray-700 mb-2 ">
-                      <span className="font-medium">Club:</span> 
-                    </p>
-                    <img className='w-8' src={playerData?.club?.logo?.url} alt={playerData.club.nombre}/>
-                  </div>
+                    <div className='flex items-center justify-center gap-2'>
+                      <p className="text-gray-700 mb-2 ">
+                        <span className="font-medium">Club:</span>
+                      </p>
+                      <img className='w-8' src={playerData?.club?.logo?.url} alt={playerData.club.nombre} />
+                    </div>
                   )}
                   {playerData.categoria && (
                     <p className="text-gray-700 mb-2">
@@ -480,12 +548,12 @@ const Profile = ({ API_BASE, user, setUser }) => {
                 <ul className="list-disc list-inside text-gray-700">
                   {playerData.pareja_drive && (
                     <li className="mb-1">
-                    <b>Pareja (posición tu como Drive):</b>  {playerData.pareja_drive.drive?.nombre}  con {playerData.pareja_drive.revez?.nombre}
+                      <b>Pareja (posición tu como Drive):</b> {playerData.pareja_drive.drive?.nombre} con {playerData.pareja_drive.revez?.nombre}
                     </li>
                   )}
                   {playerData.pareja_revez && (
                     <li className="mb-1">
-                    <b>Pareja (posición de Revés):</b>   {playerData.pareja_revez.drive?.nombre} {playerData.pareja_revez.drive?.apellido} con {playerData.pareja_revez.revez?.nombre}
+                      <b>Pareja (posición de Revés):</b> {playerData.pareja_revez.drive?.nombre} {playerData.pareja_revez.drive?.apellido} con {playerData.pareja_revez.revez?.nombre}
                     </li>
                   )}
                 </ul>
