@@ -26,7 +26,8 @@ const Register = ({ API_BASE }) => {
     }
 
     try {
-      const response = await fetch(`${API_BASE}api/auth/local/register`, {
+      // Step 1: Register the user with only username, email, and password
+      const registerResponse = await fetch(`${API_BASE}api/auth/local/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -35,18 +36,19 @@ const Register = ({ API_BASE }) => {
           username,
           email,
           password,
-          // Incluir el estado de acceptNotifications en el body
-          notifications_opt_in: acceptNotifications,
+          // Removed notifications_opt_in from here to avoid 400 Bad Request
         }),
       });
 
-      const data = await response.json();
+      const registerData = await registerResponse.json();
 
-      if (response.ok) {
-        setSuccess('¡Registro exitoso!');
+      if (registerResponse.ok) {
+        setSuccess('¡Registro exitoso! Por favor, verifica tu correo para confirmar tu cuenta.');
         navigate('/login', { state: { registeredEmail: email, showConfirmationModal: true } });
       } else {
-        setError(data.error?.message || 'Error en el registro.');
+        // Log the full error object for more details if possible
+        setError(registerData.error?.message || 'Error en el registro.');
+        console.error('Registration error:', registerData); // Log the full error object for debugging
       }
     } catch (err) {
       setError('Error de red. Inténtalo de nuevo más tarde.');
