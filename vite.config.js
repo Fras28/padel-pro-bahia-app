@@ -1,3 +1,4 @@
+// vite.config.js
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa' // Importa VitePWA
@@ -12,13 +13,15 @@ export default defineConfig({
       workbox: {
         // Esto precachea los archivos estáticos de tu aplicación.
         // Asegúrate de incluir todos los tipos de archivos relevantes.
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}']
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        // Aumenta el límite de tamaño para archivos precacheados a 5 MB (puedes ajustar este valor)
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024 
       },
       manifest: {
         // Configuración del manifiesto de la aplicación
         name: 'Padel Pro Ranking', // Nombre completo de tu aplicación
-        short_name: 'PadelPro Ranking',    // Nombre corto para la pantalla de inicio
-        description: 'Segui los torneos, tus estadisticas y mucho mas con nosotros', // Color de la barra de título/tema
+        short_name: 'PadelPro Ranking',     // Nombre corto para la pantalla de inicio
+        description: 'Segui los torneos, tus estadisticas y mucho mas con nosotros', // Descripción de la PWA
         background_color: '#75B9E4', // Color de fondo al cargar
         display: 'standalone',   // Cómo se muestra (fullscreen, standalone, minimal-ui, browser)
         scope: '/',              // Alcance de la PWA
@@ -45,4 +48,6 @@ export default defineConfig({
       }
     })
   ],
-})
+  // ¡IMPORTANTE! Añade esta línea para que Vite maneje los archivos .glb y .gltf como assets
+  assetsInclude: ['**/*.glb', '**/*.gltf'], 
+});
