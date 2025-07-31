@@ -72,6 +72,8 @@ const Profile = ({ API_BASE, user, setUser }) => {
   const [playerData, setPlayerData] = useState(user?.jugador || null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isEditingPlayer, setIsEditingPlayer] = useState(false);
+  const [editablePlayer, setEditablePlayer] = useState({ nombre: '', apellido: '', telefono: '', fechaNacimiento: '', sexo: '' }); // All fields editable
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -121,6 +123,16 @@ const Profile = ({ API_BASE, user, setUser }) => {
         if (userResponse.ok) {
           setUserData(data);
           setPlayerData(data.jugador || null);
+          if (data.jugador) {
+            setEditablePlayer({
+              nombre: data.jugador.nombre || '',
+              apellido: data.jugador.apellido || '',
+              telefono: data.jugador.telefono || '',
+              fechaNacimiento: data.jugador.fechaNacimiento ? new Date(data.jugador.fechaNacimiento).toISOString().split('T')[0] : '',
+              sexo: data.jugador.sexo || '',
+            });
+            console.log("Valor de sexo recibido del backend:", data.jugador.sexo); // ¡Añade esta línea para depurar!
+          }
           console.log("Profile.jsx: User data loaded successfully:", data);
         } else {
           console.error("Profile.jsx: Error response from API:", userResponse.status, data.error?.message);
@@ -140,6 +152,65 @@ const Profile = ({ API_BASE, user, setUser }) => {
 
     fetchProfileData();
   }, [API_BASE, navigate, setUser]);
+
+  const handleEditPlayerToggle = () => {
+    setIsEditingPlayer(!isEditingPlayer);
+    // Reset editable player data if canceling edit
+    if (isEditingPlayer && playerData) {
+      setEditablePlayer({
+        nombre: playerData.nombre || '',
+        apellido: playerData.apellido || '',
+        telefono: playerData.telefono || '',
+        fechaNacimiento: playerData.fechaNacimiento ? new Date(playerData.fechaNacimiento).toISOString().split('T')[0] : '',
+        sexo: playerData.sexo || '',
+      });
+    }
+  };
+
+  const handlePlayerInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditablePlayer(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSavePlayer = async () => {
+    setLoading(true);
+    setError('');
+    const jwt = localStorage.getItem('jwt');
+
+    if (!jwt || !playerData?.id) {
+      setError('No se puede actualizar el perfil. Falta token o ID de jugador.');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}api/jugadors/${playerData.documentId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwt}`,
+        },
+        body: JSON.stringify({ data: editablePlayer }), // Send all editable fields
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Update local state with new data
+        setPlayerData(prev => ({ ...prev, ...data.data.attributes }));
+        setIsEditingPlayer(false);
+        console.log("Player data updated successfully:", data);
+      } else {
+        console.error("Error updating player data:", response.status, data.error?.message);
+        setError(data.error?.message || 'Error al actualizar los datos del jugador.');
+      }
+    } catch (err) {
+      setError('Error de red al actualizar el perfil del jugador.');
+      console.error('Error saving player profile:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading && !userData) {
     return (
@@ -171,7 +242,8 @@ const Profile = ({ API_BASE, user, setUser }) => {
     ? clubStyles[playerData.club.id]
     : clubStyles.default;
 
-  console.log("Profile.jsx: Calculated style:", style); // Mantener este log para depuración
+  console.log("Profile.jsx: Calculated style:", style);
+
 
 
   // Access stats safely, providing an empty object as fallback if null
@@ -192,6 +264,7 @@ const Profile = ({ API_BASE, user, setUser }) => {
   } = stats;
 
   const winRate = partidosJugados > 0 ? ((partidosGanados / partidosJugados) * 100).toFixed(2) : '0.00';
+
 
 
   return (
@@ -224,37 +297,125 @@ const Profile = ({ API_BASE, user, setUser }) => {
         {playerData ? (
           <>
             <div className="mb-6 border-b pb-4">
-              <h3 className="text-2xl font-semibold text-gray-800 mb-4">Datos del Jugador</h3>
+              <h3 className="text-2xl font-semibold text-gray-800 mb-4">Datos del Jugador
+                <button
+                  onClick={handleEditPlayerToggle}
+                  className="ml-4 py-1 px-3 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600"
+                >
+                  {isEditingPlayer ? 'Cancelar' : 'Editar'}
+                </button>
+                {isEditingPlayer && (
+                  <button
+                    onClick={handleSavePlayer}
+                    className="ml-2 py-1 px-3 bg-green-500 text-white rounded-md text-sm hover:bg-green-600"
+                  >
+                    Guardar
+                  </button>
+                )}
+              </h3>
+
               {/* Player Initials Circle - Condicionalmente renderizado si 'style' es válido */}
               {style && (
                 <div className={`w-24 h-24 rounded-full flex items-center justify-center text-4xl font-bold mb-4 ${style.initialBg} ${style.titleColor} z-10 border-2 ${style.cardBorder} mx-auto`}>
                   {getInitials(playerData?.nombre, playerData?.apellido)}
                 </div>
               )}
-              <p className="text-gray-700 mb-2">
-                <span className="font-medium">Nombre:</span> {playerData.nombre}
-              </p>
-              <p className="text-gray-700 mb-2">
-                <span className="font-medium">Teléfono:</span> {playerData.telefono || 'N/A'}
-              </p>
-              <p className="text-gray-700 mb-2">
-                <span className="font-medium">Fecha de Nacimiento:</span> {playerData.fechaNacimiento ? new Date(playerData.fechaNacimiento).toLocaleDateString() : 'N/A'}
-              </p>
-              <p className="text-gray-700 mb-2">
-                <span className="font-medium">Sexo:</span> {playerData.sexo || 'N/A'}
-              </p>
-              <p className="text-gray-700 mb-2">
-                <span className="font-medium">Ranking General:</span> {playerData.rankingGeneral !== undefined ? playerData.rankingGeneral : 'N/A'}
-              </p>
-              {playerData.club && (
-                <p className="text-gray-700 mb-2">
-                  <span className="font-medium">Club:</span> {playerData.club.nombre}
-                </p>
-              )}
-              {playerData.categoria && (
-                <p className="text-gray-700 mb-2">
-                  <span className="font-medium">Categoría:</span> {playerData.categoria.nombre}
-                </p>
+
+              {isEditingPlayer ? (
+                <div className="grid grid-cols-1 gap-4">
+                  <div>
+                    <label htmlFor="nombre" className="block text-sm font-medium text-gray-700">Nombre y Apellido:</label>
+                    <input
+                      type="text"
+                      id="nombre"
+                      name="nombre"
+                      value={editablePlayer.nombre}
+                      onChange={handlePlayerInputChange}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    />
+                  </div>
+                  {/* Apellido field is editable but not displayed below it in view mode */}
+                  {/* <div>
+                    <label htmlFor="apellido" className="block text-sm font-medium text-gray-700">Apellido:</label>
+                    <input
+                      type="text"
+                      id="apellido"
+                      name="apellido"
+                      value={editablePlayer.apellido}
+                      onChange={handlePlayerInputChange}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    />
+                  </div> */}
+                  <div>
+                    <label htmlFor="telefono" className="block text-sm font-medium text-gray-700">Teléfono:</label>
+                    <input
+                      type="text"
+                      id="telefono"
+                      name="telefono"
+                      value={editablePlayer.telefono}
+                      onChange={handlePlayerInputChange}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="fechaNacimiento" className="block text-sm font-medium text-gray-700">Fecha de Nacimiento:</label>
+                    <input
+                      type="date"
+                      id="fechaNacimiento"
+                      name="fechaNacimiento"
+                      value={editablePlayer.fechaNacimiento}
+                      onChange={handlePlayerInputChange}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="sexo" className="block text-sm font-medium text-gray-700">Sexo:</label>
+                    <select
+                      id="sexo"
+                      name="sexo"
+                      value={editablePlayer.sexo}
+                      onChange={handlePlayerInputChange}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    >
+                      <option value="">Seleccionar</option>
+                      <option value="Masculina">Masculino</option>
+                      <option value="Femenino">Femenino</option>
+                      <option value="Otro">Otro</option>
+                    </select>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <p className="text-gray-700 mb-2">
+                    <span className="font-medium">Nombre:</span> {playerData.nombre}
+                  </p>
+                  {/* Apellido is explicitly not displayed here */}
+                  <p className="text-gray-700 mb-2">
+                    <span className="font-medium">Teléfono:</span> {playerData.telefono || 'N/A'}
+                  </p>
+                  <p className="text-gray-700 mb-2">
+                    <span className="font-medium">Fecha de Nacimiento:</span> {playerData.fechaNacimiento ? new Date(playerData.fechaNacimiento).toLocaleDateString() : 'N/A'}
+                  </p>
+                  <p className="text-gray-700 mb-2">
+                    <span className="font-medium">Sexo:</span> {playerData.sexo || 'N/A'}
+                  </p>
+                  <p className="text-gray-700 mb-2">
+                    <span className="font-medium">Ranking General:</span> {playerData.rankingGeneral !== undefined ? playerData.rankingGeneral : 'N/A'}
+                  </p>
+                  {playerData?.club && (
+                  <div className='flex  items-center justify-center gap-2'>
+                    <p className="text-gray-700 mb-2 ">
+                      <span className="font-medium">Club:</span> 
+                    </p>
+                    <img className='w-8' src={playerData?.club?.logo?.url} alt={playerData.club.nombre}/>
+                  </div>
+                  )}
+                  {playerData.categoria && (
+                    <p className="text-gray-700 mb-2">
+                      <span className="font-medium">Categoría:</span> {playerData.categoria.nombre}
+                    </p>
+                  )}
+                </>
               )}
             </div>
 
@@ -314,24 +475,24 @@ const Profile = ({ API_BASE, user, setUser }) => {
 
             {/* Información de Parejas */}
             <div className="mb-6 pb-4">
-  <h3 className="text-2xl font-semibold text-gray-800 mb-4">Parejas</h3>
-  {playerData.pareja_drive || playerData.pareja_revez ? (
-    <ul className="list-disc list-inside text-gray-700">
-      {playerData.pareja_drive && (
-        <li className="mb-1">
-         <b>Pareja (posición tu como Drive):</b>  {playerData.pareja_drive.drive?.nombre}  con {playerData.pareja_drive.revez?.nombre} 
-        </li>
-      )}
-      {playerData.pareja_revez && (
-        <li className="mb-1">
-        <b>Pareja (posición de Revés):</b>   {playerData.pareja_revez.drive?.nombre} {playerData.pareja_revez.drive?.apellido} con {playerData.pareja_revez.revez?.nombre} 
-        </li>
-      )}
-    </ul>
-  ) : (
-    <p className="text-gray-600">No tienes parejas registradas.</p>
-  )}
-</div>
+              <h3 className="text-2xl font-semibold text-gray-800 mb-4">Parejas</h3>
+              {playerData.pareja_drive || playerData.pareja_revez ? (
+                <ul className="list-disc list-inside text-gray-700">
+                  {playerData.pareja_drive && (
+                    <li className="mb-1">
+                    <b>Pareja (posición tu como Drive):</b>  {playerData.pareja_drive.drive?.nombre}  con {playerData.pareja_drive.revez?.nombre}
+                    </li>
+                  )}
+                  {playerData.pareja_revez && (
+                    <li className="mb-1">
+                    <b>Pareja (posición de Revés):</b>   {playerData.pareja_revez.drive?.nombre} {playerData.pareja_revez.drive?.apellido} con {playerData.pareja_revez.revez?.nombre}
+                    </li>
+                  )}
+                </ul>
+              ) : (
+                <p className="text-gray-600">No tienes parejas registradas.</p>
+              )}
+            </div>
           </>
         ) : (
           <div className="mb-6 text-center text-gray-600">
@@ -340,21 +501,21 @@ const Profile = ({ API_BASE, user, setUser }) => {
         )}
         <div className='flex gap-2 '>
 
-                <button
+          <button
             onClick={() => navigate("/create-pair")} // La ruta a tu componente CreatePair
             className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-300 ease-in-out transform hover:-translate-y-1 flex-nowrap"
           >
-     
-           Crear Parejas
+
+            Crear Parejas
           </button>
 
-        {/* Botón de Logout */}
-        <button
-          onClick={handleLogout}
-          className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-300 ease-in-out transform hover:-translate-y-1"
-        >
-          Cerrar Sesión
-        </button>
+          {/* Botón de Logout */}
+          <button
+            onClick={handleLogout}
+            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-300 ease-in-out transform hover:-translate-y-1"
+          >
+            Cerrar Sesión
+          </button>
         </div>
       </div>
     </div>
