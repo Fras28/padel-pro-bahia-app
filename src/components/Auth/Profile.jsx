@@ -456,7 +456,7 @@ const Profile = ({ API_BASE, user, setUser }) => {
               ) : (
                 <>
                   <p className="text-gray-700 mb-2">
-                    <span className="font-medium">Nombre:</span> {playerData.nombre} {playerData.apellido}
+                    <span className="font-medium">Nombre:</span> {playerData.nombre}
                   </p>
                   <p className="text-gray-700 mb-2">
                     <span className="font-medium">Teléfono:</span> {playerData.telefono || 'N/A'}
