@@ -181,7 +181,7 @@ function TournamentMatches({ API_BASE }) { // Now only expects API_BASE as a pro
                 {registeredPairs.length > 0 && (
                     <div className="border-t pt-3 mt-3">
                         <p className="font-semibold text-lg mb-2">
-                            Parejas Inscritas ({registeredPairs.length}):
+                            Parejas Inscriptas ({registeredPairs.length}):
                         </p>
                         <ul className="list-disc list-inside text-sm max-h-40 overflow-y-auto bg-gray-50 p-3 rounded-md">
                             {registeredPairs.map((pair) => (
@@ -191,10 +191,10 @@ function TournamentMatches({ API_BASE }) { // Now only expects API_BASE as a pro
                     </div>
                 )}
                 {registeredPairs.length === 0 && tournament.estado === "Abierto" && (
-                    <p className="mt-2 text-center text-gray-600">No hay parejas inscritas aún para este torneo.</p>
+                    <p className="mt-2 text-center text-gray-600">No hay parejas inscriptas aún para este torneo.</p>
                 )}
                 {registeredPairs.length === 0 && tournament.estado !== "Abierto" && (
-                    <p className="mt-2 text-center text-gray-600">No hay parejas inscritas para este torneo.</p>
+                    <p className="mt-2 text-center text-gray-600">No hay parejas inscriptas para este torneo.</p>
                 )}
             </div>
 
