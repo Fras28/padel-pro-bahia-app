@@ -382,7 +382,7 @@ const Profile = ({ API_BASE, user, setUser }) => {
                       name="nombre"
                       value={editablePlayer.nombre}
                       onChange={handlePlayerInputChange}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      className="mt-1 block w-full text-black  px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
                   </div>
                   
@@ -406,7 +406,7 @@ const Profile = ({ API_BASE, user, setUser }) => {
                       name="telefono"
                       value={editablePlayer.telefono}
                       onChange={handlePlayerInputChange}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      className="mt-1 text-black block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
                   </div>
                   <div>
@@ -417,7 +417,7 @@ const Profile = ({ API_BASE, user, setUser }) => {
                       name="fechaNacimiento"
                       value={editablePlayer.fechaNacimiento}
                       onChange={handlePlayerInputChange}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      className="mt-1 block w-full text-black px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
                   </div>
                   <div>
@@ -427,7 +427,7 @@ const Profile = ({ API_BASE, user, setUser }) => {
                       name="sexo"
                       value={editablePlayer.sexo}
                       onChange={handlePlayerInputChange}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      className="mt-1 block w-full px-3 text-black py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     >
                       <option value="">Seleccionar</option>
                       <option value="Masculina">Masculino</option>
