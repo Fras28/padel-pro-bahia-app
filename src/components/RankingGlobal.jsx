@@ -1,5 +1,5 @@
 // src/components/RankingGlobal.jsx
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import PlayerDetailModal from "./PlayerDetailModal";
 import Dternera from "../assets/DeTernera.png";
 import DonAlf from "../assets/donalf.jpg";
@@ -10,65 +10,33 @@ import ADN from "../assets/ADN.png";
 import SponsorBanner from "./SponsorBanner";
 import CountUp from "react-countup";
 import { useInView } from "react-intersection-observer";
-import SkeletonRankingTable from "./SkeletonRankingTable"; // Importamos el componente skeleton
+import SkeletonRankingTable from "./SkeletonRankingTable";
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchCategorizedRanking } from '../features/ranking/rankingSlice';
 
 function RankingGlobal() {
-  const [categorizedRanking, setCategorizedRanking] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const dispatch = useDispatch();
+  
+  // Usamos useSelector para obtener el estado del store
+  const categorizedRanking = useSelector((state) => state.ranking.data);
+  const loading = useSelector((state) => state.ranking.loading);
+  const error = useSelector((state) => state.ranking.error);
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
 
-  const API_BASE = import.meta.env.VITE_API_BASE;
-  // Nueva URL para obtener las categorías y sus jugadores ya populados
-  const CATEGORIZED_PLAYERS_API_URL = `${API_BASE}api/categorias?populate=jugadors.club.logo&populate=jugadors.pareja_drive.partidos_ganados&populate=jugadors.pareja_drive.partidos_perdidos&populate=jugadors.pareja_revez.partidos_ganados&populate=jugadors.pareja_revez.partidos_perdidos&populate=jugadors.estadisticas&sort=nombre:asc&pagination[pageSize]=1000`;
-  
   const sponsorImages = [
     { src: Dternera, url: "https://www.deternera.com.ar/", blurred: false },
     { src: DonAlf, url: "https://www.instagram.com/donalfredocentro/", blurred: false },
     { src: Morton, url: "https://www.morton.com.ar/", blurred: false },
     { src: Rucca, url: "https://www.ruccabahia.com/", blurred: false },
-    // { src: ENA, url: "https://www.enasport.com/", blurred: true },
-    // { src: ADN, url: "https://www.adn.com.ar/", blurred: true },
   ];
 
   useEffect(() => {
-    const fetchCategorizedRanking = async () => {
-      try {
-        const response = await fetch(CATEGORIZED_PLAYERS_API_URL);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        console.log("Categorized data fetched:", data.data);
-
-        const tempCategorizedRanking = {};
-
-        data.data.forEach((category) => {
-          const categoryName = category?.nombre;
-
-          // Ordenamos los jugadores de esta categoría por rankingGeneral
-          const sortedPlayers = (category.jugadors || []).sort(
-            (a, b) => (b.rankingGeneral || 0) - (a.rankingGeneral || 0)
-          );
-
-          tempCategorizedRanking[category.id] = {
-            name: categoryName,
-            players: sortedPlayers,
-          };
-        });
-
-        setCategorizedRanking(tempCategorizedRanking);
-      } catch (err) {
-        setError("Error al cargar los datos del ranking. Inténtalo de nuevo más tarde.");
-        console.error("Error fetching data:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCategorizedRanking();
-  }, []);
+    if (loading === 'idle') {
+      dispatch(fetchCategorizedRanking());
+    }
+  }, [loading, dispatch]);
 
   const openPlayerModal = (playerData) => {
     setSelectedPlayer(playerData);
@@ -101,7 +69,7 @@ function RankingGlobal() {
       <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6 text-center">
         Ranking Global por Categoría
       </h2>
-      {loading ? (
+      {loading === 'pending' ? (
         <SkeletonRankingTable />
       ) : error ? (
         <div className="text-center text-sm text-red-500">{error}</div>
@@ -214,7 +182,7 @@ function RankingGlobal() {
                               </div>
                             </td>
                             <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700 text-center">
-                              {playerName} 
+                              {playerName} {playerLastName}
                             </td>
                             <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700 text-center">
                               <AnimatedPoints points={globalPoints} />
@@ -328,7 +296,7 @@ function RankingGlobal() {
                                   </div>
                                 </td>
                                 <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700">
-                                  {playerName}
+                                  {playerName} {playerLastName}
                                 </td>
                                 <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700">
                                   <AnimatedPoints points={globalPoints} />
