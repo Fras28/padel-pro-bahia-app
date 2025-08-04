@@ -2,7 +2,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 const API_BASE = import.meta.env.VITE_API_BASE;
-const CATEGORIZED_PLAYERS_API_URL = `${API_BASE}api/categorias?populate=jugadors.club.logo&populate=jugadors.pareja_drive.partidos_ganados&populate=jugadors.pareja_drive.partidos_perdidos&populate=jugadors.pareja_revez.partidos_ganados&populate=jugadors.pareja_revez.partidos_perdidos&sort=nombre:asc&pagination[pageSize]=1000`;
+const CATEGORIZED_PLAYERS_API_URL = `${API_BASE}api/categorias?populate=jugadors.club.logo&populate=jugadors.pareja_drive.partidos_ganados&populate=jugadors.pareja_drive.partidos_perdidos&populate=jugadors.estadisticas&populate=jugadors.pareja_revez.partidos_ganados&populate=jugadors.pareja_revez.partidos_perdidos&sort=nombre:asc&pagination[pageSize]=1000`;
 
 // El thunk se encargará de la petición asíncrona y del pre-procesamiento de los datos.
 export const fetchCategorizedRanking = createAsyncThunk(

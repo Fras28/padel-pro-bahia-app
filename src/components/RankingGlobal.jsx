@@ -112,8 +112,21 @@ function RankingGlobal() {
                     <tbody className="bg-white divide-y divide-gray-200">
                       {/* Display top 10 players */}
                       {categoryData.players.slice(0, 10).map((player, index) => {
-                        const playerName = player?.nombre || "Desconocido";
-                        const playerLastName = player?.apellido || "";
+                             const playerName = player
+                             ? (() => {
+                                 const fullName = player.nombre || "";
+                                 const parts = fullName.split(" ");
+                                 if (parts.length > 0) {
+                                   const nombreInicial = parts[0]
+                                     ? `${parts[0][0]}.`
+                                     : "";
+                                   const apellido = parts.slice(1).join(" ");
+                                   return `${nombreInicial} ${apellido}`.trim();
+                                 }
+                                 return "Desconocido";
+                               })()
+                             : "Desconocido";
+   
                         const clubName = player?.club?.nombre || "N/A";
                         const clubLogoUrl = player?.club?.logo?.url || "https://placehold.co/32x32/cccccc/333333?text=Club";
                         const globalPoints = player?.rankingGeneral || 0;
@@ -226,7 +239,21 @@ function RankingGlobal() {
                         {categoryData.players
                           .slice(10, 16)
                           .map((player, index) => {
-                            const playerName = player?.nombre || "Desconocido";
+                            const playerName = player
+                            ? (() => {
+                                const fullName = player.nombre || "";
+                                const parts = fullName.split(" ");
+                                if (parts.length > 0) {
+                                  const nombreInicial = parts[0]
+                                    ? `${parts[0][0]}.`
+                                    : "";
+                                  const apellido = parts.slice(1).join(" ");
+                                  return `${nombreInicial} ${apellido}`.trim();
+                                }
+                                return "Desconocido";
+                              })()
+                            : "Desconocido";
+  
                             const playerLastName = player?.apellido || "";
                             const clubName = player?.club?.nombre || "N/A";
                             const clubLogoUrl = player?.club?.logo?.url || "https://placehold.co/32x32/cccccc/333333?text=Club";
