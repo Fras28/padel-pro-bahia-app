@@ -182,7 +182,7 @@ function RankingGlobal() {
                               </div>
                             </td>
                             <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700 text-center">
-                              {playerName} {playerLastName}
+                              {playerName}
                             </td>
                             <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700 text-center">
                               <AnimatedPoints points={globalPoints} />
@@ -296,7 +296,7 @@ function RankingGlobal() {
                                   </div>
                                 </td>
                                 <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700">
-                                  {playerName} {playerLastName}
+                                  {playerName}
                                 </td>
                                 <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700">
                                   <AnimatedPoints points={globalPoints} />
