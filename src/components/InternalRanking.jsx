@@ -1,4 +1,4 @@
-// src/components/InternalRanking.jsx (already good)
+// src/components/InternalRanking.jsx
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import CountUp from "react-countup";
@@ -28,7 +28,7 @@ function InternalRanking() {
     const [categoryName, setCategoryName] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [clubOwnerLogoUrl, setClubOwnerLogoUrl] = useState(''); // Nuevo estado para el logo del club dueño del ranking
+    const [clubOwnerLogoUrl, setClubOwnerLogoUrl] = useState('');
 
     const [selectedPlayer, setSelectedPlayer] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -45,37 +45,58 @@ function InternalRanking() {
         setSelectedPlayer(null);
     };
 
+    const getInsignia = (player) => {
+        const historial = player?.historialRanking;
+
+        if (!historial || historial.length === 0) return null;
+
+        const historialOrdenado = [...historial].sort(
+            (a, b) => new Date(b.fecha) - new Date(a.fecha)
+        );
+        const ultimoResultado = historialOrdenado[0];
+        const { ronda, esGanador } = ultimoResultado;
+
+        if (ronda === "Final" && esGanador) {
+            return <span className="text-yellow-500 ml-1 text-base leading-none">👑</span>;
+        }
+        if ((ronda === "Final" && !esGanador) || ronda === "Semifinales") {
+            return <span className="text-green-500 ml-1 text-base leading-none">▲</span>;
+        }
+        if (ronda === "Cuartos" || ronda === "Octavos") {
+            return <span className="text-yellow-400 ml-1 text-base leading-none">◆</span>;
+        }
+        if (ronda === "Fase de Grupos") {
+            return <span className="text-red-500 ml-1 text-base leading-none">▼</span>;
+        }
+        return null;
+    };
+
     useEffect(() => {
         const fetchRanking = async () => {
             setLoading(true);
             setError(null);
             try {
-                // Fetch the specific ranking-categoria for this club and category
+                // Se usa la nueva sintaxis de populate para evitar errores
+                const populateQuery = `populate[club][populate][0]=logo&populate[categoria][populate][0]=nombre&populate[entradasRanking][populate][jugador][populate][0]=estadisticas&populate[entradasRanking][populate][jugador][populate][1]=club.logo&populate[entradasRanking][populate][jugador][populate][2]=historialRanking`;
+                
                 const response = await fetch(
-                    `${API_BASE}api/ranking-categorias?populate=club.logo&populate=categoria&populate=entradasRanking.jugador.estadisticas&populate=entradasRanking.jugador.club.logo&filters[club][documentId][$eq]=${clubId}&filters[categoria][documentId][$eq]=${categoryId}`
+                       `${API_BASE}api/ranking-categorias?populate=club.logo&populate=categoria&populate=entradasRanking.jugador.estadisticas&populate=entradasRanking.jugador.club.logo&filters[club][documentId][$eq]=${clubId}&filters[categoria][documentId][$eq]=${categoryId}`
                 );
 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
-                console.log(data?.data[0].club.logo.url, "data para el logo"); //
-
 
                 if (data.data && data.data.length > 0) {
-                    const rankingData = data.data[0]; // Assuming there's only one ranking per club/category pair
+                    const rankingData = data.data[0];
                     setCategoryName(rankingData.categoria?.nombre || 'Categoría Desconocida');
 
-                    // Guarda la URL del logo del club dueño del ranking
                     setClubOwnerLogoUrl(rankingData.club?.logo?.url || `https://placehold.co/32x32/cccccc/333333?text=Club`);
 
-                    // Sort the entries based on points (descending)
                     const sortedEntries = rankingData.entradasRanking.sort((a, b) => b.puntos - a.puntos);
 
-                    // Format player names for display and assign rank
                     const formattedEntries = sortedEntries.map(entry => {
-                        console.log(entry, "entry"); //
-
                         let formattedName = "Desconocido";
                         if (entry.jugador && entry.jugador.nombre) {
                             const fullName = entry.jugador.nombre;
@@ -94,7 +115,7 @@ function InternalRanking() {
                     setRankingEntries(formattedEntries);
                 } else {
                     setRankingEntries([]);
-                    setCategoryName('Categoría Desconocida'); // No ranking data found for this specific club/category
+                    setCategoryName('Categoría Desconocida');
                 }
             } catch (e) {
                 console.error("Error fetching internal ranking:", e);
@@ -150,35 +171,40 @@ function InternalRanking() {
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {rankingEntries?.map((entry, playerIndex) => (
-                                <tr
-                                    key={entry?.jugador?.id}
-                                    onClick={() => handlePlayerClick(entry?.jugador)}
-                                    className="cursor-pointer hover:bg-gray-100"
-                                >
-                                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                        {playerIndex + 1}
-                                    </td>
-                                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
-                                        <div className="flex items-center">
-                                            {/* Usa el logo del club dueño del ranking */}
-                                            <img
-                                                className="h-8 w-8 rounded-full object-cover mr-2"
-                                                src={clubOwnerLogoUrl}
-                                                alt={entry.club?.nombre || "Club Logo"}
-                                                onError={(e) => {
-                                                    e.target.onerror = null;
-                                                    e.target.src = `https://placehold.co/32x32/cccccc/333333?text=Club`;
-                                                }}
-                                            />
-                                            <p className='text-black'>{entry.nombreJugadorTabla}</p>
-                                        </div>
-                                    </td>
-                                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700">
-                                        <AnimatedPoints points={entry.puntos} />
-                                    </td>
-                                </tr>
-                            ))}
+                            {rankingEntries?.map((entry, playerIndex) => {
+                                const insignia = getInsignia(entry?.jugador);
+                                return (
+                                    <tr
+                                        key={entry?.jugador?.id}
+                                        onClick={() => handlePlayerClick(entry?.jugador)}
+                                        className="cursor-pointer hover:bg-gray-100"
+                                    >
+                                        <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            <div className="flex items-center">
+                                                <span>{playerIndex + 1}</span>
+                                                {insignia}
+                                            </div>
+                                        </td>
+                                        <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
+                                            <div className="flex items-center">
+                                                <img
+                                                    className="h-8 w-8 rounded-full object-cover mr-2"
+                                                    src={clubOwnerLogoUrl}
+                                                    alt={entry.club?.nombre || "Club Logo"}
+                                                    onError={(e) => {
+                                                        e.target.onerror = null;
+                                                        e.target.src = `https://placehold.co/32x32/cccccc/333333?text=Club`;
+                                                    }}
+                                                />
+                                                <p className='text-black'>{entry.nombreJugadorTabla}</p>
+                                            </div>
+                                        </td>
+                                        <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700">
+                                            <AnimatedPoints points={entry.puntos} />
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>
