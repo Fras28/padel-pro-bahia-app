@@ -16,12 +16,12 @@ import { fetchCategorizedRanking } from '../features/ranking/rankingSlice';
 
 function RankingGlobal() {
   const dispatch = useDispatch();
-  
+
   // Usamos useSelector para obtener el estado del store
   const categorizedRanking = useSelector((state) => state.ranking.data);
   const loading = useSelector((state) => state.ranking.loading);
   const error = useSelector((state) => state.ranking.error);
-  
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
 
@@ -62,6 +62,36 @@ function RankingGlobal() {
         )}
       </span>
     );
+  };
+
+  // Función para determinar la insignia según la lógica definida
+  const getInsignia = (player) => {
+    const historial = player?.historialRanking;
+
+    // Si no hay historial o está vacío, no se muestra ninguna insignia.
+    if (!historial || historial.length === 0) return null;
+
+    // Se ordena por fecha de forma descendente para encontrar el último registro.
+    const historialOrdenado = [...historial].sort(
+      (a, b) => new Date(b.fecha) - new Date(a.fecha)
+    );
+    const ultimoResultado = historialOrdenado[0];
+    const { ronda, esGanador } = ultimoResultado;
+
+    // Lógica para asignar la insignia según el último resultado
+    if (ronda === "Final" && esGanador) {
+      return <span className="text-yellow-500 ml-1 text-base leading-none">👑</span>;
+    }
+    if ((ronda === "Final" && !esGanador) || ronda === "Semifinales") {
+      return <span className="text-green-500 ml-1 text-base leading-none">▲</span>;
+    }
+    if (ronda === "Cuartos" || ronda === "Octavos") {
+      return <span className="text-yellow-400 ml-1 text-base leading-none">◆</span>;
+    }
+    if (ronda === "Fase de Grupos") {
+      return <span className="text-red-500 ml-1 text-base leading-none">▼</span>;
+    }
+    return null;
   };
 
   return (
@@ -112,53 +142,26 @@ function RankingGlobal() {
                     <tbody className="bg-white divide-y divide-gray-200">
                       {/* Display top 10 players */}
                       {categoryData.players.slice(0, 10).map((player, index) => {
-                             const playerName = player
-                             ? (() => {
-                                 const fullName = player.nombre || "";
-                                 const parts = fullName.split(" ");
-                                 if (parts.length > 0) {
-                                   const nombreInicial = parts[0]
-                                     ? `${parts[0][0]}.`
-                                     : "";
-                                   const apellido = parts.slice(1).join(" ");
-                                   return `${nombreInicial} ${apellido}`.trim();
-                                 }
-                                 return "Desconocido";
-                               })()
-                             : "Desconocido";
-   
+                        const playerName = player
+                          ? (() => {
+                            const fullName = player.nombre || "";
+                            const parts = fullName.split(" ");
+                            if (parts.length > 0) {
+                              const nombreInicial = parts[0]
+                                ? `${parts[0][0]}.`
+                                : "";
+                              const apellido = parts.slice(1).join(" ");
+                              return `${nombreInicial} ${apellido}`.trim();
+                            }
+                            return "Desconocido";
+                          })()
+                          : "Desconocido";
+
                         const clubName = player?.club?.nombre || "N/A";
                         const clubLogoUrl = player?.club?.logo?.url || "https://placehold.co/32x32/cccccc/333333?text=Club";
                         const globalPoints = player?.rankingGeneral || 0;
 
-                        let allPlayerMatches = [];
-                        if (player.pareja_revez && player.pareja_revez.partidos_ganados) {
-                          allPlayerMatches.push(...player.pareja_revez.partidos_ganados.map(match => ({ ...match, won: true })));
-                        }
-                        if (player.pareja_revez && player.pareja_revez.partidos_perdidos) {
-                          allPlayerMatches.push(...player.pareja_revez.partidos_perdidos.map(match => ({ ...match, won: false })));
-                        }
-                        if (player.pareja_drive) {
-                            if (player.pareja_drive.partidos_ganados) {
-                                player.pareja_drive.partidos_ganados.forEach((match) => allPlayerMatches.push({ ...match, won: true }));
-                            }
-                            if (player.pareja_drive.partidos_perdidos) {
-                                player.pareja_drive.partidos_perdidos.forEach((match) => allPlayerMatches.push({ ...match, won: false }));
-                            }
-                        }
-                        
-                        allPlayerMatches.sort((a, b) => new Date(b.fechaPartido) - new Date(a.fechaPartido));
-                        let lastThreeWins = true;
-                        if (allPlayerMatches.length >= 3) {
-                          for (let i = 0; i < 3; i++) {
-                            if (!allPlayerMatches[i].won) {
-                              lastThreeWins = false;
-                              break;
-                            }
-                          }
-                        } else {
-                          lastThreeWins = false;
-                        }
+                        const insignia = getInsignia(player);
 
                         return (
                           <tr
@@ -169,15 +172,7 @@ function RankingGlobal() {
                             <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                               <div className="flex items-center justify-center">
                                 <span>{index + 1}</span>
-                                {lastThreeWins ? (
-                                  <span className="text-green-500 ml-1 text-base leading-none">
-                                    &#x25B2;
-                                  </span>
-                                ) : (
-                                  <span className="text-gray-400 ml-1 text-base leading-none">
-                                    &#x2022;
-                                  </span>
-                                )}
+                                {insignia}
                               </div>
                             </td>
                             <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700">
@@ -240,7 +235,7 @@ function RankingGlobal() {
                           .slice(10, 16)
                           .map((player, index) => {
                             const playerName = player
-                            ? (() => {
+                              ? (() => {
                                 const fullName = player.nombre || "";
                                 const parts = fullName.split(" ");
                                 if (parts.length > 0) {
@@ -252,41 +247,14 @@ function RankingGlobal() {
                                 }
                                 return "Desconocido";
                               })()
-                            : "Desconocido";
-  
+                              : "Desconocido";
+
                             const playerLastName = player?.apellido || "";
                             const clubName = player?.club?.nombre || "N/A";
                             const clubLogoUrl = player?.club?.logo?.url || "https://placehold.co/32x32/cccccc/333333?text=Club";
                             const globalPoints = player?.rankingGeneral || 0;
 
-                            let allPlayerMatches = [];
-                            if (player.pareja_revez && player.pareja_revez.partidos_ganados) {
-                                allPlayerMatches.push(...player.pareja_revez.partidos_ganados.map(match => ({ ...match, won: true })));
-                            }
-                            if (player.pareja_revez && player.pareja_revez.partidos_perdidos) {
-                                allPlayerMatches.push(...player.pareja_revez.partidos_perdidos.map(match => ({ ...match, won: false })));
-                            }
-                            if (player.pareja_drive) {
-                                if (player.pareja_drive.partidos_ganados) {
-                                    player.pareja_drive.partidos_ganados.forEach((match) => allPlayerMatches.push({ ...match, won: true }));
-                                }
-                                if (player.pareja_drive.partidos_perdidos) {
-                                    player.pareja_drive.partidos_perdidos.forEach((match) => allPlayerMatches.push({ ...match, won: false }));
-                                }
-                            }
-                            
-                            allPlayerMatches.sort((a, b) => new Date(b.fechaPartido) - new Date(a.fechaPartido));
-                            let lastThreeWins = true;
-                            if (allPlayerMatches.length >= 3) {
-                              for (let i = 0; i < 3; i++) {
-                                if (!allPlayerMatches[i].won) {
-                                  lastThreeWins = false;
-                                  break;
-                                }
-                              }
-                            } else {
-                              lastThreeWins = false;
-                            }
+                            const insignia = getInsignia(player);
 
                             return (
                               <tr
@@ -297,15 +265,7 @@ function RankingGlobal() {
                                 <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                   <div className="flex items-center justify-center">
                                     <span>{10 + index + 1}</span>
-                                    {lastThreeWins ? (
-                                      <span className="text-green-500 ml-1 text-base leading-none">
-                                        &#x25B2;
-                                      </span>
-                                    ) : (
-                                      <span className="text-gray-400 ml-1 text-base leading-none">
-                                        &#x2022;
-                                      </span>
-                                    )}
+                                    {insignia}
                                   </div>
                                 </td>
                                 <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700">

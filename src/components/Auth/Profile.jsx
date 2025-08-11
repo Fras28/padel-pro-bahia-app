@@ -313,11 +313,11 @@ const Profile = ({ API_BASE, user, setUser }) => {
       </div>
 
       {/* PlayerCardContent - Rendered as an overlay on top of the Lanyard card */}
-      {playerData && (
+      {/* {playerData && (
         <div className="absolute z-10" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)', pointerEvents: 'none' }}>
           <PlayerCardContent playerData={playerData} style={style} />
         </div>
-      )}
+      )} */}
 
       {/* Profile content (2D) */}
       <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md transform transition duration-500 z-20 relative">
