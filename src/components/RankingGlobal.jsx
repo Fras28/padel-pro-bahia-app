@@ -13,6 +13,7 @@ import { useInView } from "react-intersection-observer";
 import SkeletonRankingTable from "./SkeletonRankingTable";
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchCategorizedRanking } from '../features/ranking/rankingSlice';
+import PProLogo from '../assets/LogoPPR.png'
 
 function RankingGlobal() {
   const dispatch = useDispatch();
@@ -128,10 +129,7 @@ function RankingGlobal() {
                         <th className="px-3 py-2 sm:px-6 sm:py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Rank
                         </th>
-                        <th className="px-3 py-2 sm:px-6 sm:py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Club
-                        </th>
-                        <th className="px-3 py-2 sm:px-6 sm:py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider justify-center">
+                        <th className="px-3 py-2 sm:px-6 sm:py-3  text-xs font-medium text-gray-500 uppercase tracking-wider justify-center text-left">
                           Jugador
                         </th>
                         <th className="px-3 py-2 sm:px-6 sm:py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -157,10 +155,7 @@ function RankingGlobal() {
                           })()
                           : "Desconocido";
 
-                        const clubName = player?.club?.nombre || "N/A";
-                        const clubLogoUrl = player?.club?.logo?.url || "https://placehold.co/32x32/cccccc/333333?text=Club";
                         const globalPoints = player?.rankingGeneral || 0;
-
                         const insignia = getInsignia(player);
 
                         return (
@@ -169,27 +164,13 @@ function RankingGlobal() {
                             className="hover:bg-gray-50 cursor-pointer transition-colors duration-200"
                             onClick={() => openPlayerModal(player)}
                           >
-                            <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-center">
                               <div className="flex items-center justify-center">
                                 <span>{index + 1}</span>
                                 {insignia}
                               </div>
                             </td>
-                            <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700">
-                              <div className="flex items-center justify-center">
-                                <img
-                                  src={clubLogoUrl}
-                                  alt={`${clubName} Logo`}
-                                  className="w-6 h-6 sm:w-8 sm:h-8 object-contain rounded-full mr-1 sm:mr-2 shadow-sm bg-black"
-                                  onError={(e) => {
-                                    e.target.onerror = null;
-                                    e.target.src =
-                                      "https://placehold.co/32x32/cccccc/333333?text=Club";
-                                  }}
-                                />
-                              </div>
-                            </td>
-                            <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700 text-center">
+                            <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700 text-left">
                               {playerName}
                             </td>
                             <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700 text-center">
@@ -220,9 +201,6 @@ function RankingGlobal() {
                             Posición
                           </th>
                           <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Club
-                          </th>
-                          <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Jugador
                           </th>
                           <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -249,11 +227,7 @@ function RankingGlobal() {
                               })()
                               : "Desconocido";
 
-                            const playerLastName = player?.apellido || "";
-                            const clubName = player?.club?.nombre || "N/A";
-                            const clubLogoUrl = player?.club?.logo?.url || "https://placehold.co/32x32/cccccc/333333?text=Club";
                             const globalPoints = player?.rankingGeneral || 0;
-
                             const insignia = getInsignia(player);
 
                             return (
@@ -262,27 +236,13 @@ function RankingGlobal() {
                                 className="hover:bg-gray-50 cursor-pointer transition-colors duration-200"
                                 onClick={() => openPlayerModal(player)}
                               >
-                                <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-center">
                                   <div className="flex items-center justify-center">
                                     <span>{10 + index + 1}</span>
                                     {insignia}
                                   </div>
                                 </td>
-                                <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700">
-                                  <div className="flex items-center">
-                                    <img
-                                      src={clubLogoUrl}
-                                      alt={`${clubName} Logo`}
-                                      className="w-6 h-6 sm:w-8 sm:h-8 object-contain rounded-full mr-1 sm:mr-2 shadow-sm bg-black"
-                                      onError={(e) => {
-                                        e.target.onerror = null;
-                                        e.target.src =
-                                          "https://placehold.co/32x32/cccccc/333333?text=Club";
-                                      }}
-                                    />
-                                  </div>
-                                </td>
-                                <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700">
+                                <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700 text-left">
                                   {playerName}
                                 </td>
                                 <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700">
