@@ -1,8 +1,7 @@
 // src/components/Profile.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Lanyard from './Lanyard';
-import PlayerCardContent from './PlayerCardContent';
+
 
 const getInitials = (nombre, apellido) => {
   const firstInitial = nombre ? nombre.charAt(0) : '';
@@ -220,9 +219,9 @@ const Profile = ({ API_BASE, user, setUser }) => {
 
   return (
     <div className="relative min-h-screen flex flex-col lg:flex-row items-center justify-center bg-gradient-to-r from-blue-100 to-blue-300 p-4 overflow-hidden">
-      <div className="absolute top-0 left-0 w-full h-full z-0 pointer-events-none">
+      {/* <div className="absolute top-0 left-0 w-full h-full z-0 pointer-events-none">
         <Lanyard position={[0, 0, 30]} gravity={[0, -40, 0]} />
-      </div>
+      </div> */}
 
       <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md transform transition duration-500 z-20 relative">
         <h2 className="text-3xl font-extrabold text-center text-blue-800 mb-8">Mi Perfil</h2>
