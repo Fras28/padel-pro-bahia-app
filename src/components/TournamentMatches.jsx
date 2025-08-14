@@ -20,7 +20,7 @@ function TournamentMatches({ API_BASE }) {
 
             try {
                 // Corrected API URL to use nested populate syntax
-                const TOURNAMENT_DETAIL_API_URL = `${API_BASE}api/torneos/${tournamentId}?populate[club][populate]=logo&populate[partidos][populate]=pareja1,pareja2,ganador&populate[parejas_inscritas][populate]=drive,revez&populate[categoria][populate]=*`;
+                const TOURNAMENT_DETAIL_API_URL = `${API_BASE}api/torneos/${tournamentId}?populate=club.logo&populate=partidos.pareja1&populate=partidos.pareja2&populate=partidos.ganador&populate=parejas_inscritas.drive&populate=parejas_inscritas.revez&populate=categoria`;
                 const response = await fetch(TOURNAMENT_DETAIL_API_URL);
 
                 if (!response.ok) {
