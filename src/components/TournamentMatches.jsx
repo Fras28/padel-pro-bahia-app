@@ -1,10 +1,10 @@
 // src/components/TournamentMatches.jsx
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom'; // Import useParams and useNavigate
+import { useParams, useNavigate } from 'react-router-dom';
 
-function TournamentMatches({ API_BASE }) { // Now only expects API_BASE as a prop
-    const { tournamentId } = useParams(); // Get the tournamentId from the URL
-    const navigate = useNavigate(); // For potential back navigation or error redirects
+function TournamentMatches({ API_BASE }) {
+    const { tournamentId } = useParams();
+    const navigate = useNavigate();
 
     const [tournament, setTournament] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -19,9 +19,8 @@ function TournamentMatches({ API_BASE }) { // Now only expects API_BASE as a pro
             }
 
             try {
-                // Construct the API URL using the tournamentId (which is documentId)
-                // Using populate=* to get all related data as per your API example
-                const TOURNAMENT_DETAIL_API_URL = `${API_BASE}api/torneos/${tournamentId}?populate=club.logo&populate=partidos.pareja1&populate=partidos.pareja2&populate=partidos.ganador&populate=parejas_inscritas&populate=categoria`;
+                // Corrected API URL to use nested populate syntax
+                const TOURNAMENT_DETAIL_API_URL = `${API_BASE}api/torneos/${tournamentId}?populate[club][populate]=logo&populate[partidos][populate]=pareja1,pareja2,ganador&populate[parejas_inscritas][populate]=drive,revez&populate[categoria][populate]=*`;
                 const response = await fetch(TOURNAMENT_DETAIL_API_URL);
 
                 if (!response.ok) {
@@ -34,7 +33,7 @@ function TournamentMatches({ API_BASE }) { // Now only expects API_BASE as a pro
                 if (data.data) {
                     setTournament(data.data);
                 } else {
-                    setTournament(null); // No data for this tournament
+                    setTournament(null);
                     console.warn("La estructura de datos del detalle del torneo no es la esperada.");
                 }
             } catch (err) {
@@ -46,11 +45,10 @@ function TournamentMatches({ API_BASE }) { // Now only expects API_BASE as a pro
         };
 
         fetchTournamentDetails();
-    }, [tournamentId, API_BASE]); // Dependency array: re-run if tournamentId or API_BASE changes
+    }, [tournamentId, API_BASE]);
 
-    // Function to handle back navigation
     const handleBack = () => {
-        navigate('/tournaments'); // Navigate back to the tournaments list
+        navigate('/tournaments');
     };
 
     if (loading) {
@@ -89,13 +87,11 @@ function TournamentMatches({ API_BASE }) { // Now only expects API_BASE as a pro
         );
     }
 
-    // Access club information safely
     const clubName = tournament.club?.nombre || "N/A";
     const clubLogoUrl =
         tournament.club?.logo?.url ||
-        "https://placehold.co/40x40/4F46E5/FFFFFF?text=Club"; // Use a default placeholder
+        "https://placehold.co/40x40/4F46E5/FFFFFF?text=Club";
 
-    // Format dates for display
     const startDate = tournament.fechaInicio
         ? new Date(tournament.fechaInicio).toLocaleDateString()
         : "N/A";
@@ -103,100 +99,122 @@ function TournamentMatches({ API_BASE }) { // Now only expects API_BASE as a pro
         ? new Date(tournament.fechaFin).toLocaleDateString()
         : "N/A";
 
-    const matches = tournament.partidos || []; // Ensure matches array exists
-    const registeredPairs = tournament.parejas_inscritas || []; // Ensure registeredPairs array exists
+    const matches = tournament.partidos || [];
+    const registeredPairs = tournament.parejas_inscritas || [];
 
     return (
         <div className="p-6 bg-white rounded-xl shadow-lg relative w-full max-w-2xl mx-auto my-8">
             <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
-                Detalles del Torneo: {tournament.nombre || "N/A"}
+                Detalles del Torneo
             </h2>
-
+            <div className='flex gap-2 mb-4'>
+                <button
+                    onClick={handleBack}
+                    className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-300 ease-in-out transform hover:-translate-y-1"
+                >
+                    Volver a Torneos
+                </button>
+            </div>
+            
             {/* Tournament Details Section */}
-            <div className="space-y-3 text-gray-700 mb-6 border-b pb-4">
-                <p>
-                    <strong className="font-semibold">Estado:</strong>{" "}
-                    <span className="font-medium">{tournament.estado}</span>
-                </p>
-                <p>
-                    <strong className="font-semibold">Tipo de Torneo:</strong>{" "}
-                    {tournament.tipoTorneo || "N/A"}
-                </p>
-                <p>
-                    <strong className="font-semibold">Género:</strong>{" "}
-                    {tournament.genero || "N/A"}
-                </p>
-                <p>
-                    <strong className="font-semibold">Inicio:</strong> {startDate}
-                </p>
-                <p>
-                    <strong className="font-semibold">Fin:</strong> {endDate}
-                </p>
-                <p>
-                    <strong className="font-semibold">Inscripción:</strong> $
-                    {tournament.precioInscripcion || "N/A"}
-                </p>
-                <p>
-                    <strong className="font-semibold">Máx. Parejas:</strong>{" "}
-                    {tournament.maxParejas || "N/A"}
-                </p>
-                {tournament.categorias && tournament.categorias.length > 0 && (
-                    <p>
-                        <strong className="font-semibold">Categoría:</strong>{" "}
-                        {tournament.categorias[0].nombre}
-                    </p>
-                )}
-                {tournament.descripcion && (
-                    <p>
-                        <strong className="font-semibold">Descripción:</strong>{" "}
-                        {tournament.descripcion}
-                    </p>
-                )}
-
-                {tournament.premios && (
-                    <div className="border-t pt-3 mt-3">
-                        <p className="font-semibold text-lg mb-1">Premios:</p>
-                        <p className="whitespace-pre-line text-sm">{tournament.premios}</p>
-                    </div>
-                )}
-
-                {/* Club Information */}
-                <div className="border-t pt-3 mt-3 flex items-center">
+            <div className="mb-6 border-b pb-4">
+                <h3 className="text-2xl font-semibold text-gray-800 mb-4 flex items-center justify-between">
+                    Información del Torneo
+                </h3>
+                <div className="flex items-center mb-4">
                     {tournament.club?.logo?.url && (
                         <img
                             src={clubLogoUrl}
                             alt={`${clubName} Logo`}
-                            className="w-12 h-12 object-contain rounded-full mr-3 shadow-sm"
+                            className="w-16 h-16 object-contain rounded-full mr-4 shadow-sm"
                             onError={(e) => {
                                 e.target.onerror = null;
-                                e.target.src =
-                                    "https://placehold.co/48x48/cccccc/333333?text=Club";
+                                e.target.src = "https://placehold.co/48x48/cccccc/333333?text=Club";
                             }}
                         />
                     )}
-                    <p className="font-semibold text-lg">Club: {clubName}</p>
-                </div>
-
-                {/* Registered Pairs */}
-                {registeredPairs.length > 0 && (
-                    <div className="border-t pt-3 mt-3">
-                        <p className="font-semibold text-lg mb-2">
-                            Parejas Inscriptas ({registeredPairs.length}):
-                        </p>
-                        <ul className="list-disc list-inside text-sm max-h-40 overflow-y-auto bg-gray-50 p-3 rounded-md">
-                            {registeredPairs.map((pair) => (
-                                <li key={pair.id}>{pair?.nombrePareja}</li>
-                            ))}
-                        </ul>
+                    <div>
+                        <p className="text-xl font-bold text-gray-900">{tournament.nombre || "N/A"}</p>
                     </div>
-                )}
-                {registeredPairs.length === 0 && tournament.estado === "Abierto" && (
-                    <p className="mt-2 text-center text-gray-600">No hay parejas inscriptas aún para este torneo.</p>
-                )}
-                {registeredPairs.length === 0 && tournament.estado !== "Abierto" && (
-                    <p className="mt-2 text-center text-gray-600">No hay parejas inscriptas para este torneo.</p>
-                )}
+                </div>
+                <ul className="space-y-3">
+                    <li className="flex justify-between items-center bg-gray-50 p-3 rounded-lg shadow-sm">
+                        <span className="text-sm font-medium text-gray-500">Estado:</span>
+                        <span className="text-sm font-semibold text-gray-900">{tournament.estado}</span>
+                    </li>
+                    <li className="flex justify-between items-center bg-gray-50 p-3 rounded-lg shadow-sm">
+                        <span className="text-sm font-medium text-gray-500">Tipo de Torneo:</span>
+                        <span className="text-sm font-semibold text-gray-900">{tournament.tipoTorneo || 'N/A'}</span>
+                    </li>
+                    <li className="flex justify-between items-center bg-gray-50 p-3 rounded-lg shadow-sm">
+                        <span className="text-sm font-medium text-gray-500">Género:</span>
+                        <span className="text-sm font-semibold text-gray-900">{tournament.genero || 'N/A'}</span>
+                    </li>
+                    <li className="flex justify-between items-center bg-gray-50 p-3 rounded-lg shadow-sm">
+                        <span className="text-sm font-medium text-gray-500">Fechas:</span>
+                        <span className="text-sm font-semibold text-gray-900">{startDate} - {endDate}</span>
+                    </li>
+                    <li className="flex justify-between items-center bg-gray-50 p-3 rounded-lg shadow-sm">
+                        <span className="text-sm font-medium text-gray-500">Precio de Inscripción:</span>
+                        <span className="text-sm font-semibold text-gray-900">${tournament.precioInscripcion || 'N/A'}</span>
+                    </li>
+
+                    {tournament.categoria?.nombre && (
+                        <li className="flex justify-between items-center bg-gray-50 p-3 rounded-lg shadow-sm">
+                            <span className="text-sm font-medium text-gray-500">Categoría:</span>
+                            <span className="text-sm font-semibold text-gray-900">{tournament.categoria.nombre}</span>
+                        </li>
+                    )}
+                </ul>
             </div>
+            {tournament.descripcion && (
+                <div className="mb-6 border-b pb-4">
+                    <h3 className="text-xl font-semibold text-gray-800 mb-2">Descripción</h3>
+                    <p className="text-gray-700 text-sm whitespace-pre-line">{tournament.descripcion}</p>
+                </div>
+            )}
+            {tournament.premios && (
+                <div className="mb-6 border-b pb-4">
+                    <h3 className="text-xl font-semibold text-gray-800 mb-2">Premios</h3>
+                    <p className="text-gray-700 text-sm whitespace-pre-line">{tournament.premios}</p>
+                </div>
+            )}
+
+            {/* Registered Pairs with Ranking Sum and Sorting */}
+            {registeredPairs.length > 0 && (
+                <div className="mb-6 border-b pb-4">
+                    <h3 className="text-2xl font-semibold text-gray-800 mb-4">
+                        Parejas Inscriptas ({registeredPairs.length})
+                    </h3>
+                    <ul className="list-disc list-inside text-xs max-h-40 overflow-y-auto bg-gray-50 p-3 rounded-md">
+                        {[...registeredPairs]
+                            .sort((a, b) => {
+                                const rankingA = (parseFloat(a.drive?.rankingGeneral) || 0) + (parseFloat(a.revez?.rankingGeneral) || 0);
+                                const rankingB = (parseFloat(b.drive?.rankingGeneral) || 0) + (parseFloat(b.revez?.rankingGeneral) || 0);
+                                return rankingB - rankingA; // Orden descendente (de mayor a menor)
+                            })
+                            .map((pair) => {
+                                const rankingDrive = pair.drive?.rankingGeneral || 0;
+                                const rankingRevez = pair.revez?.rankingGeneral || 0;
+                                const totalRanking = parseFloat(rankingDrive) + parseFloat(rankingRevez);
+                                return (
+                                    <li key={pair.id}>
+                                        {pair?.nombrePareja}{" "}
+                                        <span className="text-gray-500 font-normal text-xs">
+                                            (Puntos: {totalRanking})
+                                        </span>
+                                    </li>
+                                );
+                            })}
+                    </ul>
+                </div>
+            )}
+            {registeredPairs.length === 0 && tournament.estado === "Abierto" && (
+                <p className="mt-2 text-center text-gray-600">No hay parejas inscriptas aún para este torneo.</p>
+            )}
+            {registeredPairs.length === 0 && tournament.estado !== "Abierto" && (
+                <p className="mt-2 text-center text-gray-600">No hay parejas inscriptas para este torneo.</p>
+            )}
 
             {/* WhatsApp Button for "Abierto" tournaments */}
             {tournament.estado === "Abierto" &&
@@ -212,7 +230,7 @@ function TournamentMatches({ API_BASE }) { // Now only expects API_BASE as a pro
                             ) {
                                 parsedPhoneNumber = parsedPhoneNumber.substring(1);
                             }
-                            const formattedPhoneNumber = '549' + parsedPhoneNumber; // Ensure international format
+                            const formattedPhoneNumber = '549' + parsedPhoneNumber;
                             const message = encodeURIComponent(
                                 `Hola, me gustaría solicitar la inscripción para el torneo ${tournament.nombre}.`
                             );
@@ -246,74 +264,42 @@ function TournamentMatches({ API_BASE }) { // Now only expects API_BASE as a pro
                 )}
 
             {/* Matches Played Section */}
-            <div className="border-t pt-3 mt-3">
-                <p className="font-semibold text-lg mb-2  text-black">
-                    Partidos del Torneo ({matches.length}):
-                </p>
+            <div className="mb-6">
+                <h3 className="text-2xl font-semibold text-gray-800 mb-4">
+                    Partidos del Torneo ({matches.length})
+                </h3>
                 {matches.length > 0 ? (
                     <ul className="list-disc list-inside text-sm max-h-96 overflow-y-auto bg-gray-50 p-3 rounded-md">
                         {matches
-                            .sort(
-                                (a, b) => new Date(a.fechaPartido) - new Date(b.fechaPartido)
-                            )
+                            .sort((a, b) => new Date(a.fechaPartido) - new Date(b.fechaPartido))
                             .map((match) => (
-                                <li key={match.id} className="mb-2">
-                                    
+                                <li key={match.id} className="mb-2 p-2 border-b last:border-b-0 border-gray-200">
                                     <p className="font-medium text-black">
-                                        Ronda: {match.ronda || "N/A"}
+                                        Ronda: <span className="font-semibold">{match.ronda || "N/A"}</span>
                                     </p>
                                     {match.pareja1 && match.pareja2 && (
                                         <p className="font-medium text-black">
-                                            Parejas:{" "}
-                                            <span
-                                                className={
-                                                    match.ganador?.documentId === match.pareja1.documentId // Compare by ID
-                                                        ? "text-green-700 font-bold"
-                                                        : ""
-                                                }
-                                            >
+                                            Parejas: <span className={match.ganador?.documentId === match.pareja1.documentId ? "text-green-700 font-bold" : ""}>
                                                 {match.pareja1?.nombrePareja}
-                                            </span>{" "}
-                                            vs{" "}
-                                            <span
-                                                className={
-                                                    match.ganador?.documentId=== match.pareja2.documentId// Compare by ID
-                                                        ? "text-green-700 font-bold"
-                                                        : ""
-                                                }
-                                            >
+                                            </span> vs <span className={match.ganador?.documentId === match.pareja2.documentId ? "text-green-700 font-bold" : ""}>
                                                 {match.pareja2?.nombrePareja}
                                             </span>
                                         </p>
                                     )}
                                     <p className="font-medium text-black">
-                                        Fecha:{" "}
-                                        {match.fechaPartido
-                                            ? new Date(match.fechaPartido).toLocaleString()
-                                            : "N/A"}
+                                        Fecha: <span className="font-semibold">{match.fechaPartido ? new Date(match.fechaPartido).toLocaleString() : "N/A"}</span>
                                     </p>
                                     <p className="font-medium text-black">
-                                        Cancha: {match.cancha || "N/A"}
+                                        Cancha: <span className="font-semibold">{match.cancha || "N/A"}</span>
                                     </p>
                                     <p className="font-medium text-black">
-                                        Estado:{" "}
-                                        <span
-                                            className={`font-semibold ${
-                                                match.estado === "En Curso"
-                                                    ? "text-blue-600"
-                                                    : match.estado === "Finalizado"
-                                                        ? "text-green-600"
-                                                        : "text-gray-600"
-                                            }`}
-                                        >
+                                        Estado: <span className={`font-semibold ${match.estado === "En Curso" ? "text-blue-600" : match.estado === "Finalizado" ? "text-green-600" : "text-gray-600"}`}>
                                             {match.estado || "N/A"}
                                         </span>
                                     </p>
                                     {match.resultadoSet1 && (
                                         <p className="font-medium text-black">
-                                            Resultado: {match.resultadoSet1}{" "}
-                                            {match.resultadoSet2 ? `- ${match.resultadoSet2}` : ""}{" "}
-                                            {match.resultadoSet3 ? `- ${match.resultadoSet3}` : ""}
+                                            Resultado: <span className="font-semibold">{match.resultadoSet1} {match.resultadoSet2 ? `- ${match.resultadoSet2}` : ""} {match.resultadoSet3 ? `- ${match.resultadoSet3}` : ""}</span>
                                         </p>
                                     )}
                                     {match?.ganador?.nombrePareja && (
