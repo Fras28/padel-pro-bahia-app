@@ -186,7 +186,7 @@ function TournamentMatches({ API_BASE }) {
                     <h3 className="text-2xl font-semibold text-gray-800 mb-4">
                         Parejas Inscriptas ({registeredPairs.length})
                     </h3>
-                    <ul className="list-disc list-inside text-xs max-h-40 overflow-y-auto bg-gray-50 p-3 rounded-md">
+                    <ul className="list-disc list-inside text-xs max-h-40 overflow-y-auto bg-gray-50 p-3 rounded-md text-black">
                         {[...registeredPairs]
                             .sort((a, b) => {
                                 const rankingA = (parseFloat(a.drive?.rankingGeneral) || 0) + (parseFloat(a.revez?.rankingGeneral) || 0);
@@ -198,7 +198,7 @@ function TournamentMatches({ API_BASE }) {
                                 const rankingRevez = pair.revez?.rankingGeneral || 0;
                                 const totalRanking = parseFloat(rankingDrive) + parseFloat(rankingRevez);
                                 return (
-                                    <li key={pair.id}>
+                                    <li key={pair.id} className='text-black'>
                                         {pair?.nombrePareja}{" "}
                                         <span className="text-gray-500 font-normal text-xs">
                                             (Puntos: {totalRanking})
