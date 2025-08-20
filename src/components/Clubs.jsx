@@ -23,7 +23,9 @@ function Clubs() {
         }
         const data = await response.json();
         if (data.data) {
-          setClubs(data.data);
+          // Ordena los clubes por id de menor a mayor
+          const sortedClubs = data.data.sort((a, b) => a.id - b.id);
+          setClubs(sortedClubs);
         } else {
           setClubs([]);
         }
@@ -35,7 +37,7 @@ function Clubs() {
       }
     };
     fetchClubs();
-  }, [API_BASE]); // Added API_BASE to dependency array for useEffect
+  }, [API_BASE]);
 
   if (loading) {
     return (
@@ -56,41 +58,46 @@ function Clubs() {
       <h2 className="text-2xl font-semibold text-blue-900 mb-4 border-b-2 border-blue-200 pb-2">
         Clubes Disponibles
       </h2>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
         {clubs.length > 0 ? (
           clubs.map((club) => (
             <button
               key={club.documentId}
               onClick={() => handleClubClick(club)}
-              className="flex flex-col items-center p-4 bg-white rounded-lg shadow-md hover:shadow-xl transform hover:scale-105 transition-all duration-300 ease-in-out cursor-pointer border border-transparent hover:border-blue-500 bg"
+              className="p-2 rounded-full backdrop-blur-lg border border-white/10 bg-gradient-to-tr from-neutral-400/60 to-black/40 shadow-lg hover:shadow-2xl hover:shadow-white/20 hover:scale-105 hover:rotate-3 active:scale-95 active:rotate-0 transition-all duration-300 ease-out cursor-pointer hover:border-blue-500/30 hover:bg-gradient-to-tr hover:from-blue-500/10 hover:to-black/40 group relative overflow-hidden"
             >
-              <img
-                src={club?.logo?.url || "https://placehold.co/80x80/cccccc/333333?text=Logo"}
-                alt={`Logo de ${club?.nombre}`}
-                className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2 rounded-full  "
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = "https://placehold.co/80x80/cccccc/333333?text=Logo";
-                }}
-              />
-              <span className="text-center font-medium text-gray-800 text-sm sm:text-base">
-                {club?.nombre}
-              </span>
-              {club.Instagram && ( // Conditionally render Instagram link
-                <a
-                  href={club.Instagram}
-                  target="_blank" // Opens in a new tab
-                  rel="noopener noreferrer" // Recommended for security when using target="_blank"
-                  onClick={(e) => e.stopPropagation()} // Prevents the club button's onClick from firing
-                  className="mt-2"
-                >
-                  <img
-                    src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" 
-                    alt="Instagram"
-                    className="w-6 h-6 object-contain"
-                  />
-                </a>
-              )}
+              <div
+                class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out"
+              ></div>
+              <div class="relative z-10 flex flex-col items-center">
+                <img
+                  src={club?.logo?.url || "https://placehold.co/80x80/cccccc/333333?text=Logo"}
+                  alt={`Logo de ${club?.nombre}`}
+                  className="w-16 h-16 sm:w-20 sm:h-20 object-contain mb-2 rounded-full "
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "https://placehold.co/80x80/cccccc/333333?text=Logo";
+                  }}
+                />
+                {/* <span className="text-center font-medium text-white text-sm sm:text-base mt-2">
+                  {club?.nombre}
+                </span> */}
+                {club.Instagram && (
+                  <a
+                    href={club.Instagram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="mt-2"
+                  >
+                    <img
+                      src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png"
+                      alt="Instagram"
+                      className="w-6 h-6 object-contain"
+                    />
+                  </a>
+                )}
+              </div>
             </button>
           ))
         ) : (

@@ -416,7 +416,7 @@ function App() {
                 <img src={PadelPro} alt="Pelota" width="108px" />
               </NavLink>
             </div>
-            <p className="text-xl text-blue-900 font-bold mb-4">
+            <p className="text-xl text-blue-900 font-bold mb-4 mt-3">
               Ranking Bahia Blanca
             </p>
 
