@@ -100,7 +100,8 @@ function InternalRanking() {
                         let formattedName = "Desconocido";
                         if (entry.jugador && entry.jugador.nombre) {
                             const fullName = entry.jugador.nombre;
-                            const parts = fullName.split(" ");
+                            const cleanedName = fullName.replace(/-\s*\w+$/, '').trim();
+                            const parts = cleanedName.split(" ");
                             if (parts.length > 0) {
                                 const nombreInicial = parts[0] ? `${parts[0][0]}.` : "";
                                 const apellido = parts.slice(1).join(" ");
@@ -170,6 +171,9 @@ function InternalRanking() {
                                 <th scope="col" className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Rank
                                 </th>
+                                <th scope="col" className="px-3 py-2 sm:px-6 sm:py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                 
+                                </th>
                                 <th scope="col" className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Jugador
                                 </th>
@@ -190,8 +194,10 @@ function InternalRanking() {
                                         <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                             <div className="flex items-center">
                                                 <span>{playerIndex + 1}</span>
-                                                {insignia}
                                             </div>
+                                        </td>
+                                        <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700 text-center">
+                                          {insignia}
                                         </td>
                                         <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
                                             <div className="flex items-center">

@@ -129,6 +129,9 @@ function RankingGlobal() {
                         <th className="px-3 py-2 sm:px-6 sm:py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Rank
                         </th>
+                        <th className="px-3 py-2 sm:px-6 sm:py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                       
+                        </th>
                         <th className="px-3 py-2 sm:px-6 sm:py-3  text-xs font-medium text-gray-500 uppercase tracking-wider justify-center text-left">
                           Jugador
                         </th>
@@ -142,17 +145,18 @@ function RankingGlobal() {
                       {categoryData.players.slice(0, 10).map((player, index) => {
                         const playerName = player
                           ? (() => {
-                            const fullName = player.nombre || "";
-                            const parts = fullName.split(" ");
-                            if (parts.length > 0) {
-                              const nombreInicial = parts[0]
-                                ? `${parts[0][0]}.`
-                                : "";
-                              const apellido = parts.slice(1).join(" ");
-                              return `${nombreInicial} ${apellido}`.trim();
-                            }
-                            return "Desconocido";
-                          })()
+                              let fullName = player.nombre || "";
+                              const cleanedName = fullName.replace(/-\s*\w+$/, '').trim();
+                              const parts = cleanedName.split(" ");
+                              if (parts.length > 0) {
+                                const nombreInicial = parts[0]
+                                  ? `${parts[0][0]}.`
+                                  : "";
+                                const apellido = parts.slice(1).join(" ");
+                                return `${nombreInicial} ${apellido}`.trim();
+                              }
+                              return "Desconocido";
+                            })()
                           : "Desconocido";
 
                         const globalPoints = player?.rankingGeneral || 0;
@@ -167,8 +171,10 @@ function RankingGlobal() {
                             <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-center">
                               <div className="flex items-center justify-center">
                                 <span>{index + 1}</span>
-                                {insignia}
                               </div>
+                            </td>
+                            <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700 text-center">
+                              {insignia}
                             </td>
                             <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700 text-left">
                               {playerName}
@@ -200,6 +206,9 @@ function RankingGlobal() {
                           <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Posición
                           </th>
+                          <th className="px-3 py-2 sm:px-6 sm:py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                   
+                          </th>
                           <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Jugador
                           </th>
@@ -214,17 +223,18 @@ function RankingGlobal() {
                           .map((player, index) => {
                             const playerName = player
                               ? (() => {
-                                const fullName = player.nombre || "";
-                                const parts = fullName.split(" ");
-                                if (parts.length > 0) {
-                                  const nombreInicial = parts[0]
-                                    ? `${parts[0][0]}.`
-                                    : "";
-                                  const apellido = parts.slice(1).join(" ");
-                                  return `${nombreInicial} ${apellido}`.trim();
-                                }
-                                return "Desconocido";
-                              })()
+                                  let fullName = player.nombre || "";
+                                  const cleanedName = fullName.replace(/-\s*\w+$/, '').trim();
+                                  const parts = cleanedName.split(" ");
+                                  if (parts.length > 0) {
+                                    const nombreInicial = parts[0]
+                                      ? `${parts[0][0]}.`
+                                      : "";
+                                    const apellido = parts.slice(1).join(" ");
+                                    return `${nombreInicial} ${apellido}`.trim();
+                                  }
+                                  return "Desconocido";
+                                })()
                               : "Desconocido";
 
                             const globalPoints = player?.rankingGeneral || 0;
@@ -239,8 +249,10 @@ function RankingGlobal() {
                                 <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-center">
                                   <div className="flex items-center justify-center">
                                     <span>{10 + index + 1}</span>
-                                    {insignia}
                                   </div>
+                                </td>
+                                <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700 text-center">
+                                  {insignia}
                                 </td>
                                 <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700 text-left">
                                   {playerName}

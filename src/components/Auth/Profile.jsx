@@ -2,37 +2,27 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-
-const getInitials = (nombre, apellido) => {
-  const firstInitial = nombre ? nombre.charAt(0) : '';
-  const lastInitial = apellido ? apellido.charAt(0) : '';
-  return `${firstInitial}${lastInitial}`.toUpperCase();
+const getInitials = (nombre) => {
+  return nombre ? nombre.charAt(0).toUpperCase() : '';
 };
 
-const defaultStyles = {
-  cardBg: 'bg-gray-800',
-  cardBorder: 'border-gray-600',
-  titleColor: 'text-gray-100',
-  accentColor: 'text-blue-400',
-  statBlockBg: 'bg-gray-700',
-  statBlockBorder: 'border-gray-500',
-  textColor: 'text-gray-200',
-  initialBg: 'bg-blue-600',
-  winRateBg: 'bg-blue-800',
-  playerTitleColor: 'text-blue-400',
+const getFormattedSex = (sex) => {
+  if (sex === 'Masculina') return 'Masculino';
+  if (sex === 'Femenina') return 'Femenino';
+  return sex || 'N/A';
 };
 
 const Profile = ({ API_BASE, user, setUser }) => {
   const [userData, setUserData] = useState(user || null);
-  const [playerData, setPlayerData] = useState(user?.jugador || null);
+  const [playersData, setPlayersData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [isEditingPlayer, setIsEditingPlayer] = useState(false);
+  const [isEditingPlayerId, setIsEditingPlayerId] = useState(null);
   const [editablePlayer, setEditablePlayer] = useState({ nombre: '', apellido: '', telefono: '', fechaNacimiento: '', sexo: '' });
+  const [selectedPlayer, setSelectedPlayer] = useState(null);
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    console.log("Profile.jsx: Initiating logout...");
     localStorage.removeItem('jwt');
     localStorage.removeItem('user');
     setUser(null);
@@ -44,7 +34,6 @@ const Profile = ({ API_BASE, user, setUser }) => {
       setLoading(true);
       setError('');
       const jwt = localStorage.getItem('jwt');
-      console.log("Profile.jsx: JWT retrieved from localStorage (first 10 chars):", jwt ? jwt.substring(0, 10) + "..." : "No JWT found");
 
       if (!jwt) {
         setError('No hay token de autenticación. Por favor, inicia sesión para ver tu perfil completo.');
@@ -54,13 +43,13 @@ const Profile = ({ API_BASE, user, setUser }) => {
 
       try {
         const populateQuery = [
-          'populate[jugador][populate][estadisticas]=*',
-          'populate[jugador][populate][categoria]=*',
-          'populate[jugador][populate][torneos]=*',
-          'populate[jugador][populate][pareja_drive][populate][drive]=*',
-          'populate[jugador][populate][pareja_drive][populate][revez]=*',
-          'populate[jugador][populate][pareja_revez][populate][drive]=*',
-          'populate[jugador][populate][pareja_revez][populate][revez]=*',
+          'populate[jugadors][populate][estadisticas]=*',
+          'populate[jugadors][populate][categoria]=*',
+          'populate[jugadors][populate][torneos]=*',
+          'populate[jugadors][populate][pareja_drive][populate][drive]=*',
+          'populate[jugadors][populate][pareja_drive][populate][revez]=*',
+          'populate[jugadors][populate][pareja_revez][populate][drive]=*',
+          'populate[jugadors][populate][pareja_revez][populate][revez]=*',
         ].join('&');
 
         const userResponse = await fetch(`${API_BASE}api/users/me?${populateQuery}`, {
@@ -69,25 +58,11 @@ const Profile = ({ API_BASE, user, setUser }) => {
           },
         });
         const data = await userResponse.json();
-        console.log("Profile.jsx: Raw API response status:", userResponse.status);
-        console.log("Profile.jsx: Raw API response data:", data);
 
         if (userResponse.ok) {
           setUserData(data);
-          setPlayerData(data.jugador || null);
-          if (data.jugador) {
-            setEditablePlayer({
-              nombre: data.jugador.nombre || '',
-              apellido: data.jugador.apellido || '',
-              telefono: data.jugador.telefono || '',
-              fechaNacimiento: data.jugador.fechaNacimiento ? new Date(data.jugador.fechaNacimiento).toISOString().split('T')[0] : '',
-              sexo: data.jugador.sexo || '',
-            });
-            console.log("Valor de sexo recibido del backend:", data.jugador.sexo);
-          }
-          console.log("Profile.jsx: User data loaded successfully:", data);
+          setPlayersData(data.jugadors || []);
         } else {
-          console.error("Profile.jsx: Error response from API:", userResponse.status, data.error?.message);
           if (userResponse.status === 401 || userResponse.status === 403) {
             setError('Tu sesión ha expirado o es inválida. Por favor, haz clic en "Cerrar Sesión" para iniciar sesión de nuevo.');
           } else {
@@ -101,19 +76,20 @@ const Profile = ({ API_BASE, user, setUser }) => {
         setLoading(false);
       }
     };
-
     fetchProfileData();
   }, [API_BASE, navigate, setUser]);
 
-  const handleEditPlayerToggle = () => {
-    setIsEditingPlayer(!isEditingPlayer);
-    if (isEditingPlayer && playerData) {
+  const handleEditPlayerToggle = (player) => {
+    if (isEditingPlayerId === player.id) {
+      setIsEditingPlayerId(null);
+    } else {
+      setIsEditingPlayerId(player.id);
       setEditablePlayer({
-        nombre: playerData.nombre || '',
-        apellido: playerData.apellido || '',
-        telefono: playerData.telefono || '',
-        fechaNacimiento: playerData.fechaNacimiento ? new Date(playerData.fechaNacimiento).toISOString().split('T')[0] : '',
-        sexo: playerData.sexo || '',
+        nombre: player.nombre || '',
+        apellido: player.apellido || '',
+        telefono: player.telefono || '',
+        fechaNacimiento: player.fechaNacimiento ? new Date(player.fechaNacimiento).toISOString().split('T')[0] : '',
+        sexo: player.sexo || '',
       });
     }
   };
@@ -127,15 +103,16 @@ const Profile = ({ API_BASE, user, setUser }) => {
     setLoading(true);
     setError('');
     const jwt = localStorage.getItem('jwt');
+    const playerId = isEditingPlayerId;
 
-    if (!jwt || !playerData?.id) {
+    if (!jwt || !playerId) {
       setError('No se puede actualizar el perfil. Falta token o ID de jugador.');
       setLoading(false);
       return;
     }
 
     try {
-      const response = await fetch(`${API_BASE}api/jugadors/${playerData.documentId}`, {
+      const response = await fetch(`${API_BASE}api/jugadors/${playerId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -147,30 +124,24 @@ const Profile = ({ API_BASE, user, setUser }) => {
       const data = await response.json();
 
       if (response.ok) {
-        setPlayerData(prev => ({
-          ...prev,
-          ...data.data,
-        }));
-        setIsEditingPlayer(false);
-        console.log("Player data updated successfully:", data);
+        setPlayersData(prevPlayers => prevPlayers.map(p =>
+          p.id === playerId ? { ...p, ...data.data.attributes } : p
+        ));
+        setIsEditingPlayerId(null);
       } else {
-        console.error("Error updating player data:", response.status, data.error?.message);
         setError(data.error?.message || 'Error al actualizar los datos del jugador.');
       }
     } catch (err) {
       setError('Error de red al actualizar el perfil del jugador.');
-      console.error('Error saving player profile:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const getFormattedSex = (sex) => {
-    if (sex === 'Masculina') return 'Masculino';
-    if (sex === 'Femenina') return 'Femenino';
-    return sex || 'N/A';
+  const handleSelectPlayer = (player) => {
+    setSelectedPlayer(selectedPlayer?.id === player.id ? null : player);
   };
-
+  
   if (loading && !userData) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-100 to-blue-300 p-4">
@@ -195,44 +166,16 @@ const Profile = ({ API_BASE, user, setUser }) => {
     );
   }
 
-  const style = defaultStyles;
-
-  console.log("Profile.jsx: Calculated style:", style);
-
-  const stats = playerData?.estadisticas || {
-    partidosJugados: 0,
-    partidosGanados: 0,
-    torneosJugados: 0,
-    torneosGanados: 0,
-    partidosCuartosRonda: 0,
-  };
-
-  const {
-    partidosJugados,
-    partidosGanados,
-    torneosJugados,
-    torneosGanados,
-    partidosCuartosRonda,
-  } = stats;
-
-  const winRate = partidosJugados > 0 ? ((partidosGanados / partidosJugados) * 100).toFixed(2) : '0.00';
-
   return (
-    <div className="relative min-h-screen flex flex-col lg:flex-row items-center justify-center bg-gradient-to-r from-blue-100 to-blue-300 p-4 overflow-hidden">
-      {/* <div className="absolute top-0 left-0 w-full h-full z-0 pointer-events-none">
-        <Lanyard position={[0, 0, 30]} gravity={[0, -40, 0]} />
-      </div> */}
-
-      <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md transform transition duration-500 z-20 relative">
+    <div className="relative min-h-screen flex flex-col items-center justify-center bg-gradient-to-r from-blue-100 to-blue-300 p-4 overflow-hidden">
+      <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-lg transform transition duration-500 z-20 relative">
         <h2 className="text-3xl font-extrabold text-center text-blue-800 mb-8">Mi Perfil</h2>
-
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
             <strong className="font-bold">¡Error!</strong>
             <span className="block sm:inline"> {error}</span>
           </div>
         )}
-
         <div className="mb-6 border-b pb-4">
           <h3 className="text-2xl font-semibold text-gray-800 mb-4">Datos de Usuario</h3>
           <p className="text-gray-700 mb-2">
@@ -246,200 +189,154 @@ const Profile = ({ API_BASE, user, setUser }) => {
           </p>
         </div>
 
-        {playerData ? (
-          <>
-            <div className="mb-6 border-b pb-4">
-              <h3 className="text-2xl font-semibold text-gray-800 mb-4 flex items-center justify-between">
-                Datos del Jugador
-                <div>
-                  <button
-                    onClick={handleEditPlayerToggle}
-                    className="ml-4 py-1 px-3 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600 transition duration-200"
+        <div className="mb-6 border-b pb-4">
+          <h3 className="text-2xl font-semibold text-gray-800 mb-4">Perfiles de Jugador</h3>
+          <div className="flex flex-wrap justify-center gap-4">
+            {playersData.length > 0 ? (
+              playersData.map(player => {
+                const isEditing = isEditingPlayerId === player.id;
+                const isSelected = selectedPlayer?.id === player.id;
+                const stats = player.estadisticas || { partidosJugados: 0, partidosGanados: 0, torneosJugados: 0, torneosGanados: 0, partidosCuartosRonda: 0 };
+                const winRate = stats.partidosJugados > 0 ? ((stats.partidosGanados / stats.partidosJugados) * 100).toFixed(2) : '0.00';
+                
+                return (
+                  <div
+                    key={player.id}
+                    className={`relative w-full max-w-sm p-4 rounded-xl shadow-2xl overflow-hidden cursor-pointer
+                      bg-gradient-to-br from-blue-500 to-cyan-600 text-white
+                      transform transition duration-500 hover:scale-105 ${isSelected ? 'ring-4 ring-yellow-400' : ''}`}
+                    onClick={() => handleSelectPlayer(player)}
                   >
-                    {isEditingPlayer ? 'Cancelar' : 'Editar'}
-                  </button>
-                  {isEditingPlayer && (
-                    <button
-                      onClick={handleSavePlayer}
-                      className="ml-2 py-1 px-3 bg-green-500 text-white rounded-md text-sm hover:bg-green-600 transition duration-200"
-                    >
-                      Guardar
-                    </button>
-                  )}
-                </div>
-              </h3>
-              {style && (
-                <div className={`w-24 h-24 rounded-full flex items-center justify-center text-4xl font-bold mb-4 ${style.initialBg} ${style.titleColor} z-10 border-2 ${style.cardBorder} mx-auto`}>
-                  {getInitials(playerData?.nombre, playerData?.apellido)}
-                </div>
-              )}
+                    <div className="absolute inset-0 bg-white/10 backdrop-filter backdrop-blur-lg rounded-xl"></div>
+                    
+                    <div className="relative z-10 flex flex-col items-center h-full">
+                      {isEditing ? (
+                        <div className="w-full">
+                          <h4 className="text-lg font-bold mb-2">Editar Jugador</h4>
+                          <input
+                            type="text"
+                            name="nombre"
+                            value={editablePlayer.nombre}
+                            onChange={handlePlayerInputChange}
+                            className="mt-1 block w-full text-black px-3 py-1 rounded-md"
+                            placeholder="Nombre"
+                          />
+                          <input
+                            type="text"
+                            name="apellido"
+                            value={editablePlayer.apellido}
+                            onChange={handlePlayerInputChange}
+                            className="mt-2 block w-full text-black px-3 py-1 rounded-md"
+                            placeholder="Apellido"
+                          />
+                          <button onClick={handleSavePlayer} className="mt-2 w-full py-1 px-3 bg-green-500 text-white rounded-md text-sm hover:bg-green-600">Guardar</button>
+                          <button onClick={() => setIsEditingPlayerId(null)} className="mt-1 w-full py-1 px-3 bg-gray-500 text-white rounded-md text-sm hover:bg-gray-600">Cancelar</button>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="text-center">
+                            <div className="w-16 h-16 mx-auto bg-blue-700 rounded-full flex items-center justify-center text-3xl font-bold mb-2">
+                              {getInitials(player.nombre)}
+                            </div>
+                            <h4 className="text-xl font-bold mb-1">{player.nombre} {player.apellido}</h4>
+                            <p className="text-sm">Ranking: <span className="font-semibold">{player.rankingGeneral !== undefined ? player.rankingGeneral : 'N/A'}</span></p>
+                          </div>
+                          
+                          <div className="w-full mt-4">
+    <div className="flex items-center justify-between mb-1">
+        <span className="text-sm font-semibold">Win Rate: {winRate}%</span>
+        <span className="text-xs text-white/75">{stats.partidosGanados} / {stats.partidosJugados} Partidos</span>
+    </div>
+    <div className="relative rounded-full h-3 bg-white/20 overflow-hidden shadow-inner-custom">
+        <div
+            className="h-full rounded-full transition-all duration-500 ease-out"
+            style={{ 
+                width: `${winRate}%`,
+                background: 'linear-gradient(to right, #4C82FF, #48A7FF)',
+                boxShadow: 'inset 0 0 10px 2px rgba(72, 167, 255, 0.7)',
+                animation: 'liquid-motion 4s infinite'
+            }}
+        ></div>
+    </div>
+</div>
+                          
+                          <div className="w-full mt-4 text-center text-sm">
+                            <p>Categoría: <span className="font-semibold">{player.categoria?.nombre || 'N/A'}</span></p>
+                            <p>Sexo: <span className="font-semibold">{getFormattedSex(player.sexo)}</span></p>
+                          </div>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleEditPlayerToggle(player); }}
+                            className="absolute top-2 right-2 py-1 px-2 bg-white/20 text-white rounded-md text-xs hover:bg-white/30"
+                          >
+                            Editar
+                          </button>
 
-              {isEditingPlayer ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="md:col-span-2">
-                    <label htmlFor="nombre" className="block text-sm font-medium text-gray-700">Nombre y Apellido:</label>
-                    <input
-                      type="text"
-                      id="nombre"
-                      name="nombre"
-                      value={editablePlayer.nombre}
-                      onChange={handlePlayerInputChange}
-                      className="mt-1 block w-full text-black px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="telefono" className="block text-sm font-medium text-gray-700">Teléfono:</label>
-                    <input
-                      type="text"
-                      id="telefono"
-                      name="telefono"
-                      value={editablePlayer.telefono}
-                      onChange={handlePlayerInputChange}
-                      className="mt-1 text-black block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="fechaNacimiento" className="block text-sm font-medium text-gray-700">Fecha de Nacimiento:</label>
-                    <input
-                      type="date"
-                      id="fechaNacimiento"
-                      name="fechaNacimiento"
-                      value={editablePlayer.fechaNacimiento}
-                      onChange={handlePlayerInputChange}
-                      className="mt-1 block w-full text-black px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="sexo" className="block text-sm font-medium text-gray-700">Sexo:</label>
-                    <select
-                      id="sexo"
-                      name="sexo"
-                      value={editablePlayer.sexo}
-                      onChange={handlePlayerInputChange}
-                      className="mt-1 block w-full px-3 text-black py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    >
-                      <option value="">Seleccionar</option>
-                      <option value="Masculina">Masculino</option>
-                      <option value="Femenina">Femenino</option>
-                      <option value="Otro">Otro</option>
-                    </select>
-                  </div>
-                </div>
-              ) : (
-                <ul className="space-y-3">
-                  <li className="flex justify-between items-center bg-gray-50 p-3 rounded-lg shadow-sm">
-                    <span className="text-sm font-medium text-gray-500">Nombre:</span>
-                    <span className="text-sm font-semibold text-gray-900">{playerData.nombre}</span>
-                  </li>
-                  <li className="flex justify-between items-center bg-gray-50 p-3 rounded-lg shadow-sm">
-                    <span className="text-sm font-medium text-gray-500">Teléfono:</span>
-                    <span className="text-sm font-semibold text-gray-900">{playerData.telefono || 'N/A'}</span>
-                  </li>
-                  <li className="flex justify-between items-center bg-gray-50 p-3 rounded-lg shadow-sm">
-                    <span className="text-sm font-medium text-gray-500">Fecha de Nacimiento:</span>
-                    <span className="text-sm font-semibold text-gray-900">{playerData.fechaNacimiento ? new Date(playerData.fechaNacimiento).toLocaleDateString() : 'N/A'}</span>
-                  </li>
-                  <li className="flex justify-between items-center bg-gray-50 p-3 rounded-lg shadow-sm">
-                    <span className="text-sm font-medium text-gray-500">Sexo:</span>
-                    <span className="text-sm font-semibold text-gray-900">{getFormattedSex(playerData.sexo)}</span>
-                  </li>
-                  <li className="flex justify-between items-center bg-gray-50 p-3 rounded-lg shadow-sm">
-                    <span className="text-sm font-medium text-gray-500">Ranking General:</span>
-                    <span className="text-sm font-semibold text-gray-900">{playerData.rankingGeneral !== undefined ? playerData.rankingGeneral : 'N/A'}</span>
-                  </li>
-                  {playerData.categoria && (
-                    <li className="flex justify-between items-center bg-gray-50 p-3 rounded-lg shadow-sm">
-                      <span className="text-sm font-medium text-gray-500">Categoría:</span>
-                      <span className="text-sm font-semibold text-gray-900">{playerData.categoria.nombre}</span>
-                    </li>
-                  )}
-                </ul>
-              )}
-            </div>
-
-            <div className="mb-6 border-b pb-4">
-              <h3 className="text-2xl font-semibold text-gray-800 mb-4">Estadísticas</h3>
-              {style && (
-                <>
-                  <div className="grid grid-cols-2 gap-3 w-full text-center mb-6">
-                    <div className={`p-3 rounded-lg ${style.winRateBg} ${style.cardBorder} border shadow-inner flex flex-col justify-center items-center`}>
-                      <span className={`text-base sm:text-lg font-semibold ${style.playerTitleColor}`}>Pts Ranking</span>
-                      <span className={`text-2xl sm:text-3xl font-extrabold ${style.accentColor}`}>{playerData.rankingGeneral || 'N/A'}</span>
-                    </div>
-                    <div className={`p-3 rounded-lg ${style.winRateBg} ${style.cardBorder} border shadow-inner flex flex-col justify-center items-center`}>
-                      <span className={`text-base sm:text-lg font-semibold ${style.playerTitleColor}`}>Win Rate</span>
-                      <span className={`text-2xl sm:text-3xl font-extrabold ${winRate === '0.00' ? style.textColor : style.accentColor}`}>{winRate}%</span>
+                          {/* Expanded stats and tournaments (visible when card is selected) */}
+                          {isSelected && (
+                              <div className="mt-4 w-full">
+                                  <div className="grid grid-cols-2 gap-2 text-center">
+                                      <div className="p-2 rounded-lg bg-white/10">
+                                          <p className="text-xs font-semibold">Torneos Jugados</p>
+                                          <p className="text-lg font-bold">{stats.torneosJugados}</p>
+                                      </div>
+                                      <div className="p-2 rounded-lg bg-white/10">
+                                          <p className="text-xs font-semibold">Torneos Ganados</p>
+                                          <p className="text-lg font-bold">{stats.torneosGanados}</p>
+                                      </div>
+                                      <div className="p-2 rounded-lg bg-white/10">
+                                          <p className="text-xs font-semibold">Partidos en Cuartos</p>
+                                          <p className="text-lg font-bold">{stats.partidosCuartosRonda || 0}</p>
+                                      </div>
+                                      <div className="p-2 rounded-lg bg-white/10">
+                                          <p className="text-xs font-semibold">Octavos de Final</p>
+                                          <p className="text-lg font-bold">{stats.partidosOctavosRonda || 0}</p>
+                                      </div>
+                                      <div className="p-2 rounded-lg bg-white/10">
+                                          <p className="text-xs font-semibold">Semifinales</p>
+                                          <p className="text-lg font-bold">{stats.partidosSemifinalRonda || 0}</p>
+                                      </div>
+                                      <div className="p-2 rounded-lg bg-white/10">
+                                          <p className="text-xs font-semibold">Finales Perdidass</p>
+                                          <p className="text-lg font-bold">{stats.finalesPerdidas || 0}</p>
+                                      </div>
+                                  </div>
+                                  <div className="mt-4">
+                                      <h5 className="text-md font-bold mb-2">Torneos inscriptos</h5>
+                                      {player.torneos && player.torneos.length > 0 ? (
+                                        <ul className="text-xs list-disc list-inside">
+                                          {player.torneos.map(torneo => (
+                                            <li key={torneo.id} className="mb-1">{torneo.nombre}</li>
+                                          ))}
+                                        </ul>
+                                      ) : (
+                                        <p className="text-xs">No inscripto en torneos.</p>
+                                      )}
+                                  </div>
+                              </div>
+                          )}
+                        </>
+                      )}
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-3 w-full text-center">
-                    {[
-                      { label: 'Partidos Jugados', value: partidosJugados },
-                      { label: 'Partidos Ganados', value: partidosGanados },
-                      { label: 'Torneos Jugados', value: torneosJugados },
-                      { label: 'Cuartos', value: partidosCuartosRonda || 0 },
-                      { label: 'Torneos Ganados', value: torneosGanados },
-                    ].map(stat => (
-                      <div
-                        key={stat.label}
-                        className={`p-2 rounded-lg ${style.statBlockBg} ${style.statBlockBorder} border shadow-inner ${
-                          stat.label === 'Torneos Ganados' ? 'col-span-2' : ''
-                        }`}
-                      >
-                        <p className={`text-sm sm:text-base font-medium ${style.textColor}`}>{stat.label}</p>
-                        <p className={`text-lg sm:text-xl font-bold ${style.accentColor}`}>{stat.value}</p>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-
-            <div className="mb-6 border-b pb-4">
-              <h3 className="text-2xl font-semibold text-gray-800 mb-4">Torneos Inscritos</h3>
-              {playerData.torneos && playerData.torneos.length > 0 ? (
-                <ul className="list-disc list-inside text-gray-700">
-                  {playerData.torneos.map(torneo => (
-                    <li key={torneo.id} className="mb-1">
-                      {torneo.nombre} ({new Date(torneo.fechaInicio).toLocaleDateString()} - {new Date(torneo.fechaFin).toLocaleDateString()})
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-gray-600">No estás inscrito en ningún torneo actualmente.</p>
-              )}
-            </div>
-
-            <div className="mb-6 pb-4">
-              <h3 className="text-2xl font-semibold text-gray-800 mb-4">Parejas</h3>
-              {playerData.pareja_drive || playerData.pareja_revez ? (
-                <ul className="list-disc list-inside text-gray-700">
-                  {playerData.pareja_drive && (
-                    <li className="mb-1">
-                      <b>Pareja (posición tu como Drive):</b> {playerData.pareja_drive.drive?.nombre} con {playerData.pareja_drive.revez?.nombre}
-                    </li>
-                  )}
-                  {playerData.pareja_revez && (
-                    <li className="mb-1">
-                      <b>Pareja (posición de Revés):</b> {playerData.pareja_revez.drive?.nombre} {playerData.pareja_revez.drive?.apellido} con {playerData.pareja_revez.revez?.nombre}
-                    </li>
-                  )}
-                </ul>
-              ) : (
-                <p className="text-gray-600">No tienes parejas registradas.</p>
-              )}
-            </div>
-          </>
-        ) : (
-          <div className="mb-6 text-center text-gray-600">
-            <p>No hay un perfil de jugador asociado a esta cuenta.</p>
+                );
+              })
+            ) : (
+              <div className="text-center text-gray-600 w-full">
+                <p>No hay perfiles de jugador asociados a esta cuenta.</p>
+              </div>
+            )}
           </div>
-        )}
-        <div className='flex gap-2 '>
+        </div>
+        
+        <div className='flex gap-2 mt-8'>
           <button
-            onClick={() => navigate("/create-pair")}
-            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-300 ease-in-out transform hover:-translate-y-1 flex-nowrap"
+            onClick={() => navigate("/create-pair", { state: { playerId: selectedPlayer.id } })}
+            disabled={!selectedPlayer}
+            className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-sm font-medium text-white 
+              ${selectedPlayer ? 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500' : 'bg-gray-400 cursor-not-allowed'}
+              focus:outline-none focus:ring-2 focus:ring-offset-2 transition duration-300 ease-in-out transform hover:-translate-y-1 flex-nowrap`}
           >
-            Crear Parejas
+            Crear Parejas con {selectedPlayer?.nombre || ''}
           </button>
           <button
             onClick={handleLogout}
