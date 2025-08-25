@@ -1,90 +1,30 @@
 // src/components/Categories.jsx
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchCategoriesByClub, clearCategories } from '../features/categories/categoriesSlice'; // <-- Importa la nueva acción
 
 function Categories() {
     const { clubId } = useParams();
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
-    const [categories, setCategories] = useState([]);
-    const [clubData, setClubData] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const API_BASE = import.meta.env.VITE_API_BASE;
+    const { clubData, categories, loading, error } = useSelector(state => state.categories);
 
     const handleCategoryClick = useCallback((categoryId) => {
         navigate(`/clubs/${clubId}/categories/${categoryId}/ranking`);
     }, [clubId, navigate]);
 
-
     useEffect(() => {
-        const fetchClubAndCategories = async () => {
-            if (!clubId) {
-                setError("No se ha proporcionado un ID de club en la URL.");
-                setLoading(false);
-                return;
-            }
+        // Dispara la acción cada vez que el clubId cambia
+        if (clubId) {
+            // Limpia el estado antes de cada nueva carga
+            dispatch(clearCategories()); 
+            dispatch(fetchCategoriesByClub(clubId));
+        }
+    }, [clubId, dispatch]);
 
-            setLoading(true);
-            setError(null);
-
-            try {
-                // 1. Fetch Club Details (including logo)
-                const clubResponse = await fetch(`${API_BASE}api/clubs?filters[documentId][$eq]=${clubId}&populate=logo`);
-                if (!clubResponse.ok) {
-                    throw new Error(`HTTP error! status: ${clubResponse.status} fetching club data`);
-                }
-                const clubDataRes = await clubResponse.json();
-                if (clubDataRes.data && clubDataRes.data.length > 0) {
-                    setClubData(clubDataRes.data[0]);
-                } else {
-                    setError("Club no encontrado.");
-                    setLoading(false);
-                    return;
-                }
-
-                // 2. Fetch Ranking Categories for the specific club
-                // We populate 'categoria' to get category details
-                const rankingCategoriesResponse = await fetch(
-                    `${API_BASE}api/ranking-categorias?populate=categoria&filters[club][documentId][$eq]=${clubId}`
-                );
-                if (!rankingCategoriesResponse.ok) {
-                    throw new Error(`HTTP error! status: ${rankingCategoriesResponse.status} fetching ranking categories`);
-                }
-                const rankingCategoriesData = await rankingCategoriesResponse.json();
-
-                // Extract unique categories from the ranking_categorias entries
-                const uniqueCategories = [];
-                const seenCategoryIds = new Set();
-
-                rankingCategoriesData.data.forEach(rc => {
-                    if (rc.categoria && !seenCategoryIds.has(rc.categoria.id)) {
-                        uniqueCategories.push({
-                            id: rc.categoria.id,
-                            documentId: rc.categoria.documentId, // Assuming 'documentId' is the correct ID to use for navigation
-                            nombre: rc.categoria.nombre,
-                            // Add other category properties if needed
-                        });
-                        seenCategoryIds.add(rc.categoria.id);
-                    }
-                });
-
-                // Sort categories by nombre for consistent display (optional)
-                uniqueCategories.sort((a, b) => a.nombre.localeCompare(b.nombre));
-
-                setCategories(uniqueCategories);
-
-            } catch (e) {
-                console.error("Error fetching club or categories:", e);
-                setError("Error al cargar las categorías del club. Inténtalo de nuevo más tarde.");
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchClubAndCategories();
-    }, [API_BASE, clubId]);
-
-    if (loading) {
+    if (loading === 'pending') {
         return (
             <div className="flex justify-center items-center h-screen">
                 <div className="text-blue-500 text-lg">Cargando categorías...</div>

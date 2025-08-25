@@ -107,10 +107,10 @@ const Help = () => {
                     <td className="py-2 px-4 border-b text-sm">Octavos de Final</td>
                     <td className="py-2 px-4 border-b text-sm">15 puntos</td>
                   </tr>
-                  {/* <tr className="hover:bg-gray-50">
-                    <td className="py-2 px-4 border-b text-sm">Ronda de 32</td>
-                    <td className="py-2 px-4 border-b text-sm">5 puntos</td>
-                  </tr> */}
+                  <tr className="hover:bg-gray-50">
+                    <td className="py-2 px-4 border-b text-sm">Dieciseisavos</td>
+                    <td className="py-2 px-4 border-b text-sm">10 puntos</td>
+                  </tr>
                   <tr className="hover:bg-gray-50">
                     <td className="py-2 px-4 border-b text-sm">Zona</td>
                     <td className="py-2 px-4 border-b text-sm">5 puntos</td>
@@ -149,6 +149,10 @@ const Help = () => {
                   <tr className="hover:bg-gray-50">
                     <td className="py-2 px-4 border-b text-sm">Octavos de Final</td>
                     <td className="py-2 px-4 border-b text-sm">30 puntos</td>
+                  </tr>
+                  <tr className="hover:bg-gray-50">
+                    <td className="py-2 px-4 border-b text-sm">Dieciseisavos</td>
+                    <td className="py-2 px-4 border-b text-sm">20 puntos</td>
                   </tr>
                   <tr className="hover:bg-gray-50">
                     <td className="py-2 px-4 border-b text-sm">Zona</td>

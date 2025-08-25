@@ -1,45 +1,30 @@
 // src/components/Clubs.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { fetchClubs } from '../features/clubs/clubsSlice'; // <-- Importa el thunk
 
 function Clubs() {
-  const [clubs, setClubs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const API_BASE = import.meta.env.VITE_API_BASE;
-
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  // Obtener el estado de Redux
+  const clubs = useSelector((state) => state.clubs.data);
+  const loading = useSelector((state) => state.clubs.loading);
+  const error = useSelector((state) => state.clubs.error);
+
+  useEffect(() => {
+    // Si los datos no se han cargado, dispara el thunk
+    if (loading === 'idle') {
+      dispatch(fetchClubs());
+    }
+  }, [loading, dispatch]);
 
   const handleClubClick = (club) => {
     navigate(`/clubs/${club.documentId}/categories`);
   };
 
-  useEffect(() => {
-    const fetchClubs = async () => {
-      try {
-        const response = await fetch(API_BASE + "api/clubs?populate=logo");
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        if (data.data) {
-          // Ordena los clubes por id de menor a mayor
-          const sortedClubs = data.data.sort((a, b) => a.id - b.id);
-          setClubs(sortedClubs);
-        } else {
-          setClubs([]);
-        }
-        setLoading(false);
-      } catch (e) {
-        console.error("Error fetching clubs:", e);
-        setError("Error al cargar los clubes. Inténtalo de nuevo más tarde.");
-        setLoading(false);
-      }
-    };
-    fetchClubs();
-  }, [API_BASE]);
-
-  if (loading) {
+  if (loading === 'pending') {
     return (
       <div className="text-center py-4 text-gray-600">Cargando clubes...</div>
     );
@@ -79,9 +64,6 @@ function Clubs() {
                     e.target.src = "https://placehold.co/80x80/cccccc/333333?text=Logo";
                   }}
                 />
-                {/* <span className="text-center font-medium text-white text-sm sm:text-base mt-2">
-                  {club?.nombre}
-                </span> */}
                 {club.Instagram && (
                   <a
                     href={club.Instagram}
