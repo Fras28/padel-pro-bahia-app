@@ -112,7 +112,7 @@ const Help = () => {
                     <td className="py-2 px-4 border-b text-sm">5 puntos</td>
                   </tr> */}
                   <tr className="hover:bg-gray-50">
-                    <td className="py-2 px-4 border-b text-sm">Fase de Grupos</td>
+                    <td className="py-2 px-4 border-b text-sm">Zona</td>
                     <td className="py-2 px-4 border-b text-sm">5 puntos</td>
                   </tr>
                  
@@ -151,7 +151,7 @@ const Help = () => {
                     <td className="py-2 px-4 border-b text-sm">30 puntos</td>
                   </tr>
                   <tr className="hover:bg-gray-50">
-                    <td className="py-2 px-4 border-b text-sm">Fase de Grupos</td>
+                    <td className="py-2 px-4 border-b text-sm">Zona</td>
                     <td className="py-2 px-4 border-b text-sm">10 puntos</td>
                   </tr>
                 </tbody>
@@ -173,7 +173,7 @@ const Help = () => {
                     <td className="py-2 px-4 border-b text-sm">0 puntos</td>
                   </tr>
                   <tr className="hover:bg-gray-50">
-                    <td className="py-2 px-4 border-b text-sm">(Fase de Grupos, Octavos, Cuartos, Semifinal, Final, 3er y 4to Puesto, R-16avos)</td>
+                    <td className="py-2 px-4 border-b text-sm">(Zona, Octavos, Cuartos, Semifinal, Final, 3er y 4to Puesto, R-16avos)</td>
                     <td className="py-2 px-4 border-b text-sm"></td>
                   </tr>
                 </tbody>

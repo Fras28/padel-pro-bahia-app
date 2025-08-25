@@ -65,7 +65,7 @@ function InternalRanking() {
         if (ronda === "Cuartos" || ronda === "Octavos") {
             return <span className="text-yellow-400 ml-1 text-base leading-none">◆</span>;
         }
-        if (ronda === "Fase de Grupos") {
+        if (ronda === "Zona") {
             return <span className="text-red-500 ml-1 text-base leading-none">▼</span>;
         }
         return null;
