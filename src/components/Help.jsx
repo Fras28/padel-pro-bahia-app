@@ -8,6 +8,7 @@ const Help = () => {
   const [openSections, setOpenSections] = useState({
     general: false,
     points: false,
+    insignias: false,
   });
 
   // Function to toggle the visibility of a section
@@ -162,30 +163,46 @@ const Help = () => {
               </table>
             </div>
 
-            {/* <h3 className="text-lg font-semibold text-blue-600 mb-2">Torneo AJPP (Categoría Masculina)</h3>
-            <div className="overflow-x-auto mb-6 shadow-md rounded-lg">
-              <table className="min-w-full bg-white border border-gray-200">
-                <thead>
-                  <tr className="bg-blue-50">
-                    <th className="py-2 px-4 border-b text-left text-sm font-medium text-gray-600">Puesto / Ronda Alcanzada</th>
-                    <th className="py-2 px-4 border-b text-left text-sm font-medium text-gray-600">Puntos Obtenidos</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="hover:bg-gray-50">
-                    <td className="py-2 px-4 border-b text-sm">Todos los Puestos / Rondas</td>
-                    <td className="py-2 px-4 border-b text-sm">0 puntos</td>
-                  </tr>
-                  <tr className="hover:bg-gray-50">
-                    <td className="py-2 px-4 border-b text-sm">(Zona, Octavos, Cuartos, Semifinal, Final, 3er y 4to Puesto, R-16avos)</td>
-                    <td className="py-2 px-4 border-b text-sm"></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div> */}
             <p className="text-sm text-gray-600 mt-4">
-              **Nota Importante:** Los puntos reflejan la contribución al ranking por alcanzar esa etapa o posición. 
+              **Nota Importante:** Los puntos reflejan la contribución al ranking por alcanzar esa etapa o posición.
             </p>
+          </div>
+        )}
+      </div>
+      
+      {/* Sección para las insignias */}
+      <div className="mb-6 border-b pb-4">
+        <button
+          className="w-full flex justify-between items-center py-3 px-4 bg-blue-100 hover:bg-blue-200 rounded-md text-blue-800 font-semibold text-left transition duration-300 ease-in-out"
+          onClick={() => toggleSection('insignias')}
+        >
+          <span>Indicadores de Ranking (Insignias)</span>
+          <FontAwesomeIcon icon={openSections.insignias ? faChevronUp : faChevronDown} className="text-blue-600" />
+        </button>
+        {openSections.insignias && (
+          <div className="mt-4 text-gray-700 px-4">
+            <h2 className="text-xl font-semibold text-blue-700 mb-2">¿Qué significan las insignias en el ranking?</h2>
+            <p className="mb-4">
+              Las insignias que se muestran junto al nombre de cada jugador indican el resultado que obtuvieron en su último torneo, según la ronda más alta a la que llegaron.
+            </p>
+            <ul className="list-none space-y-2">
+              <li className="flex items-center">
+                <span className="text-yellow-500 text-lg mr-2">👑</span>
+                <p><strong>Corona Amarilla:</strong> El jugador fue el <strong>Ganador</strong> del último torneo.</p>
+              </li>
+              <li className="flex items-center">
+                <span className="text-green-500 text-lg mr-2">▲</span>
+                <p><strong>Flecha Verde:</strong> El jugador llegó a las <strong>Semifinales</strong> o fue el <strong>subcampeón</strong> del último torneo.</p>
+              </li>
+              <li className="flex items-center">
+                <span className="text-yellow-400 text-lg mr-2">◆</span>
+                <p><strong>Diamante Amarillo:</strong> El jugador alcanzó la ronda de <strong>Cuartos</strong> u <strong>Octavos de Final</strong>.</p>
+              </li>
+              <li className="flex items-center">
+                <span className="text-red-500 text-lg mr-2">▼</span>
+                <p><strong>Flecha Roja:</strong> El jugador solo participó en la etapa de <strong>Zona</strong> y no avanzó a rondas eliminatorias.</p>
+              </li>
+            </ul>
           </div>
         )}
       </div>
