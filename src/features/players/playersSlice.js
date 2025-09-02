@@ -3,10 +3,10 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
-// Thunk para buscar jugadores con paginación y filtro
+// Thunk para buscar jugadores con paginación, búsqueda y filtros
 export const fetchPlayersByPageAndTerm = createAsyncThunk(
   'players/fetchPlayersByPageAndTerm',
-  async ({ page, term }, { rejectWithValue }) => {
+  async ({ page, term, gender, category }, { rejectWithValue }) => {
     try {
       const populateParams = [
           'club.logo',
@@ -22,13 +22,25 @@ export const fetchPlayersByPageAndTerm = createAsyncThunk(
           'pagination[pageSize]': 25,
       });
   
+      // Se añaden los parámetros de populate uno por uno
       populateParams.forEach(param => {
           queryParams.append('populate', param);
       });
   
+      // Filtros de búsqueda por nombre y apellido
       if (term) {
           queryParams.append('filters[$or][0][nombre][$containsi]', term);
           queryParams.append('filters[$or][1][apellido][$containsi]', term);
+      }
+      
+      // Filtro de género
+      if (gender) {
+          queryParams.append('filters[genero][$eq]', gender);
+      }
+
+      // Filtro de categoría
+      if (category) {
+          queryParams.append('filters[categoria][id][$eq]', category);
       }
   
       const PLAYERS_API_URL = `${API_BASE}api/jugadors?${queryParams.toString()}`;
@@ -61,15 +73,25 @@ const playersSlice = createSlice({
     error: null,
     searchTerm: '',
     currentPage: 1,
+    // Nuevo: estado para los filtros
+    filters: {
+        gender: '',
+        category: '',
+    }
   },
   reducers: {
     setSearchTerm: (state, action) => {
       state.searchTerm = action.payload;
-      state.currentPage = 1; // Reset a la página 1 al buscar
+      state.currentPage = 1;
     },
     setCurrentPage: (state, action) => {
       state.currentPage = action.payload;
     },
+    // Nuevo: reducer para establecer los filtros
+    setFilters: (state, action) => {
+        state.filters = { ...state.filters, ...action.payload };
+        state.currentPage = 1;
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -91,5 +113,5 @@ const playersSlice = createSlice({
   },
 });
 
-export const { setSearchTerm, setCurrentPage } = playersSlice.actions;
+export const { setSearchTerm, setCurrentPage, setFilters } = playersSlice.actions;
 export default playersSlice.reducer;
