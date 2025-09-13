@@ -83,7 +83,7 @@ function RankingGlobal() {
     if (ronda === "Final" && esGanador) {
       return <span className="text-yellow-500 ml-1 text-base leading-none">👑</span>;
     }
-    if ((ronda === "Final" && !esGanador) || ronda === "Semifinales") {
+    if ((ronda === "Final" && !esGanador) || ronda === "Semifinal") {
       return <span className="text-green-500 ml-1 text-base leading-none">▲</span>;
     }
     if (ronda === "Cuartos" || ronda === "Octavos") {
