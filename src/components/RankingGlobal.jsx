@@ -173,7 +173,7 @@ function RankingGlobal() {
                                 <span>{index + 1}</span>
                               </div>
                             </td>
-                            <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700 text-center">
+                            <td className=" py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700 text-center">
                               {insignia}
                             </td>
                             <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700 text-left">

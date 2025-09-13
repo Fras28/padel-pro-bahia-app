@@ -191,12 +191,12 @@ function InternalRanking() {
                                         onClick={() => handlePlayerClick(entry?.jugador)}
                                         className="cursor-pointer hover:bg-gray-100"
                                     >
-                                        <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        <td className="px-3 py-2  sm:px-6 sm:py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                             <div className="flex items-center">
-                                                <span>{playerIndex + 1}</span>
+                                                <span className='m-auto'>{playerIndex + 1}</span>
                                             </div>
                                         </td>
-                                        <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700 text-center">
+                                        <td className="py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700 text-center">
                                           {insignia}
                                         </td>
                                         <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
