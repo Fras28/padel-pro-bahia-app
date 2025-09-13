@@ -117,7 +117,7 @@ function RankingGlobal() {
           })
           .map((categoryData, catIndex) => (
             <div key={catIndex} className="mb-8">
-              <SponsorBanner sponsorImages={sponsorImages} />
+      
               <h3 className="text-lg sm:text-xl font-semibold text-gray-700 mb-4 border-b pb-2">
                 {categoryData.name}
               </h3>
@@ -193,9 +193,9 @@ function RankingGlobal() {
                   No se encontraron jugadores en esta categoría.
                 </p>
               )}
-
+   
               {categoryData.players.length > 10 && (
-                <div className="mt-4 border-t pt-4">
+                <div className="mt-4  pt-4">
                   <h4 className="text-md font-semibold text-gray-700 mb-2">
                     Puestos 11-16
                   </h4>
@@ -251,7 +251,7 @@ function RankingGlobal() {
                                     <span>{10 + index + 1}</span>
                                   </div>
                                 </td>
-                                <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700 text-center">
+                                <td className=" py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700 text-center">
                                   {insignia}
                                 </td>
                                 <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700 text-left">
@@ -268,6 +268,7 @@ function RankingGlobal() {
                   </div>
                 </div>
               )}
+                      <SponsorBanner sponsorImages={sponsorImages} />
             </div>
           ))
       ) : (
