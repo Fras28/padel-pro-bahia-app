@@ -75,10 +75,11 @@ function InternalRanking() {
             return <span className="text-yellow-500 ml-1 text-base leading-none" title="Campeón">👑</span>;
         }
         if ((ronda === "Final" && !esGanador) || ronda === "Semifinal") {
-            return <span className="text-blue-500 ml-1 text-base leading-none" title="Finalista o Semifinalista">🥈</span>;
+            // Revertir a la flecha verde como se solicitó
+            return <span className="text-green-500 ml-1 text-base leading-none" title="Finalista o Semifinalista">▲</span>;
         }
         if (ronda === "Cuartos" || ronda === "Octavos") {
-            return <span className="text-green-500 ml-1 text-base leading-none" title="Cuartos o Octavos de Final">◆</span>;
+            return <span className="text-yellow-500 ml-1 text-base leading-none" title="Cuartos o Octavos de Final">◆</span>;
         }
         if (ronda === "Zona") {
             return <span className="text-red-500 ml-1 text-base leading-none" title="Fase de Grupos">▼</span>;
