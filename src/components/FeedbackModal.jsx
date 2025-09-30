@@ -124,7 +124,7 @@ const FeedbackModal = ({ API_BASE, user, isOpen, onClose }) => {
                         <FontAwesomeIcon icon={faPenToSquare} className="mr-2 text-yellow-500" />
                         ¡Déjanos tu Sugerencia!
                     </h2>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-700 transition-colors">
+                    <button onClick={onClose} className="text-red-400 hover:text-red-600 transition-colors bg-gray-100 border-solid border-2 border-red">
                         <FontAwesomeIcon icon={faTimes} className="h-6 w-6" />
                     </button>
                 </div>
