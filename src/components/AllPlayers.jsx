@@ -93,7 +93,7 @@ function AllPlayers() {
                         <input
                             type="text"
                             placeholder="Buscar por nombre o apellido..."
-                            className="w-full pl-10 pr-4 py-3 text-base border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors duration-200"
+                            className="w-full pl-10 pr-4 py-3 text-base text-black border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors duration-200"
                             value={searchTerm}
                             onChange={handleSearchChange}
                             aria-label="Buscar jugador"
