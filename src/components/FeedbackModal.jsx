@@ -170,7 +170,7 @@ const FeedbackModal = ({ API_BASE, user, isOpen, onClose }) => {
                             rows="4"
                             maxLength="300"
                             required
-                            className="shadow-sm focus:ring-blue-500 focus:border-blue-500 mt-1 block w-full sm:text-sm border-gray-300 rounded-md border p-2 resize-none"
+                            className="shadow-sm focus:ring-blue-500 focus:border-blue-500 mt-1 block w-full sm:text-sm border-gray-300 rounded-md border p-2 resize-none text-black"
                             placeholder="Ej: La tabla de ranking interno es confusa en móvil."
                         ></textarea>
                         <p className={`text-right text-xs mt-1 ${formData.detalle.length > 300 || formData.detalle.length < 10 ? 'text-red-500' : 'text-gray-500'}`}>
@@ -189,7 +189,7 @@ const FeedbackModal = ({ API_BASE, user, isOpen, onClose }) => {
                             name="email_contacto"
                             value={formData.email_contacto}
                             onChange={handleInputChange}
-                            className="shadow-sm focus:ring-blue-500 focus:border-blue-500 mt-1 block w-full sm:text-sm border-gray-300 rounded-md border p-2"
+                            className="shadow-sm focus:ring-blue-500 focus:border-blue-500 mt-1 block w-full sm:text-sm border-gray-300 rounded-md border p-2 text-black"
                             placeholder="email@ejemplo.com"
                         />
                     </div>
