@@ -138,7 +138,7 @@ const FeedbackModal = ({ API_BASE, user, isOpen, onClose }) => {
                 <form onSubmit={handleSubmit} className="space-y-4">
                     {/* Tipo de Sugerencia */}
                     <div>
-                        <label htmlFor="tipo_sugerencia" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="tipo_sugerencia" className="block text-sm font-medium text-gray-700 mb-1 text-left">
                             Categoría del feedback
                         </label>
                         <select
@@ -159,9 +159,9 @@ const FeedbackModal = ({ API_BASE, user, isOpen, onClose }) => {
 
                     {/* Detalle */}
                     <div>
-                        <label htmlFor="detalle" className="block text-sm font-medium text-gray-700 mb-1">
-                            Describe tu idea o problema (Mín. 10 / Máx. 300)
-                        </label>
+                        <label htmlFor="detalle" className="block  font-medium text-gray-700 mb-1 text-left">
+                            Describe tu idea o problema
+                        </label> 
                         <textarea
                             id="detalle"
                             name="detalle"
@@ -180,7 +180,7 @@ const FeedbackModal = ({ API_BASE, user, isOpen, onClose }) => {
 
                     {/* Email de Contacto (mapea a email_usuario en Strapi) */}
                     <div>
-                        <label htmlFor="email_contacto" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="email_contacto" className="block text-sm font-medium text-gray-700 mb-1 text-left">
                             Email de Contacto ({user ? 'Tu cuenta' : 'Opcional'})
                         </label>
                         <input
@@ -194,9 +194,9 @@ const FeedbackModal = ({ API_BASE, user, isOpen, onClose }) => {
                         />
                     </div>
 
-                    <p className="text-xs text-gray-500">
+                    {/* <p className="text-xs text-gray-500">
                         Contexto de la página: <code>{formData.contexto_pagina}</code>
-                    </p>
+                    </p> */}
 
 
                     {/* Botón de Enviar */}
