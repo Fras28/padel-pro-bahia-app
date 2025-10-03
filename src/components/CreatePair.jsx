@@ -78,41 +78,48 @@ const CreatePair = ({ API_BASE, user }) => {
     }
   };
 
-  /**
-   * Helper function to check if two players are already paired together.
-   * It checks both players' drive and revez pairs to see if they form a duo.
-   * Compares using 'documentId' for robustness.
-   * @param {object} player1 - The first player object (e.g., current user).
-   * @param {object} player2 - The second player object (e.g., selected partner).
-   * @returns {boolean} True if they are already paired, false otherwise.
-   */
-  const arePlayersAlreadyPaired = (player1, player2) => {
-    console.log("arePlayersAlreadyPaired: Checking if players are already paired using documentId.");
-    console.log("  Player 1 (current user):", player1?.nombre, player1?.apellido, "Document ID:", player1?.documentId);
-    console.log("  Player 2 (potential partner):", player2?.nombre, player2?.apellido, "Document ID:", player2?.documentId);
+/**
+ * Helper function to check if two players are already paired together.
+ * It checks both players' drive and revez pairs to see if they form a duo.
+ * Compares using 'id' (the Strapi primary key) for robustness.
+ * @param {object} player1 - The first player object (e.g., current user).
+ * @param {object} player2 - The second player object (e.g., selected partner).
+ * @returns {boolean} True if they are already paired, false otherwise.
+ */
+const arePlayersAlreadyPaired = (player1, player2) => {
+    // CAMBIO 1: Usar .id en lugar de .documentId
+    console.log("arePlayersAlreadyPaired: Checking if players are already paired using ID.");
+    console.log("  Player 1 (current user):", player1?.nombre, player1?.apellido, "ID:", player1?.id);
+    console.log("  Player 2 (potential partner):", player2?.nombre, player2?.apellido, "ID:", player2?.id);
 
-    if (!player1 || !player2 || !player1.documentId || !player2.documentId) {
-      console.log("arePlayersAlreadyPaired: Missing player data or document IDs. Returning false.");
-      return false;
+    // CAMBIO 2: Validar por .id
+    if (!player1 || !player2 || !player1.id || !player2.id) {
+        console.log("arePlayersAlreadyPaired: Missing player data or IDs. Returning false.");
+        return false;
     }
 
     const checkSpecificPair = (pair, pairOwnerName, pairType) => {
         console.log(`  Checking ${pairType} pair for ${pairOwnerName}:`, pair);
-        // Ensure the pair object exists and has drive and revez properties which are objects with a 'documentId'
-        if (pair && pair.drive && typeof pair.drive === 'object' && pair.drive.documentId &&
-            pair.revez && typeof pair.revez === 'object' && pair.revez.documentId) {
-            const driveDocumentId = pair.drive.documentId;
-            const revezDocumentId = pair.revez.documentId;
-            console.log(`    Pair Document IDs: drive=${driveDocumentId}, revez=${revezDocumentId}`);
+        // Ensure the pair object exists and has drive and revez properties which are objects with an 'id'
+        // CAMBIO 3: Validar por .id en las relaciones anidadas
+        if (pair && pair.drive && typeof pair.drive === 'object' && pair.drive.id &&
+            pair.revez && typeof pair.revez === 'object' && pair.revez.id) {
+            
+            // CAMBIO 4: Usar .id en las variables
+            const driveId = pair.drive.id;
+            const revezId = pair.revez.id;
+            console.log(`    Pair IDs: drive=${driveId}, revez=${revezId}`);
+            
             // Check if player1 and player2 are the drive and revez of this pair (in any order)
+            // CAMBIO 5: Comparar IDs
             const isPaired = (
-                (driveDocumentId === player1.documentId && revezDocumentId === player2.documentId) ||
-                (driveDocumentId === player2.documentId && revezDocumentId === player1.documentId)
+                (driveId === player1.id && revezId === player2.id) ||
+                (driveId === player2.id && revezId === player1.id)
             );
             console.log(`    Is paired: ${isPaired}`);
             return isPaired;
         }
-        console.log("  Pair is not valid or not fully populated with document IDs. Returning false for this pair.");
+        console.log("  Pair is not valid or not fully populated with IDs. Returning false for this pair.");
         return false;
     };
 
@@ -121,13 +128,12 @@ const CreatePair = ({ API_BASE, user }) => {
     if (checkSpecificPair(player1.pareja_revez, player1.nombre, 'player1.pareja_revez')) return true;
 
     // Check pairs where player2 is involved (this is crucial for search results)
-    // The player2 object (from search results) should also have its pairs populated
     if (checkSpecificPair(player2.pareja_drive, player2.nombre, 'player2.pareja_drive')) return true;
     if (checkSpecificPair(player2.pareja_revez, player2.nombre, 'player2.pareja_revez')) return true;
 
     console.log("arePlayersAlreadyPaired: No existing pair found between these two players. Returning false.");
     return false;
-  };
+};
 
   /**
    * Handles the player search functionality.
