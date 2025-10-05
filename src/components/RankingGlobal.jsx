@@ -65,36 +65,50 @@ function RankingGlobal() {
     );
   };
 
-  // Función para determinar la insignia según la lógica definida
-  const getInsignia = (player) => {
-    const historial = player?.historialRanking;
+// Función para determinar la insignia según la lógica definida
+const getInsignia = (player) => {
+  const historial = player?.historialRanking;
 
-    // Si no hay historial o está vacío, no se muestra ninguna insignia.
-    if (!historial || historial.length === 0) return null;
+  // Si no hay historial o está vacío, no se muestra ninguna insignia.
+  if (!historial || historial.length === 0) return null;
 
-    // Se ordena por fecha de forma descendente para encontrar el último registro.
-    const historialOrdenado = [...historial].sort(
-      (a, b) => new Date(b.fecha) - new Date(a.fecha)
-    );
-    const ultimoResultado = historialOrdenado[0];
-    const { ronda, esGanador } = ultimoResultado;
-
-    // Lógica para asignar la insignia según el último resultado
-    if (ronda === "Final" && esGanador) {
+  // 1. PRIORIDAD MÁXIMA: Buscar la CORONA (Campeón) en TODO el historial.
+  // Un logro de campeón es significativo y se mantiene sobre cualquier otro resultado.
+  const fueCampeon = historial.some(
+      (item) => item.ronda === "Final" && item.esGanador
+  );
+  if (fueCampeon) {
       return <span className="text-yellow-500 ml-1 text-base leading-none">👑</span>;
-    }
-    if ((ronda === "Final" && !esGanador) || ronda === "Semifinal") {
-      return <span className="text-green-500 ml-1 text-base leading-none">▲</span>;
-    }
-    if (ronda === "Cuartos" || ronda === "Octavos") {
-      return <span className="text-yellow-400 ml-1 text-base leading-none">◆</span>;
-    }
-    if (ronda === "Zona") {
-      return <span className="text-red-500 ml-1 text-base leading-none">▼</span>;
-    }
-    return null;
-  };
+  }
 
+  // Se ordena por fecha de forma descendente para tener el resultado más reciente primero.
+  const historialOrdenado = [...historial].sort(
+      (a, b) => new Date(b.fecha) - new Date(a.fecha)
+  );
+
+  // 2. PRIORIDAD MEDIA: Buscar el MEJOR resultado del TORNEO MÁS RECIENTE.
+  // Asumimos que el historialOrdenado[0] representa la última ronda de ELIMINACIÓN o el resultado MÁS ALTO del último torneo.
+  const ultimoResultado = historialOrdenado[0];
+  const { ronda, esGanador } = ultimoResultado;
+
+  // Si el último resultado fue podio o cuartos, ese es el indicador que se muestra.
+  if ((ronda === "Final" && !esGanador) || ronda === "Semifinal") {
+      return <span className="text-green-500 ml-1 text-base leading-none">▲</span>;
+  }
+  if (ronda === "Cuartos" || ronda === "Octavos") {
+      return <span className="text-yellow-400 ml-1 text-base leading-none">◆</span>;
+  }
+
+  // 3. PRIORIDAD BAJA: Solo mostrar la flecha roja (▼) si la última eliminación fue en ZONA
+  // Y NO se ha encontrado un logro superior (Corona, Podio, Cuartos) en los pasos anteriores.
+  if (ronda === "Zona") {
+      return <span className="text-red-500 ml-1 text-base leading-none">▼</span>;
+  }
+  
+  // Si el historialOrdenado[0] es un partido de zona ganado, o un resultado no mapeado,
+  // simplemente no se muestra insignia para evitar que un partido menor borre un logro superior.
+  return null;
+};
   return (
     <div className="bg-white rounded-xl shadow-md ">
       <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6 text-center">
