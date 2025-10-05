@@ -59,56 +59,108 @@ function InternalRanking() {
         setSelectedPlayer(null);
     };
 
-// Función para determinar la insignia según la lógica de persistencia de logros
-const getInsignia = (player) => {
-    const historial = player?.historialRanking;
+    // Función para determinar la insignia según la lógica de persistencia de logros
+    // Función auxiliar para determinar si el jugador tiene una racha de 5 o más partidos ganados
+    const getFireIcon = (historial) => {
+        if (!historial || historial.length === 0) return null;
 
-    // Si no hay historial o está vacío, no se muestra ninguna insignia.
-    if (!historial || historial.length === 0) return null;
+        // 1. Ordenar el historial por fecha de forma descendente (el más reciente primero)
+        const historialOrdenado = [...historial].sort(
+            (a, b) => new Date(b.fecha) - new Date(a.fecha)
+        );
 
-    // --- 1. MÁXIMA PRIORIDAD: Corona (Logro de Campeón) ---
-    // Persiste en todo el historial.
-    const fueCampeon = historial.some(
-        (item) => item.ronda === "Final" && item.esGanador
-    );
-    if (fueCampeon) {
-        return <span className="text-yellow-500 ml-1 text-base leading-none">👑</span>;
-    }
+        let consecutiveWins = 0;
 
-    // --- 2. ALTA PRIORIDAD: Podio (Finalista o Semifinalista) ---
-    // Persiste en todo el historial.
-    const fuePodio = historial.some(
-        (item) => (item.ronda === "Final" && !item.esGanador) || item.ronda === "Semifinal"
-    );
-    if (fuePodio) {
-        return <span className="text-green-500 ml-1 text-base leading-none">▲</span>;
-    }
+        // 2. Iterar sobre el historial y contar victorias consecutivas
+        for (const item of historialOrdenado) {
+            // La racha solo cuenta partidos individuales ganados.
+            // No todas las rondas tienen 'esGanador', pero vamos a asumir que para el conteo de racha,
+            // solo nos importan los registros que indican una victoria.
 
-    // --- 3. MEDIA PRIORIDAD: Diamante (Cuartos u Octavos) ---
-    // Persiste en todo el historial, como solicitaste.
-    const fueCuartosOctavos = historial.some(
-        (item) => item.ronda === "Cuartos" || item.ronda === "Octavos"
-    );
-    if (fueCuartosOctavos) {
-        return <span className="text-yellow-400 ml-1 text-base leading-none">◆</span>;
-    }
+            // Criterio de "victoria": que el registro tenga 'esGanador' como true
+            if (item.esGanador === true) {
+                consecutiveWins++;
+            } else {
+                // Si encontramos una derrota o un registro que no es de victoria (p. ej. solo puntos por ronda),
+                // la racha se rompe.
+                // Nota: Si la BD registra la eliminación sin 'esGanador: false', la racha también se rompe.
+                break;
+            }
+        }
 
-    // --- 4. BAJA PRIORIDAD: Flecha Roja (Eliminación en Zona) ---
-    // Solo si no hay logros superiores, se mira el resultado más reciente.
-    // Se ordena por fecha de forma descendente para tener el resultado más reciente primero.
-    const historialOrdenado = [...historial].sort(
-        (a, b) => new Date(b.fecha) - new Date(a.fecha)
-    );
-    const ultimoResultado = historialOrdenado[0];
-    
-    if (ultimoResultado.ronda === "Zona") {
-        // Asumimos que si el registro más reciente es "Zona", es una eliminación temprana.
-        return <span className="text-red-500 ml-1 text-base leading-none">▼</span>;
-    }
-    
-    // Si no se cumple ninguna de las condiciones anteriores, no se muestra insignia.
-    return null;
-};
+        // 3. Devolver la llama si la racha es de 5 o más
+        if (consecutiveWins >= 4) {
+            // La clase "text-orange-500" o similar le dará color de fuego
+            return <span className="text-orange-500 ml-1 text-base leading-none">🔥</span>;
+        }
+
+        return null;
+    };
+
+
+    // Función principal para determinar la insignia (LOGRO + FUEGO)
+    const getInsignia = (player) => {
+        const historial = player?.historialRanking;
+
+        // Si no hay historial o está vacío, no se muestra ninguna insignia.
+        if (!historial || historial.length === 0) return null;
+
+        // Obtener el ícono de la racha
+        const fireIcon = getFireIcon(historial);
+        let mainInsignia = null;
+
+        // --- 1. MÁXIMA PRIORIDAD: Corona (Logro de Campeón) ---
+        // Persiste en todo el historial.
+        const fueCampeon = historial.some(
+            (item) => item.ronda === "Final" && item.esGanador
+        );
+        if (fueCampeon) {
+            mainInsignia = <span className="text-yellow-500 ml-1 text-base leading-none">👑</span>;
+        } else {
+            // --- 2. ALTA PRIORIDAD: Podio (Finalista o Semifinalista) ---
+            // Persiste en todo el historial.
+            const fuePodio = historial.some(
+                (item) => (item.ronda === "Final" && !item.esGanador) || item.ronda === "Semifinal"
+            );
+            if (fuePodio) {
+                mainInsignia = <span className="text-green-500 ml-1 text-base leading-none">▲</span>;
+            } else {
+                // --- 3. MEDIA PRIORIDAD: Diamante (Cuartos u Octavos) ---
+                // Persiste en todo el historial.
+                const fueCuartosOctavos = historial.some(
+                    (item) => item.ronda === "Cuartos" || item.ronda === "Octavos"
+                );
+                if (fueCuartosOctavos) {
+                    mainInsignia = <span className="text-yellow-400 ml-1 text-base leading-none">◆</span>;
+                } else {
+                    // --- 4. BAJA PRIORIDAD: Flecha Roja (Eliminación en Zona) ---
+                    // Solo si no hay logros superiores, se mira el resultado más reciente.
+                    const historialOrdenado = [...historial].sort(
+                        (a, b) => new Date(b.fecha) - new Date(a.fecha)
+                    );
+                    const ultimoResultado = historialOrdenado[0];
+
+                    if (ultimoResultado && ultimoResultado.ronda === "Zona" && ultimoResultado.esGanador !== true) {
+                        // Solo se muestra la flecha roja si la ronda es Zona y NO es una victoria
+                        mainInsignia = <span className="text-red-500 ml-1 text-base leading-none">▼</span>;
+                    }
+                }
+            }
+        }
+
+        // 5. Devolver la insignia principal Y el ícono de fuego si existe
+        // Esto requiere un ajuste en el JSX de la tabla.
+        if (mainInsignia || fireIcon) {
+            return (
+                <>
+                    {mainInsignia}
+                    {fireIcon}
+                </>
+            );
+        }
+
+        return null;
+    };
 
     useEffect(() => {
         const fetchRanking = async () => {
@@ -116,7 +168,7 @@ const getInsignia = (player) => {
             setError(null);
             try {
                 const response = await fetch(
-                       `${API_BASE}api/ranking-categorias?populate=club.logo&populate=categoria&populate=entradasRanking.jugador.estadisticas&populate=entradasRanking.jugador.club.logo&filters[club][documentId][$eq]=${clubId}&filters[categoria][documentId][$eq]=${categoryId}`
+                    `${API_BASE}api/ranking-categorias?populate=club.logo&populate=categoria&populate=entradasRanking.jugador.estadisticas&populate=entradasRanking.jugador.club.logo&filters[club][documentId][$eq]=${clubId}&filters[categoria][documentId][$eq]=${categoryId}`
                 );
 
                 if (!response.ok) {
@@ -246,8 +298,8 @@ const getInsignia = (player) => {
                                                 <span className='m-auto'>{playerIndex + 1}</span>
                                             </div>
                                         </td>
-                                        <td className="py-4 whitespace-nowrap text-sm text-gray-700 text-center">
-                                          {insignia}
+                                        <td className=" py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700 text-center">
+                                            {insignia}
                                         </td>
                                         <td className="px-3 py-4 whitespace-nowrap">
                                             <div className="flex items-center">
