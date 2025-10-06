@@ -65,50 +65,107 @@ function RankingGlobal() {
     );
   };
 
-// Función para determinar la insignia según la lógica definida
+  // Función auxiliar para determinar si el jugador tiene una racha de 4 o más partidos ganados
+  const getFireIcon = (historial) => {
+    if (!historial || historial.length === 0) return null;
+
+    // 1. Ordenar el historial por fecha de forma descendente (el más reciente primero)
+    const historialOrdenado = [...historial].sort(
+        (a, b) => new Date(b.fecha) - new Date(a.fecha)
+    );
+
+    let consecutiveWins = 0;
+
+    // 2. Iterar sobre el historial y contar victorias consecutivas
+    for (const item of historialOrdenado) {
+        // Criterio de "victoria": que el registro tenga 'esGanador' como true
+        if (item.esGanador === true) {
+            consecutiveWins++;
+        } else {
+            // Si encontramos una derrota, la racha se rompe.
+            break;
+        }
+    }
+
+    // 3. Devolver la llama si la racha es de 4 o más
+    if (consecutiveWins >= 4) {
+        // La clase "text-orange-500" o similar le dará color de fuego
+        return <span className="text-orange-500 ml-1 text-base leading-none">🔥</span>;
+    }
+
+    return null;
+  };
+
+
+// Función principal para determinar la insignia según la lógica definida
 const getInsignia = (player) => {
   const historial = player?.historialRanking;
 
   // Si no hay historial o está vacío, no se muestra ninguna insignia.
   if (!historial || historial.length === 0) return null;
 
-  // 1. PRIORIDAD MÁXIMA: Buscar la CORONA (Campeón) en TODO el historial.
-  // Un logro de campeón es significativo y se mantiene sobre cualquier otro resultado.
-  const fueCampeon = historial.some(
-      (item) => item.ronda === "Final" && item.esGanador
-  );
-  if (fueCampeon) {
-      return <span className="text-yellow-500 ml-1 text-base leading-none">👑</span>;
-  }
-
   // Se ordena por fecha de forma descendente para tener el resultado más reciente primero.
   const historialOrdenado = [...historial].sort(
-      (a, b) => new Date(b.fecha) - new Date(a.fecha)
+    (a, b) => new Date(b.fecha) - new Date(a.fecha)
   );
-
-  // 2. PRIORIDAD MEDIA: Buscar el MEJOR resultado del TORNEO MÁS RECIENTE.
-  // Asumimos que el historialOrdenado[0] representa la última ronda de ELIMINACIÓN o el resultado MÁS ALTO del último torneo.
-  const ultimoResultado = historialOrdenado[0];
-  const { ronda, esGanador } = ultimoResultado;
-
-  // Si el último resultado fue podio o cuartos, ese es el indicador que se muestra.
-  if ((ronda === "Final" && !esGanador) || ronda === "Semifinal") {
-      return <span className="text-green-500 ml-1 text-base leading-none">▲</span>;
-  }
-  if (ronda === "Cuartos" || ronda === "Octavos") {
-      return <span className="text-yellow-400 ml-1 text-base leading-none">◆</span>;
-  }
-
-  // 3. PRIORIDAD BAJA: Solo mostrar la flecha roja (▼) si la última eliminación fue en ZONA
-  // Y NO se ha encontrado un logro superior (Corona, Podio, Cuartos) en los pasos anteriores.
-  if (ronda === "Zona") {
-      return <span className="text-red-500 ml-1 text-base leading-none">▼</span>;
-  }
   
-  // Si el historialOrdenado[0] es un partido de zona ganado, o un resultado no mapeado,
-  // simplemente no se muestra insignia para evitar que un partido menor borre un logro superior.
+  const ultimoResultado = historialOrdenado[0];
+  const fireIcon = getFireIcon(historial); // <--- Nuevo: Obtener el ícono de fuego
+  let mainInsignia = null; // <--- Inicializar la insignia principal
+
+  // --- LÓGICA DE LOGRO PRINCIPAL (Prioridad por Fecha) ---
+
+  // 1. PRIORIDAD MÁXIMA PARA RESULTADOS RECIENTES:
+  if (ultimoResultado) {
+    const { ronda, esGanador } = ultimoResultado;
+
+    // Flecha Verde (▲): Podio Reciente (Subcampeón/Semifinalista)
+    if ((ronda === "Final" && !esGanador) || ronda === "Semifinal") {
+      mainInsignia = <span className="text-green-500 ml-1 text-base leading-none">▲</span>;
+    }
+
+    // Diamante (◆): Cuartos/Octavos Recientes
+    else if (ronda === "Cuartos" || ronda === "Octavos" || ronda === "16avos") { 
+      mainInsignia = <span className="text-yellow-400 ml-1 text-base leading-none">◆</span>;
+    }
+  }
+
+  // 2. PRIORIDAD MEDIA: Corona Histórica
+  // Si no se asignó insignia principal (es decir, el último resultado no fue podio/cuartos),
+  // revisamos si fue campeón histórico.
+  if (!mainInsignia) {
+    const fueCampeon = historial.some(
+      (item) => item.ronda === "Final" && item.esGanador
+    );
+    if (fueCampeon) {
+      mainInsignia = <span className="text-yellow-500 ml-1 text-base leading-none">👑</span>;
+    }
+  }
+
+  // 3. PRIORIDAD BAJA: Eliminación Temprana Reciente
+  // Solo si NO se encontró un logro superior (mainInsignia sigue nula), 
+  // y el último resultado fue una eliminación en Zona.
+  if (!mainInsignia && ultimoResultado && ultimoResultado.ronda === "Zona" && ultimoResultado.esGanador !== true) {
+    mainInsignia = <span className="text-red-500 ml-1 text-base leading-none">▼</span>;
+  }
+
+
+  // --- COMBINACIÓN Y RETORNO FINAL ---
+  // Devolver la insignia principal Y el ícono de fuego si existe
+  if (mainInsignia || fireIcon) {
+      return (
+          <>
+              {mainInsignia}
+              {fireIcon}
+          </>
+      );
+  }
+
+  // Si no se aplica ninguna insignia ni fuego
   return null;
 };
+
+
   return (
     <div className="bg-white rounded-xl shadow-md ">
       <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6 text-center">
