@@ -330,7 +330,12 @@ const Profile = ({ API_BASE, user, setUser }) => {
         
         <div className='flex gap-2 mt-8'>
           <button
-            onClick={() => navigate("/create-pair", { state: { playerId: selectedPlayer.id } })}
+         onClick={() => navigate("/create-pair", { 
+          state: { 
+              playerId: selectedPlayer.id, // Opcional, para referencias internas
+              playerDocumentId: selectedPlayer.documentId // CRÍTICO para la URL
+          } 
+      })}
             disabled={!selectedPlayer}
             className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-sm font-medium text-white 
               ${selectedPlayer ? 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500' : 'bg-gray-400 cursor-not-allowed'}

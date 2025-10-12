@@ -1,495 +1,512 @@
 // src/components/CreatePair.jsx
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faUserPlus, faTimesCircle, faArrowRight, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+// Incluimos faStar para el renderizado de puntos y el resto de iconos
+import { faSearch, faUserPlus, faTimesCircle, faArrowRight, faCheckCircle, faSpinner, faStar } from '@fortawesome/free-solid-svg-icons';
 
 const CreatePair = ({ API_BASE, user }) => {
   const navigate = useNavigate();
-  const [playerData, setPlayerData] = useState(null); // The current logged-in player's data
+  const location = useLocation(); 
+  // CRÍTICO: Usar Document ID para la URL
+  const playerDocumentId = location.state?.playerDocumentId; 
+  const playerId = location.state?.playerId; // ID numérico para payload POST
+
+  const [playerData, setPlayerData] = useState(null); 
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [selectedPartner, setSelectedPartner] = useState(null);
-  const [partnerPosition, setPartnerPosition] = useState(''); // 'drive' or 'revez' for the selected partner
+  const [partnerPosition, setPartnerPosition] = useState(''); 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     if (!user) {
       navigate('/login');
       return;
     }
-    fetchPlayerData();
-  }, [user, navigate]);
-
-  /**
-   * Fetches the current logged-in player's data, populating their associated pairs
-   * and the players within those pairs.
-   */
-  const fetchPlayerData = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const jwt = localStorage.getItem('jwt');
-      if (!jwt) {
-        setError('No authentication token found. Please log in.');
-        setLoading(false);
-        return;
-      }
-
-      // Define parameters to populate nested relationships for the current player's data
-      const userPopulateParams = [
-          'jugador.pareja_drive.revez',
-          'jugador.pareja_drive.drive',
-          'jugador.pareja_revez.revez',
-          'jugador.pareja_revez.drive'
-      ];
-      const userQueryParams = new URLSearchParams();
-      userPopulateParams.forEach(param => {
-          userQueryParams.append('populate', param);
-      });
-      const userAPI_URL = `${API_BASE}api/users/me?${userQueryParams.toString()}`;
-
-      const userResponse = await fetch(userAPI_URL, {
-        headers: {
-          'Authorization': `Bearer ${jwt}`,
-        },
-      });
-
-      if (!userResponse.ok) {
-        throw new Error('Failed to fetch user data.');
-      }
-      const userData = await userResponse.json();
-
-      if (!userData.jugador) {
-        setError('No player profile associated with your account. Please contact support.');
-        setLoading(false);
-        return;
-      }
-      setPlayerData(userData.jugador);
-      console.log('Fetched playerData (full structure):', userData.jugador);
-
-    } catch (err) {
-      console.error('Error fetching player data:', err);
-      setError(err.message || 'Error loading player data.');
-    } finally {
+    if (!playerDocumentId) {
+      setError('Error: Document ID del jugador no especificado. Vuelve a la página de perfil para seleccionar tu jugador.');
       setLoading(false);
+      return;
     }
-  };
+    fetchPlayerData(playerDocumentId);
+  }, [user, navigate, playerDocumentId]); 
 
 /**
- * Helper function to check if two players are already paired together.
- * It checks both players' drive and revez pairs to see if they form a duo.
- * Compares using 'id' (the Strapi primary key) for robustness.
- * @param {object} player1 - The first player object (e.g., current user).
- * @param {object} player2 - The second player object (e.g., selected partner).
- * @returns {boolean} True if they are already paired, false otherwise.
+ * Fetches the current player's data by their Document ID, handling the non-standard API response structure.
  */
-const arePlayersAlreadyPaired = (player1, player2) => {
-    // CAMBIO 1: Usar .id en lugar de .documentId
-    console.log("arePlayersAlreadyPaired: Checking if players are already paired using ID.");
-    console.log("  Player 1 (current user):", player1?.nombre, player1?.apellido, "ID:", player1?.id);
-    console.log("  Player 2 (potential partner):", player2?.nombre, player2?.apellido, "ID:", player2?.id);
+const fetchPlayerData = async (docId) => {
+  setLoading(true);
+  setError('');
+  const jwt = localStorage.getItem('jwt');
+  if (!jwt) {
+    setError('No estás autenticado.');
+    setLoading(false);
+    navigate('/login');
+    return;
+  }
 
-    // CAMBIO 2: Validar por .id
-    if (!player1 || !player2 || !player1.id || !player2.id) {
-        console.log("arePlayersAlreadyPaired: Missing player data or IDs. Returning false.");
-        return false;
+  try {
+    const populateParams = [
+      'pareja_drive.revez', 
+      'pareja_drive.drive', 
+      'pareja_revez.revez', 
+      'pareja_revez.drive'
+    ].map(param => `populate=${param}`).join('&'); 
+
+    const playerAPI_URL = `${API_BASE}api/jugadors/${docId}?${populateParams}`;
+
+    const playerResponse = await fetch(playerAPI_URL, {
+      headers: {
+        'Authorization': `Bearer ${jwt}`,
+      },
+    });
+
+    if (!playerResponse.ok) {
+      throw new Error('No se pudieron cargar los datos del jugador.');
     }
 
-    const checkSpecificPair = (pair, pairOwnerName, pairType) => {
-        console.log(`  Checking ${pairType} pair for ${pairOwnerName}:`, pair);
-        // Ensure the pair object exists and has drive and revez properties which are objects with an 'id'
-        // CAMBIO 3: Validar por .id en las relaciones anidadas
-        if (pair && pair.drive && typeof pair.drive === 'object' && pair.drive.id &&
-            pair.revez && typeof pair.revez === 'object' && pair.revez.id) {
-            
-            // CAMBIO 4: Usar .id en las variables
-            const driveId = pair.drive.id;
-            const revezId = pair.revez.id;
-            console.log(`    Pair IDs: drive=${driveId}, revez=${revezId}`);
-            
-            // Check if player1 and player2 are the drive and revez of this pair (in any order)
-            // CAMBIO 5: Comparar IDs
-            const isPaired = (
-                (driveId === player1.id && revezId === player2.id) ||
-                (driveId === player2.id && revezId === player1.id)
-            );
-            console.log(`    Is paired: ${isPaired}`);
-            return isPaired;
-        }
-        console.log("  Pair is not valid or not fully populated with IDs. Returning false for this pair.");
-        return false;
-    };
+    const playerDataResponse = await playerResponse.json();
+    
+    // CRÍTICO: Manejar respuesta API sin 'attributes' (formato plano)
+    if (playerDataResponse.data) {
+      const dataFromApi = playerDataResponse.data;
+      
+      if (dataFromApi.id && dataFromApi.nombre) {
+          
+          if (dataFromApi.attributes) {
+              setPlayerData({
+                  id: dataFromApi.id,
+                  documentId: dataFromApi.documentId || docId,
+                  ...dataFromApi.attributes
+              });
+          } else {
+              setPlayerData({
+                  // Aplanar data si viene sin wrapper 'attributes'
+                  ...dataFromApi, 
+                  id: dataFromApi.id,
+                  documentId: dataFromApi.documentId || docId,
+              });
+          }
+          return;
+      }
+    }
+    
+    throw new Error('Formato de datos de jugador no reconocido o jugador no encontrado.');
 
-    // Check pairs where player1 is involved
-    if (checkSpecificPair(player1.pareja_drive, player1.nombre, 'player1.pareja_drive')) return true;
-    if (checkSpecificPair(player1.pareja_revez, player1.nombre, 'player1.pareja_revez')) return true;
-
-    // Check pairs where player2 is involved (this is crucial for search results)
-    if (checkSpecificPair(player2.pareja_drive, player2.nombre, 'player2.pareja_drive')) return true;
-    if (checkSpecificPair(player2.pareja_revez, player2.nombre, 'player2.pareja_revez')) return true;
-
-    console.log("arePlayersAlreadyPaired: No existing pair found between these two players. Returning false.");
-    return false;
+  } catch (err) {
+    console.error('Error fetching player data:', err);
+    setError(`Error al cargar el perfil: ${err.message}`);
+  } finally {
+    setLoading(false);
+  }
 };
 
-  /**
-   * Handles the player search functionality.
-   * Fetches players matching the search term and filters out the current user.
-   * Also identifies if a searched player is already paired with the current user.
-   */
-  const handleSearch = async (e) => {
-    e.preventDefault();
+
+/**
+ * Checks if two players (player1 and player2) are already paired in any way.
+ * Solo verifica la data populada de player1 (usuario actual).
+ */
+const arePlayersAlreadyPaired = (player1, player2) => {
+  const player1Id = player1?.id;
+  const player2Id = player2?.id;
+
+  if (!player1Id || !player2Id) return false;
+
+  const checkSpecificPair = (pair) => {
+    if (!pair) return false;
+    
+    // Manejar relaciones simples (ID) o populadas (objeto con ID)
+    const driveId = typeof pair.drive === 'object' ? pair.drive.id : pair.drive;
+    const revezId = typeof pair.revez === 'object' ? pair.revez.id : pair.revez;
+
+    if (!driveId || !revezId) return false;
+    
+    const driveIdNum = Number(driveId);
+    const revezIdNum = Number(revezId);
+    const player1IdNum = Number(player1Id);
+    const player2IdNum = Number(player2Id);
+
+    const isPaired = (
+      (driveIdNum === player1IdNum && revezIdNum === player2IdNum) ||
+      (driveIdNum === player2IdNum && revezIdNum === player1IdNum)
+    );
+
+    return isPaired;
+  };
+
+  // Solo revisamos las parejas del Jugador 1 (usuario actual)
+  if (checkSpecificPair(player1.pareja_drive)) return true;
+  if (checkSpecificPair(player1.pareja_revez)) return true;
+
+  return false;
+};
+
+// src/components/CreatePair.jsx - Función handleSearch (REEMPLAZAR)
+
+const handleSearch = async (e) => {
+  e.preventDefault();
+  if (!searchTerm.trim()) {
     setSearchResults([]);
-    setError('');
-    if (searchTerm.trim().length < 3) {
-      setError('Por favor, ingresa al menos 3 caracteres para buscar.');
+    return;
+  }
+
+  setIsSearching(true);
+  setSearchResults([]);
+  setSelectedPartner(null);
+  setPartnerPosition('');
+  setError('');
+
+  const jwt = localStorage.getItem('jwt');
+
+  try {
+    const queryParams = new URLSearchParams();
+
+    // Filtros de búsqueda (Sintaxis robusta)
+    queryParams.append('filters[$or][0][nombre][$containsi]', searchTerm);
+    queryParams.append('filters[$or][1][apellido][$containsi]', searchTerm);
+    queryParams.append('filters[$or][2][email][$containsi]', searchTerm);
+
+    // Excluir al jugador actual
+    if (playerData?.id) {
+        queryParams.append('filters[id][$ne]', playerData.id);
+    }
+    
+    // Populate simple (solo las relaciones directas) para la validación de pareja
+    const populateParams = [
+        'pareja_drive', 
+        'pareja_revez' 
+    ];
+    populateParams.forEach(param => {
+        queryParams.append('populate', param);
+    });
+
+    const url = `${API_BASE}api/jugadors?${queryParams.toString()}`;
+
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${jwt}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+       throw new Error(data.error?.message || 'Error en la búsqueda de jugadores.');
+    }
+      
+    if (Array.isArray(data.data)) {
+      const results = data.data.map(item => {
+        // CORRECCIÓN FINAL CRÍTICA: La respuesta de Colección también es PLANA.
+        // Mapeamos los campos directamente desde 'item', no desde 'item.attributes'.
+        
+        return {
+            id: item.id, 
+            documentId: item.documentId, 
+            nombre: item.nombre, // <-- CORREGIDO
+            apellido: item.apellido, // <-- CORREGIDO
+            email: item.email, // <-- CORREGIDO
+            rankingGeneral: item.rankingGeneral, // <-- CORREGIDO
+            pareja_drive: item.pareja_drive, 
+            pareja_revez: item.pareja_revez,
+        };
+      });
+      
+      setSearchResults(results);
+    } else {
+      throw new Error('La respuesta de la búsqueda no es una lista válida.');
+    }
+
+  } catch (err) {
+    setError('Error al buscar jugadores: ' + err.message);
+  } finally {
+    setIsSearching(false);
+  }
+};
+
+  const handleCreatePair = async () => {
+    if (!playerData || !selectedPartner || !partnerPosition) {
+      setError('Datos incompletos para crear la pareja.');
       return;
     }
 
-    try {
-      const jwt = localStorage.getItem('jwt');
-      const searchQueryParams = new URLSearchParams();
-
-      // Main search filter by name, last name or email
-      searchQueryParams.append('filters[$or][0][nombre][$containsi]', searchTerm);
-      searchQueryParams.append('filters[$or][1][apellido][$containsi]', searchTerm);
-      searchQueryParams.append('filters[$or][2][email][$containsi]', searchTerm);
-
-      // Filter only players that have a related user
-      searchQueryParams.append('filters[users_permissions_user][$notNull]', 'true');
-
-      // Populate nested relationships for searched players' pairs
-      const searchPopulateParams = [
-          'pareja_drive.revez',
-          'pareja_drive.drive',
-          'pareja_revez.revez',
-          'pareja_revez.drive',
-          'users_permissions_user'
-      ];
-      searchPopulateParams.forEach(param => {
-          searchQueryParams.append('populate', param);
-      });
-
-      const SEARCH_API_URL = `${API_BASE}api/jugadors?${searchQueryParams.toString()}`;
-
-      const response = await fetch(SEARCH_API_URL, {
-        headers: {
-          'Authorization': `Bearer ${jwt}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Falló la búsqueda de jugadores.');
-      }
-      const data = await response.json();
-
-      console.log("Datos de la API para la búsqueda de jugadores:", data.data);
-
-      const players = data.data.map(item => ({ id: item.id, ...item }));
-
-      const processedPlayers = players.map(player => ({
-        ...player,
-        nombre: player?.nombre || 'Nombre Desconocido',
-        apellido: player?.apellido || '',
-        email: player.email || 'email@desconocido.com'
-      }));
-
-      // Filter out the current logged-in player from search results
-      const filteredPlayers = processedPlayers.filter(p => p.id !== playerData.id);
-      console.log("filteredPlayers (after removing current user):", filteredPlayers);
-
-      // Add a flag to indicate if the searched player is already paired with the current user
-      const finalFilteredPlayers = filteredPlayers.map(player => {
-          console.log("DEBUG: Checking player in search results:", player.nombre, player.apellido, "Document ID:", player.documentId);
-          console.log("  Player's pareja_drive (from search result):", player.pareja_drive);
-          console.log("  Player's pareja_revez (from search result):", player.pareja_revez);
-          const isAlreadyPaired = arePlayersAlreadyPaired(playerData, player);
-          console.log(`  Is ${player.nombre} (Document ID: ${player.documentId}) already paired with current user (Document ID: ${playerData.documentId})? ${isAlreadyPaired}`);
-          return {
-              ...player,
-              isAlreadyPairedTogether: isAlreadyPaired
-          };
-      });
-      console.log("Final filtered players with disabled status:", finalFilteredPlayers);
-
-      setSearchResults(finalFilteredPlayers);
-      if (finalFilteredPlayers.length === 0) {
-        setError('No se encontraron jugadores que coincidan con tu búsqueda.');
-      }
-    } catch (err) {
-      console.error('Error buscando jugadores:', err);
-      setError(err.message || 'Error buscando jugadores. Por favor, inténtalo de nuevo.');
+    if (arePlayersAlreadyPaired(playerData, selectedPartner)) {
+      setError('¡Esta pareja ya existe! Por favor, selecciona otro compañero.');
+      return;
     }
-  };
 
-  /**
-   * Handles the selection of a partner from the search results.
-   * @param {object} player - The selected player object.
-   */
-  const handleSelectPartner = (player) => {
-    setSelectedPartner(player);
-    setSearchResults([]); // Clear search results after selection
-    setSearchTerm(''); // Clear search term
-  };
+    const myPosition = partnerPosition === 'drive' ? 'revez' : 'drive';
 
-  /**
-   * Clears the selected partner and their position.
-   */
-  const handleRemovePartner = () => {
-    setSelectedPartner(null);
-    setPartnerPosition('');
-  };
+    // 2. Validación de disponibilidad de posición para el jugador actual
+    const myExistingPair = myPosition === 'drive' ? playerData.pareja_drive : playerData.pareja_revez;
+    if (myExistingPair) {
+      const partnerInExistingPair = myPosition === 'drive' 
+        ? myExistingPair.revez 
+        : myExistingPair.drive;
 
-  /**
-   * Helper function to format player name for pair naming (e.g., "F.SELVAROLO").
-   * @param {object} player - The player object.
-   * @returns {string} Formatted player name.
-   */
-  const formatPlayerNameForPair = (player) => {
-    if (!player || !player.nombre || !player.apellido) {
-      return 'Jugador Desconocido';
+      setError(`Ya tienes una pareja en la posición de ${myPosition}. Estás emparejado con ${partnerInExistingPair?.nombre || 'otro jugador'}.`);
+      return;
     }
-    const initial = player.nombre.charAt(0).toUpperCase();
-    const formattedApellido = player.apellido.charAt(0).toUpperCase() + player.apellido.slice(1).toLowerCase();
-    return `${initial}.${formattedApellido}`;
-  };
+    
+    // 3. Validación de disponibilidad de posición para el compañero (la posición opuesta)
+    const partnerExistingPairAttribute = partnerPosition === 'drive' ? selectedPartner.pareja_drive : selectedPartner.pareja_revez;
 
-  /**
-   * Handles the creation of a new pair.
-   * Performs validations before sending the request to the API.
-   */
-  const handleCreatePair = async (e) => {
-    e.preventDefault();
+    if (partnerExistingPairAttribute) {
+      setError(`¡Tu compañero (${selectedPartner.nombre}) ya tiene una pareja en la posición de ${partnerPosition}! No puede formar otra.`);
+      return;
+    }
+
+
+    setLoading(true);
     setError('');
     setSuccessMessage('');
+    const jwt = localStorage.getItem('jwt');
 
-    if (!playerData || !selectedPartner || !partnerPosition) {
-      setError('Por favor, selecciona un compañero y su posición.');
-      return;
-    }
-
-    // NEW: Check if players are already paired together using documentId
-    console.log("DEBUG: playerData before arePlayersAlreadyPaired check in handleCreatePair:", playerData);
-    console.log("DEBUG: selectedPartner before arePlayersAlreadyPaired check in handleCreatePair:", selectedPartner);
-    if (arePlayersAlreadyPaired(playerData, selectedPartner)) {
-        setError('Usted y su compañero seleccionado ya tienen una pareja creada juntos. No se puede crear otra.');
-        return;
-    }
-
-    // Determine current user's position based on selected partner's position
-    let myPosition = '';
-    if (partnerPosition === 'drive') {
-      myPosition = 'revez';
-    } else { // partnerPosition === 'revez'
-      myPosition = 'drive';
-    }
-
-    // Checks for existing pairs for the current user in the chosen position
-    if (myPosition === 'drive' && playerData.pareja_drive) {
-        setError(`Ya eres el 'Drive' en una pareja: ${playerData.pareja_drive.drive?.nombre || ''} ${playerData.pareja_drive.drive?.apellido || ''} y ${playerData.pareja_drive.revez?.nombre || ''} ${playerData.pareja_drive.revez?.apellido || ''}. No puedes crear otra pareja como 'Drive'.`);
-        return;
-    }
-    if (myPosition === 'revez' && playerData.pareja_revez) {
-        setError(`Ya eres el 'Revés' en una pareja: ${playerData.pareja_revez.drive?.nombre || ''} ${playerData.pareja_revez.drive?.apellido || ''} y ${playerData.pareja_revez.revez?.nombre || ''} ${playerData.pareja_revez.revez?.apellido || ''}. No puedes crear otra pareja como 'Revés'.`);
-        return;
-    }
-     // Check if selected partner already has a partner in the chosen position
-    if (partnerPosition === 'drive' && selectedPartner.pareja_drive) {
-        setError(`${selectedPartner.nombre} ${selectedPartner.apellido} ya es el 'Drive' en una pareja. Por favor, elige otro compañero o posición.`);
-        return;
-    }
-    if (partnerPosition === 'revez' && selectedPartner.pareja_revez) {
-        setError(`${selectedPartner.nombre} ${selectedPartner.apellido} ya es el 'Revés' en una pareja. Por favor, elige otro compañero o posición.`);
-        return;
-    }
-
-
-    // Construct the pair data based on who is drive and who is revez
-    let newPairData = {};
-    const player1FormattedName = formatPlayerNameForPair(playerData);
-    const player2FormattedName = formatPlayerNameForPair(selectedPartner);
+    let newPairData;
+    const player1Name = playerData.nombre;
+    const player2Name = selectedPartner.nombre;
 
     if (myPosition === 'drive') {
       newPairData = {
-        drive: playerData.id, // Still use ID for API payload if that's what backend expects
-        revez: selectedPartner.id, // Still use ID for API payload if that's what backend expects
-        // Automatic generation of the pair name
-        nombrePareja: `${player1FormattedName} & ${player2FormattedName}`,
+        drive: playerData.id, 
+        revez: selectedPartner.id, 
+        nombrePareja: `${player1Name} / ${player2Name} (D/R)`,
       };
-    } else { // myPosition === 'revez'
+    } else { 
       newPairData = {
-        drive: selectedPartner.id, // Still use ID for API payload if that's what backend expects
-        revez: playerData.id, // Still use ID for API payload if that's what backend expects
-        // Automatic generation of the pair name (ordered by drive & revez)
-        nombrePareja: `${player2FormattedName} & ${player1FormattedName}`,
+        drive: selectedPartner.id, 
+        revez: playerData.id, 
+        nombrePareja: `${player1Name} / ${player2Name} (R/D)`,
       };
     }
 
     try {
-      const jwt = localStorage.getItem('jwt');
       const response = await fetch(`${API_BASE}api/parejas`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${jwt}`,
         },
-        body: JSON.stringify({ data: newPairData }),
+        body: JSON.stringify({ data: newPairData }), 
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || 'Falló la creación de la pareja.');
-      }
+      const data = await response.json();
 
-      const createdPair = await response.json();
-      setSuccessMessage('¡Pareja creada con éxito! Ahora puedes registrarte en torneos con esta pareja.');
-      setSelectedPartner(null);
-      setPartnerPosition('');
-      setSearchTerm('');
-      setSearchResults([]);
-      // Re-fetch player data to update their associated pairs
-      fetchPlayerData();
+      if (response.ok) {
+        setSuccessMessage(`¡Pareja creada exitosamente: ${newPairData.nombrePareja}!`);
+        fetchPlayerData(playerDocumentId); 
+        setSelectedPartner(null);
+        setPartnerPosition('');
+        setSearchResults([]);
+        setSearchTerm('');
+
+      } else {
+        const message = data.error?.message || 'Error desconocido al crear la pareja.';
+        setError('Error: ' + message);
+        console.error('API Error:', data.error);
+      }
     } catch (err) {
-      console.error('Error creando pareja:', err);
-      setError(err.message || 'Error creando pareja. Por favor, inténtalo de nuevo.');
+      setError('Error de red al intentar crear la pareja.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (loading) {
-    return <div className="text-center p-4 text-gray-600">Cargando perfil del jugador...</div>;
+
+  // --- Renderizado ---
+  if (loading && !playerData) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <FontAwesomeIcon icon={faSpinner} spin size="3x" className="text-blue-600" />
+        <p className="ml-3 text-lg">Cargando datos del jugador...</p>
+      </div>
+    );
   }
 
-  if (error && !playerData) { // Show full error if player data couldn't be loaded at all
-    return <div className="text-center p-4 text-red-600">{error}</div>;
+  if (error && !successMessage) {
+    return (
+      <div className="p-8 bg-red-100 border border-red-400 text-red-700 rounded-lg shadow-lg">
+        <p className="font-bold">Error:</p>
+        <p>{error}</p>
+        <button onClick={() => navigate('/profile')} className="mt-4 text-blue-600 hover:underline">
+          Volver al Perfil
+        </button>
+      </div>
+    );
   }
 
   return (
-    <div className="container mx-auto p-4 sm:p-6 lg:p-8 max-w-2xl bg-white rounded-lg shadow-xl mt-8">
-      <h1 className="text-3xl font-bold text-center text-blue-700 mb-6">Gestionar Parejas</h1>
-      {playerData && (
-        <div className="mb-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <h2 className="text-xl font-semibold text-blue-800 mb-3">Tus Parejas Actuales:</h2>
-          {playerData.pareja_drive || playerData.pareja_revez ? (
-            <ul className="list-disc list-inside text-gray-700">
-              {playerData.pareja_drive && (
-                <li className="mb-1">
-                  <span className="font-medium text-blue-600">Como Drive:</span> {playerData.pareja_drive.drive?.nombre || 'N/A'} y {playerData.pareja_drive.revez?.nombre || 'N/A'} 
-                </li>
-              )}
-              {playerData.pareja_revez && (
-                <li className="mb-1">
-                  <span className="font-medium text-blue-600">Como Revés:</span> {playerData.pareja_revez.drive?.nombre || 'N/A'} y {playerData.pareja_revez.revez?.nombre || 'N/A'} 
-                </li>
-              )}
-            </ul>
-          ) : (
-            <p className="text-gray-600">No tienes parejas registradas.</p>
-          )}
+    <div className="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-2xl">
+      <h1 className="text-3xl font-bold mb-6 text-gray-800 border-b pb-2">Crear Nueva Pareja</h1>
+      
+      {/* Mensajes de Éxito/Error */}
+      {successMessage && (
+        <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert">
+          <p className="font-bold">¡Éxito!</p>
+          <p>{successMessage}</p>
+        </div>
+      )}
+      {error && !successMessage && (
+        <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
+          <p className="font-bold">Error</p>
+          <p>{error}</p>
         </div>
       )}
 
-      <div className="mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Crear Nueva Pareja</h2>
-
-        {error && <p className="text-red-600 text-sm mb-4 text-center">{error}</p>}
-        {successMessage && <p className="text-green-600 text-sm mb-4 text-center">{successMessage}</p>}
-
-        {!selectedPartner ? (
-          <>
-            <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3 mb-4">
-              <input
-                type="text"
-                placeholder="Buscar compañero por nombre, apellido o email..."
-                className="flex-grow p-3 text-black border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                required
-              />
-              <button
-                type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 flex items-center justify-center gap-2"
-              >
-                <FontAwesomeIcon icon={faSearch} /> Buscar
-              </button>
-            </form>
-
-            {searchResults.length > 0 && (
-              <div className="border border-gray-200 rounded-lg bg-white shadow-inner max-h-60 overflow-y-auto">
-                <ul className="divide-y divide-gray-200">
-                  {searchResults.map((player) => (
-                    <li
-                      key={player.id}
-                      className={`p-3 hover:bg-blue-50 cursor-pointer flex items-center justify-between ${player.isAlreadyPairedTogether ? 'opacity-50 cursor-not-allowed bg-gray-100' : ''}`}
-                      onClick={() => !player.isAlreadyPairedTogether && handleSelectPartner(player)}
-                    >
-                      <span className={`${player.isAlreadyPairedTogether ? 'line-through text-gray-500' : 'text-gray-800'}`}>
-                         {player?.nombre} {player.isAlreadyPairedTogether && '(Ya emparejado con este usuario)'}
-                      </span>
-                      <FontAwesomeIcon
-                          icon={player.isAlreadyPairedTogether ? faCheckCircle : faUserPlus}
-                      />
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </>
-        ) : (
-          <div className="p-4 border border-blue-300 bg-blue-50 rounded-lg shadow-md">
-            <h3 className="text-lg font-semibold text-blue-800 mb-3">Compañero Seleccionado:</h3>
-            <div className="flex items-center justify-between mb-4 bg-white p-3 rounded-md shadow-sm border border-blue-200">
-              <span className="text-gray-800 font-medium">
-                {selectedPartner.nombre} 
-              </span>
-              <button
-                onClick={handleRemovePartner}
-                className="text-red-500 hover:text-red-700 transition duration-200"
-                title="Quitar compañero"
-              >
-                <FontAwesomeIcon icon={faTimesCircle} size="lg" />
-              </button>
-            </div>
-
-            <h3 className="text-lg font-semibold text-blue-800 mb-3">Selecciona Posiciones:</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-              <div
-                className={`p-4 rounded-lg border-2 cursor-pointer transition duration-300 ease-in-out ${
-                  partnerPosition === 'drive'
-                    ? 'border-blue-600 bg-blue-100 shadow-md'
-                    : 'border-gray-300 hover:border-blue-400'
-                }`}
-                onClick={() => setPartnerPosition('drive')}
-              >
-                <p className="font-semibold text-gray-800">Yo soy <span className="text-blue-600">Revés</span></p>
-                <p className="text-gray-600">Mi compañero ({selectedPartner.nombre}) es <span className="text-blue-600">Drive</span></p>
-              </div>
-              <div
-                className={`p-4 rounded-lg border-2 cursor-pointer transition duration-300 ease-in-out ${
-                  partnerPosition === 'revez'
-                    ? 'border-blue-600 bg-blue-100 shadow-md'
-                    : 'border-gray-300 hover:border-blue-400'
-                }`}
-                onClick={() => setPartnerPosition('revez')}
-              >
-                <p className="font-semibold text-gray-800">Yo soy <span className="text-blue-600">Drive</span></p>
-                <p className="text-gray-600">Mi compañero ({selectedPartner.nombre}) es <span className="text-blue-600">Revés</span></p>
-              </div>
-            </div>
-
-            <button
-              onClick={handleCreatePair}
-              disabled={!partnerPosition}
-              className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-sm font-medium text-white transition duration-300 ease-in-out transform hover:-translate-y-1 ${
-                !partnerPosition ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500'
-              }`}
-            >
-              <FontAwesomeIcon icon={faUserPlus} className="mr-2" /> Crear Pareja
-            </button>
+      {/* Información del Jugador Actual */}
+      {playerData && (
+        <div className="mb-8 p-4 border rounded-lg bg-blue-50">
+          <p className="text-lg font-semibold text-blue-800">Jugador Actual:</p>
+          <p className="text-2xl font-extrabold text-blue-900">{playerData.nombre} {playerData.apellido}</p>
+          <div className="mt-2 text-sm">
+            {/* Mostrar parejas existentes del jugador */}
+            <p className="text-black">
+              <span className="font-semibold">Pareja Drive:</span>{' '}
+              {playerData.pareja_drive 
+                ? `con ${playerData.pareja_drive.revez.nombre} (${playerData.pareja_drive.nombrePareja})` 
+                : 'Libre'
+              }
+            </p>
+            <p className="text-black">
+              <span className="font-semibold">Pareja Revés:</span>{' '}
+              {playerData.pareja_revez 
+                ? `con ${playerData.pareja_revez.drive.nombre} (${playerData.pareja_revez.nombrePareja})` 
+                : 'Libre'
+              }
+            </p>
           </div>
-        )}
+        </div>
+      )}
+
+      {/* 1. Buscar Compañero */}
+      <div className="mb-8">
+        <h2 className="text-xl font-bold mb-4 text-gray-700">1. Buscar Compañero</h2>
+        <form onSubmit={handleSearch} className="flex space-x-3">
+          <input
+            type="text"
+            placeholder="Buscar por Nombre, Apellido o Email..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="flex-grow p-3 border border-gray-300 rounded-lg text-black focus:ring-blue-500 focus:border-blue-500"
+          />
+          <button
+            type="submit"
+            disabled={isSearching}
+            className={`p-3 rounded-lg text-white transition duration-300 ${
+              isSearching ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'
+            }`}
+          >
+            <FontAwesomeIcon icon={isSearching ? faSpinner : faSearch} spin={isSearching} />
+          </button>
+        </form>
+
+        {/* Resultados de Búsqueda */}
+        <div className="mt-4 space-y-3 max-h-64 overflow-y-auto">
+        {searchResults.length > 0 ? (
+          searchResults.map(player => (
+            console.log("player", player),	
+            <div 
+              key={player.id} 
+              className={`p-4 border rounded-lg cursor-pointer transition duration-200 ${
+                selectedPartner?.id === player.id 
+                  ? 'bg-green-100 border-green-500 shadow-md' 
+                  : 'hover:bg-gray-50 border-gray-200'
+              }`}
+              onClick={() => {
+                setSelectedPartner(player);
+                setPartnerPosition(''); 
+              }}
+            >
+              {/* Renderizado mejorado y accesible: Nombre y Puntos */}
+              <div className="flex justify-between items-center mb-1">
+                  <div className="text-xl font-bold text-black">
+                      {player?.nombre} {player?.apellido}
+                  </div>
+                  <div className="flex items-center text-lg font-extrabold text-yellow-600">
+                      <FontAwesomeIcon icon={faStar} className="w-4 h-4 mr-1" />
+                      {player.rankingGeneral || 'N/A'}
+                  </div>
+              </div>
+              <div className="text-sm text-gray-500">
+                  {player.email}
+              </div>
+              
+              {selectedPartner?.id === player.id && (
+                <div className="mt-2 text-green-600 font-bold flex items-center">
+                  <FontAwesomeIcon icon={faCheckCircle} className="mr-2" />
+                  Compañero seleccionado
+                </div>
+              )}
+            </div>
+          ))
+      ) : searchTerm.length > 0 && !isSearching ? (
+          <p className="text-gray-500 text-center">No se encontraron jugadores que coincidan o ya están excluidos.</p>
+      ) : null}
+        </div>
+      </div>
+
+      {/* 2. Seleccionar Posición y Crear */}
+      {selectedPartner && (
+        <div className="border-t pt-8">
+          {/* Título y subtítulo con encadenamiento opcional para evitar fallos */}
+          <h2 className="text-xl font-bold mb-4 text-black">2. Seleccionar Posición para {selectedPartner?.nombre}</h2>
+          <p className="mb-4 text-gray-600">
+            Estás creando una pareja con <span className="font-bold text-green-700">{selectedPartner?.nombre} {selectedPartner?.apellido}</span>.
+            Selecciona la posición de tu compañero, lo que determinará tu posición.
+          </p>
+
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div
+              className={`p-4 rounded-lg border-2 cursor-pointer transition duration-300 ease-in-out ${
+                partnerPosition === 'drive'
+                  ? 'border-green-600 bg-green-100 shadow-md'
+                  : 'border-gray-300 hover:border-green-400'
+              }`}
+              onClick={() => setPartnerPosition('drive')}
+            >
+              <p className="font-semibold text-gray-800">Yo soy <span className="text-green-600">Revés</span></p>
+              {/* Card 1: Uso seguro del nombre */}
+              <p className="text-gray-600">Mi compañero ({selectedPartner?.nombre}) es <span className="text-green-600">Drive</span></p>
+            </div>
+            <div
+              className={`p-4 rounded-lg border-2 cursor-pointer transition duration-300 ease-in-out ${
+                partnerPosition === 'revez'
+                  ? 'border-green-600 bg-green-100 shadow-md'
+                  : 'border-gray-300 hover:border-green-400'
+              }`}
+              onClick={() => setPartnerPosition('revez')}
+            >
+              <p className="font-semibold text-gray-800">Yo soy <span className="text-green-600">Drive</span></p>
+              {/* Card 2: Uso seguro del nombre */}
+              <p className="text-black">Mi compañero ({selectedPartner?.nombre}) es <span className="text-green-600">Revés</span></p>
+            </div>
+          </div>
+
+          <button
+            onClick={handleCreatePair}
+            disabled={!partnerPosition || loading}
+            className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-sm font-medium text-black transition duration-300 ease-in-out transform hover:-translate-y-1 ${
+              !partnerPosition || loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500'
+            }`}
+          >
+            <FontAwesomeIcon icon={loading ? faSpinner : faUserPlus} spin={loading} className="mr-2" />
+            {/* Botón: Uso seguro del nombre */}
+            {loading ? 'Creando Pareja...' : `Crear Pareja con ${selectedPartner?.nombre || 'Compañero'}`}
+          </button>
+        </div>
+      )}
+
+      <div className='mt-8 pt-4 border-t'>
+        <button
+          onClick={() => navigate('/profile')}
+          className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-black bg-white hover:bg-gray-50 transition duration-300"
+        >
+          <FontAwesomeIcon icon={faArrowRight} rotation={180} className="mr-2" />
+          Volver al Perfil
+        </button>
       </div>
     </div>
   );
