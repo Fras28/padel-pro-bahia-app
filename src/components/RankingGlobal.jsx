@@ -550,7 +550,7 @@ const getInsignia = (player) => {
             return getCategoryOrderIndex(a.name) - getCategoryOrderIndex(b.name);
           })
           .map((categoryData, catIndex) => (
-    <><div key={catIndex} className="mb-8 border border-gray-100 p-4 rounded-lg shadow-sm"> 
+    <><div key={catIndex} className="mb-8 border border-gray-100 rounded-lg shadow-sm"> 
       
               <h3 className="text-lg sm:text-xl font-bold text-indigo-700 mb-4 border-b pb-2">
                 {categoryData.name}
