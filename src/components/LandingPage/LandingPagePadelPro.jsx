@@ -2,7 +2,11 @@ import React, { useEffect, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import Logo from "../../assets/LogoPPR.png";
 
-// Componente para animación de conteo de números
+// IMÁGENES ESTÁTICAS CORREGIDAS
+import bgHero1 from "../../assets/bgHero.png"; // Fondo estático del Hero
+import historicalImage from "../../assets/Historia/historia2.jpg"; // Imagen estática para "Sobre Nosotros"
+
+// Componente para animación de conteo de números (Sin cambios)
 const NumberCounter = ({ target, duration = 2000 }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, amount: 0.5 });
@@ -12,7 +16,7 @@ const NumberCounter = ({ target, duration = 2000 }) => {
     if (!isInView) return;
     let start = 0;
     const end = parseInt(target, 10);
-    const increment = end / (duration / 10); // Pasos por 10ms
+    const increment = end / (duration / 10);
     const timer = setInterval(() => {
       start += increment;
       setCount(Math.floor(start));
@@ -27,21 +31,15 @@ const NumberCounter = ({ target, duration = 2000 }) => {
   return <span ref={ref}>{count}</span>;
 };
 
-// Función para iconos (sin cambios)
+// Función para iconos (Sin cambios)
 const Icon = ({ name, className }) => {
   let svgPath = '';
   switch (name) {
-    case 'Dumbbell':
-      svgPath = 'M12 2a1 1 0 0 1 1 1v18a1 1 0 0 1-2 0V3a1 1 0 0 1 1-1zM2 10a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0v-2a1 1 0 0 1 1-1zM22 10a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0v-2a1 1 0 0 1 1-1zM7 10a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0v-2a1 1 0 0 1 1-1zM17 10a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0v-2a1 1 0 0 1 1-1z';
-      break;
     case 'CalendarCheck':
       svgPath = 'M21 4V2h-3v2H8V2H5v2H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zM4 6h16v2H4V6zm16 14H4V10h16v10zM9 14l2 2 4-4';
       break;
     case 'LineChart':
       svgPath = 'M3 3v18h18M18 10l-4 4-2-2-6 6';
-      break;
-    case 'Users':
-      svgPath = 'M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 3a4 4 0 1 0 4 4 4 4 0 0 0-4-4zM22 16c0-1.5-.5-2.8-1.4-3.8A4 4 0 0 0 18 10a4 4 0 0 0-1.6 3.2 4 4 0 0 0-1.4 3.8h7zm-4-9a4 4 0 1 0 0 8 4 4 0 0 0 0-8z';
       break;
     case 'Wallet':
       svgPath = 'M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5M10 7h4M12 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4z';
@@ -64,8 +62,14 @@ const Icon = ({ name, className }) => {
     case 'Instagram':
       svgPath = 'M18 2h-12a4 4 0 0 0-4 4v12a4 4 0 0 0 4 4h12a4 4 0 0 0 4-4V6a4 4 0 0 0-4-4zM12 17.5a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11zM12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM18.5 7a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z';
       break;
+    case 'Trophy':
+      svgPath = 'M6 9H4V2h2v7zm14 0h-2V2h2v7zm-8 4H10l2 7 2-7zm-4-4h2V2h-2v7zm8 0h2V2h-2v7zM12 21l-3-3H6a2 2 0 0 1-2-2v-4h16v4a2 2 0 0 1-2 2h-3l-3 3z';
+      break;
+    case 'Users2':
+      svgPath = 'M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 3a4 4 0 1 0 4 4 4 4 0 0 0-4-4zM22 16c0-1.5-.5-2.8-1.4-3.8A4 4 0 0 0 18 10a4 4 0 0 0-1.6 3.2 4 4 0 0 0-1.4 3.8h7zm-4-9a4 4 0 1 0 0 8 4 4 0 0 0 0-8z';
+      break;
     default:
-      svgPath = 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'; // Fallback shield
+      svgPath = 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z';
       break;
   }
 
@@ -86,6 +90,9 @@ const Icon = ({ name, className }) => {
 };
 
 const LandingPagePadelPro = () => {
+  // Lógica de estado y efecto del carrusel eliminada.
+  
+  // Clase CSS para el fondo estático del Hero (restaurada)
   const styles = `
     :root {
       --color-primary: #1D4ED8; /* Azul oscuro/deportivo */
@@ -116,13 +123,14 @@ const LandingPagePadelPro = () => {
     }
     .bg-hero {
       background-color: var(--color-dark);
-      background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://placehold.co/1920x800/1D4ED8/FFFFFF?text=Fondo+de+Cancha+de+Pádel');
+      /* Usamos la imagen estática bgHero1.jpg con un overlay */
+      background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(${bgHero1}); 
       background-size: cover;
       background-position: center;
     }
   `;
 
-  // Variants para animaciones generales
+  // Variants para animaciones generales (Sin cambios)
   const sectionVariants = {
     hidden: { opacity: 0, y: 50 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeInOut' } },
@@ -145,7 +153,7 @@ const LandingPagePadelPro = () => {
     <>
       <style>{styles}</style>
 
-      {/* Header (sin animación fuerte para sticky) */}
+      {/* Header (sin cambios) */}
       <header className="bg-white shadow-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div className="flex flex-col items-start">
@@ -167,14 +175,14 @@ const LandingPagePadelPro = () => {
       </header>
 
       <main>
-        {/* Hero con fade-in y slide-up */}
+        {/* Hero Restaurado a Fondo Estático */}
         <motion.section
-          className="bg-hero text-white text-center py-20 md:py-32"
+          className="bg-hero text-white text-center py-20 md:py-32" // Clase bg-hero restaurada
           initial="hidden"
           animate="visible"
           variants={sectionVariants}
         >
-          <div className="max-w-4xl mx-auto px-4">
+          <div className="relative z-10 max-w-4xl mx-auto px-4">
             <motion.h1
               className="text-4xl sm:text-6xl font-extrabold mb-4 leading-tight"
               variants={cardVariants}
@@ -199,7 +207,65 @@ const LandingPagePadelPro = () => {
           </div>
         </motion.section>
 
-        {/* Sobre Nosotros con scroll reveal */}
+        {/* Sección Solución Integral (sin cambios) */}
+        <motion.section
+          id="solucion"
+          className="py-16 md:py-24 bg-white"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          variants={staggerContainer}
+        >
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <motion.h2
+              className="text-3xl sm:text-4xl font-extrabold text-center mb-4 text-dark"
+              variants={cardVariants}
+            >
+              Una <span className="text-primary">Solución Integral</span> para tu Club
+            </motion.h2>
+            <motion.p
+              className="text-xl text-gray-700 mb-12 max-w-3xl mx-auto"
+              variants={cardVariants}
+            >
+              Cubrimos cada aspecto de la administración de torneos: desde el registro hasta la publicación de resultados y estadísticas.
+            </motion.p>
+
+            <motion.div
+              className="grid md:grid-cols-4 gap-8"
+              variants={staggerContainer}
+            >
+              {/* Característica 1 */}
+              <motion.div variants={cardVariants} className="p-6 bg-gray-50 rounded-xl shadow-lg border-t-4 border-primary hover:shadow-xl transition duration-300">
+                <Icon name="CalendarCheck" className="text-5xl text-primary mx-auto mb-4 h-12 w-12 stroke-1" />
+                <h3 className="text-xl font-bold mb-3 text-dark">Gestión Total de Torneos</h3>
+                <p className="text-gray-600 text-sm">Creación de cuadros, control de partidos, y asignación de horarios de forma rápida y automatizada.</p>
+              </motion.div>
+
+              {/* Característica 2 */}
+              <motion.div variants={cardVariants} className="p-6 bg-gray-50 rounded-xl shadow-lg border-t-4 border-secondary hover:shadow-xl transition duration-300">
+                <Icon name="Trophy" className="text-5xl text-secondary mx-auto mb-4 h-12 w-12 stroke-1" />
+                <h3 className="text-xl font-bold mb-3 text-dark">Ranking Automático</h3>
+                <p className="text-gray-600 text-sm">Actualización inmediata y transparente del ranking de jugadores tras cada partido. ¡Cero errores manuales!</p>
+              </motion.div>
+
+              {/* Característica 3 */}
+              <motion.div variants={cardVariants} className="p-6 bg-gray-50 rounded-xl shadow-lg border-t-4 border-primary hover:shadow-xl transition duration-300">
+                <Icon name="LineChart" className="text-5xl text-primary mx-auto mb-4 h-12 w-12 stroke-1" />
+                <h3 className="text-xl font-bold mb-3 text-dark">Estadísticas Detalladas</h3>
+                <p className="text-gray-600 text-sm">Visualizá el rendimiento, la progresión de categorías y el historial de partidos para jugadores y clubes.</p>
+              </motion.div>
+
+              {/* Característica 4 */}
+              <motion.div variants={cardVariants} className="p-6 bg-gray-50 rounded-xl shadow-lg border-t-4 border-secondary hover:shadow-xl transition duration-300">
+                <Icon name="Users2" className="text-5xl text-secondary mx-auto mb-4 h-12 w-12 stroke-1" />
+                <h3 className="text-xl font-bold mb-3 text-dark">Registro y Notificación Pro</h3>
+                <p className="text-gray-600 text-sm">Sistema de inscripción sencillo para jugadores y notificaciones automáticas (horarios, resultados, cambios).</p>
+              </motion.div>
+            </motion.div>
+          </div>
+        </motion.section>
+
+        {/* SECCIÓN SOBRE NOSOTROS (UX/UI Mejorado y con Imagen Estática) */}
         <motion.section
           id="about-us"
           className="py-16 md:py-24 bg-gray-50"
@@ -208,25 +274,81 @@ const LandingPagePadelPro = () => {
           viewport={{ once: true, amount: 0.3 }}
           variants={sectionVariants}
         >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.h2
-              className="text-3xl sm:text-4xl font-extrabold text-center mb-6 text-dark"
+              className="text-3xl sm:text-4xl font-extrabold text-center mb-12 text-dark"
               variants={cardVariants}
             >
-              Nuestra Historia y Misión
+              Nuestra Historia: Aprendiendo de la Lección de los '90
             </motion.h2>
-            <div className="max-w-3xl mx-auto">
-              <motion.p
-                className="text-xl text-gray-700 mb-6"
+
+            <div className="grid md:grid-cols-2 gap-12 items-start">
+              {/* Columna 1: Narrativa */}
+              <motion.div variants={staggerContainer} className="space-y-6 text-left">
+                
+                <motion.p
+                  className="text-xl text-gray-700 font-medium"
+                  variants={cardVariants}
+                >
+                  Padel Pro Ranking no nació de la nada. **Nació de la experiencia, aquí en Bahía Blanca.** Recordamos el *boom* del pádel en los años 90: canchas llenas, entusiasmo desbordado y una generación que dio grandes figuras al deporte.
+                </motion.p>
+                
+                {/* CAJA DE ÉNFASIS PARA EL PROBLEMA (UX/UI Mejorado) */}
+                <motion.div 
+                  variants={cardVariants} 
+                  className="bg-red-50 border-l-4 border-red-500 p-6 shadow-md"
+                >
+                  <p className="text-xl font-bold text-red-700 mb-2">
+                    El Declive: Un Error que No Se Repite.
+                  </p>
+                  <p className="text-lg text-gray-800 italic">
+                    "El pádel fue tratado como un **negocio fácil antes que como un deporte**." La falta de una **gestión seria**, el pobre seguimiento al jugador (*el semillero*), y la ausencia de rankings y estadísticas profesionales desincentivaron la competencia.
+                  </p>
+                </motion.div>
+                
+                <motion.p
+                  className="text-xl text-gray-700"
+                  variants={cardVariants}
+                >
+                  El jugador no tenía un espejo profesional donde verse, y la *fiebre* se apagó abruptamente en la región.
+                </motion.p>
+
+                {/* SEPARADOR Y MISIÓN (UX/UI Mejorado) */}
+                <motion.div variants={cardVariants} className="pt-6 border-t border-gray-300 mt-6">
+                     <p className="text-3xl font-extrabold text-primary flex items-center space-x-3">
+                        <Icon name="Rocket" className="h-8 w-8 text-secondary stroke-2" />
+                        <span><span className="text-secondary">Nuestra Misión:</span> Profesionalización Total.</span>
+                     </p>
+                </motion.div>
+                
+                <motion.p
+                  className="text-xl text-gray-700"
+                  variants={cardVariants}
+                >
+                  Hoy, Padel Pro Ranking ofrece la plataforma integral que faltó en esa época: **profesionalización total.** Brindamos a clubes y jugadores rankings automáticos, estadísticas transparentes y un seguimiento digital que convierte la pasión por el pádel en una carrera deportiva sostenible.
+                </motion.p>
+              </motion.div>
+
+              {/* Columna 2: Imagen Histórica Estática */}
+              <motion.div 
+                className="relative p-4 md:p-8 bg-dark rounded-xl shadow-2xl"
                 variants={cardVariants}
               >
-                Padel Pro Ranking nació de la necesidad de modernizar y profesionalizar la gestión de torneos de pádel. Vimos la frustración de clubes y jugadores con planillas manuales...
-              </motion.p>
+                <img 
+                  src={historicalImage} 
+                  alt="Cancha de pádel antigua de los 90s en Bahía Blanca" 
+                  className="w-full h-auto object-cover rounded-lg transform rotate-1 transition duration-500 ease-in-out hover:rotate-0 hover:scale-[1.02]"
+                />
+                <div className="absolute top-2 left-4 text-xs font-bold text-secondary bg-dark/70 px-2 py-1 rounded-sm shadow-md italic">
+                    Bahía Blanca, Años '90
+                </div>
+              </motion.div>
             </div>
           </div>
         </motion.section>
+        {/* FIN SECCIÓN SOBRE NOSOTROS */}
 
-        {/* Sección Nuestros Números (ejemplo con animación de conteo) */}
+        {/* Sección Nuestros Números (sin cambios) */}
         <motion.section
           id="numeros"
           className="py-16 md:py-24 bg-white"
@@ -262,7 +384,7 @@ const LandingPagePadelPro = () => {
           </div>
         </motion.section>
 
-        {/* Beneficios con stagger y scale */}
+        {/* Beneficios con stagger y scale (sin cambios) */}
         <motion.section
           id="beneficios"
           className="py-16 md:py-24 bg-gray-100"
@@ -340,44 +462,56 @@ const LandingPagePadelPro = () => {
         </motion.section>
       </main>
 
-      {/* Footer con fade-in */}
+      {/* Footer (sin cambios) */}
       <motion.footer
-        className="bg-dark text-white py-12"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        variants={sectionVariants}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-3 gap-8 border-b border-gray-700 pb-8 mb-8">
-            <div>
-              <h5 className="text-xl font-bold text-secondary mb-3">Padel Pro Ranking</h5>
-              <p className="text-gray-400 text-sm">Innovación y profesionalismo en la gestión de torneos de pádel en Argentina.</p>
+    className="bg-dark text-white py-12"
+    initial="hidden"
+    whileInView="visible"
+    viewport={{ once: true }}
+    variants={sectionVariants}
+>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* grid-cols-1 para mobile (apilado y centrado) | md:grid-cols-3 para desktop */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 border-b border-gray-700 pb-8 mb-8 space-y-8 md:space-y-0">
+            
+            {/* Columna 1: Info Empresa */}
+            <div className="text-center md:text-left">
+                <h5 className="text-xl font-bold text-secondary mb-3">Padel Pro Ranking</h5>
+                <p className="text-gray-400 text-sm">Innovación y profesionalismo en la gestión de torneos de pádel en Argentina.</p>
             </div>
-            <div>
-              <h5 className="text-lg font-bold mb-3">Explorar</h5>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#about-us" className="text-gray-400 hover:text-white transition">Sobre Nosotros</a></li>
-                <li><a href="#solucion" className="text-gray-400 hover:text-white transition">Características</a></li>
-                <li><a href="#numeros" className="text-gray-400 hover:text-white transition">Estadísticas</a></li>
-                <li><a href="https://www.padelproranking.com" target="_blank" className="text-gray-400 hover:text-white transition">Ayuda / FAQ</a></li>
-              </ul>
+            
+            {/* Columna 2: Explorar */}
+            <div className="text-center md:text-left">
+                <h5 className="text-lg font-bold mb-3">Explorar</h5>
+                <ul className="space-y-2 text-sm"> 
+                    <li><a href="#about-us" className="text-gray-400 hover:text-white transition">Sobre Nosotros</a></li>
+                    <li><a href="#solucion" className="text-gray-400 hover:text-white transition">Características</a></li>
+                    <li><a href="#numeros" className="text-gray-400 hover:text-white transition">Estadísticas</a></li>
+                    <li><a href="https://www.padelproranking.com" target="_blank" className="text-gray-400 hover:text-white transition">Ayuda / FAQ</a></li>
+                </ul>
             </div>
-            <div>
-              <h5 className="text-lg font-bold mb-3">Contacto</h5>
-              <p className="text-gray-400 text-sm flex items-center"><Icon name="Mail" className="h-4 w-4 mr-2 stroke-2" /> info@padelproranking.com</p>
-              <p className="text-gray-400 text-sm flex items-center"><Icon name="Phone" className="h-4 w-4 mr-2 stroke-2" /> +54 9 291 5729501</p>
-              <p className="text-gray-400 text-sm mt-3">¡Seguinos en redes!</p>
-              <div className="flex space-x-4 mt-2">
-                <a href="#" target="_blank" className="text-gray-400 hover:text-white transition"><Icon name="Instagram" className="text-xl h-6 w-6 stroke-2" /></a>
-              </div>
+            
+            {/* Columna 3: Contacto */}
+            <div className="text-center md:text-left">
+                <h5 className="text-lg font-bold mb-3">Contacto</h5>
+                {/* justify-center centra el contenido flex en mobile */}
+                <p className="text-gray-400 text-sm flex items-center justify-center md:justify-start">
+                    <Icon name="Mail" className="h-4 w-4 mr-2 stroke-2" /> info@padelproranking.com
+                </p>
+                <p className="text-gray-400 text-sm flex items-center justify-center md:justify-start">
+                    <Icon name="Phone" className="h-4 w-4 mr-2 stroke-2" /> +54 9 291 5729501
+                </p>
+                <p className="text-gray-400 text-sm mt-3">¡Seguinos en redes!</p>
+                <div className="flex space-x-4 mt-2 justify-center md:justify-start">
+                    <a href="https://www.instagram.com/padelproranking/" target="_blank" className="text-gray-400 hover:text-white transition"><Icon name="Instagram" className="text-xl h-6 w-6 stroke-2" /></a>
+                </div>
             </div>
-          </div>
-          <div className="text-center text-sm text-gray-500">
-            &copy; 2024 Padel Pro Ranking. Todos los derechos reservados.
-          </div>
         </div>
-      </motion.footer>
+        <div className="text-center text-sm text-gray-500">
+            &copy; 2024 Padel Pro Ranking. Todos los derechos reservados.
+        </div>
+    </div>
+</motion.footer>
     </>
   );
 };
