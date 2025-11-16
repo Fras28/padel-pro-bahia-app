@@ -1,10 +1,81 @@
-import React, { useEffect, useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
+import React, { useEffect, useRef, useState } from 'react';
+import { motion, useInView, AnimatePresence } from 'framer-motion';
 import Logo from "../../assets/LogoPPR.png";
 
 // IMÁGENES ESTÁTICAS CORREGIDAS
 import bgHero1 from "../../assets/bgHero.png"; // Fondo estático del Hero
-import historicalImage from "../../assets/Historia/historia2.jpg"; // Imagen estática para "Sobre Nosotros"
+
+// Usaremos estas imágenes para el carrusel de HISTORIA (simulando que están en assets)
+import historicalImage1 from "../../assets/Historia/historia2.jpg"; 
+import historicalImage2 from "../../assets/Historia/historia1.jpg"; // Placeholder 1
+import historicalImage3 from "../../assets/Historia/historia3.jpg"; // Placeholder 2
+
+
+// --- Componente de Carrusel de Imágenes (NUEVO/REINTEGRADO) ---
+const ImageCarousel = ({ images, interval = 5000 }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+    }, interval);
+
+    return () => clearInterval(timer);
+  }, [images.length, interval]);
+
+  const variants = {
+    enter: { opacity: 0, x: 200 },
+    center: { opacity: 1, x: 0, transition: { duration: 0.5, ease: 'easeInOut' } },
+    exit: { opacity: 0, x: -200, transition: { duration: 0.5, ease: 'easeInOut' } },
+  };
+
+  return (
+    <div className="relative w-full h-full overflow-hidden rounded-xl shadow-2xl">
+      <AnimatePresence initial={false} mode="wait">
+        <motion.img
+          key={currentIndex}
+          src={images[currentIndex].src}
+          alt={images[currentIndex].alt}
+          className="absolute inset-0 w-full h-full object-cover"
+          variants={variants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          drag="x"
+          dragConstraints={{ left: 0, right: 0 }}
+          onDragEnd={(e, { offset, velocity }) => {
+            const swipe = offset.x;
+            if (swipe < -100) {
+              setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+            } else if (swipe > 100) {
+              setCurrentIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length);
+            }
+          }}
+        />
+      </AnimatePresence>
+      
+      {/* Indicadores de Carrusel */}
+      <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2 z-10">
+        {images.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => setCurrentIndex(index)}
+            className={`w-3 h-3 rounded-full transition-colors duration-300 ${
+              index === currentIndex ? 'bg-secondary scale-110' : 'bg-white bg-opacity-50'
+            }`}
+            aria-label={`Go to slide ${index + 1}`}
+          />
+        ))}
+      </div>
+      
+      <div className="absolute top-2 left-4 text-xs font-bold text-secondary bg-dark/70 px-2 py-1 rounded-sm shadow-md italic z-10">
+        {images[currentIndex].label}
+      </div>
+    </div>
+  );
+};
+// -------------------------------------------------------------
+
 
 // Componente para animación de conteo de números (Sin cambios)
 const NumberCounter = ({ target, duration = 2000 }) => {
@@ -90,7 +161,14 @@ const Icon = ({ name, className }) => {
 };
 
 const LandingPagePadelPro = () => {
-  // Lógica de estado y efecto del carrusel eliminada.
+
+  // --- DATOS DEL CARRUSEL DE HISTORIA ---
+  const historyImages = [
+    { src: historicalImage1, alt: "Cancha de pádel antigua de los 90s en Bahía Blanca", label: "Bahía Blanca, Años '90" },
+    { src: historicalImage2, alt: "Jugadores de pádel en alta competencia", label: "Profesionalismo Actual" },
+    { src: historicalImage3, alt: "Ambiente de un torneo de pádel", label: "Torneos y Comunidad" },
+  ];
+  // ----------------------------------------
   
   // Clase CSS para el fondo estático del Hero (restaurada)
   const styles = `
@@ -175,9 +253,9 @@ const LandingPagePadelPro = () => {
       </header>
 
       <main>
-        {/* Hero Restaurado a Fondo Estático */}
+        {/* Hero Estático (sin cambios) */}
         <motion.section
-          className="bg-hero text-white text-center py-20 md:py-32" // Clase bg-hero restaurada
+          className="bg-hero text-white text-center py-20 md:py-32" 
           initial="hidden"
           animate="visible"
           variants={sectionVariants}
@@ -265,7 +343,7 @@ const LandingPagePadelPro = () => {
           </div>
         </motion.section>
 
-        {/* SECCIÓN SOBRE NOSOTROS (UX/UI Mejorado y con Imagen Estática) */}
+        {/* SECCIÓN SOBRE NOSOTROS (Ahora con Carrusel) */}
         <motion.section
           id="about-us"
           className="py-16 md:py-24 bg-gray-50"
@@ -283,7 +361,7 @@ const LandingPagePadelPro = () => {
             </motion.h2>
 
             <div className="grid md:grid-cols-2 gap-12 items-start">
-              {/* Columna 1: Narrativa */}
+              {/* Columna 1: Narrativa (sin cambios) */}
               <motion.div variants={staggerContainer} className="space-y-6 text-left">
                 
                 <motion.p
@@ -293,7 +371,7 @@ const LandingPagePadelPro = () => {
                   Padel Pro Ranking no nació de la nada. **Nació de la experiencia, aquí en Bahía Blanca.** Recordamos el *boom* del pádel en los años 90: canchas llenas, entusiasmo desbordado y una generación que dio grandes figuras al deporte.
                 </motion.p>
                 
-                {/* CAJA DE ÉNFASIS PARA EL PROBLEMA (UX/UI Mejorado) */}
+                {/* CAJA DE ÉNFASIS PARA EL PROBLEMA (sin cambios) */}
                 <motion.div 
                   variants={cardVariants} 
                   className="bg-red-50 border-l-4 border-red-500 p-6 shadow-md"
@@ -313,7 +391,7 @@ const LandingPagePadelPro = () => {
                   El jugador no tenía un espejo profesional donde verse, y la *fiebre* se apagó abruptamente en la región.
                 </motion.p>
 
-                {/* SEPARADOR Y MISIÓN (UX/UI Mejorado) */}
+                {/* SEPARADOR Y MISIÓN (sin cambios) */}
                 <motion.div variants={cardVariants} className="pt-6 border-t border-gray-300 mt-6">
                      <p className="text-3xl font-extrabold text-primary flex items-center space-x-3">
                         <Icon name="Rocket" className="h-8 w-8 text-secondary stroke-2" />
@@ -329,19 +407,12 @@ const LandingPagePadelPro = () => {
                 </motion.p>
               </motion.div>
 
-              {/* Columna 2: Imagen Histórica Estática */}
+              {/* Columna 2: Carrusel de Historia (Implementación NUEVA) */}
               <motion.div 
-                className="relative p-4 md:p-8 bg-dark rounded-xl shadow-2xl"
                 variants={cardVariants}
+                className="relative h-[450px]" // Establecer una altura fija para el carrusel
               >
-                <img 
-                  src={historicalImage} 
-                  alt="Cancha de pádel antigua de los 90s en Bahía Blanca" 
-                  className="w-full h-auto object-cover rounded-lg transform rotate-1 transition duration-500 ease-in-out hover:rotate-0 hover:scale-[1.02]"
-                />
-                <div className="absolute top-2 left-4 text-xs font-bold text-secondary bg-dark/70 px-2 py-1 rounded-sm shadow-md italic">
-                    Bahía Blanca, Años '90
-                </div>
+                <ImageCarousel images={historyImages} />
               </motion.div>
             </div>
           </div>
@@ -462,56 +533,51 @@ const LandingPagePadelPro = () => {
         </motion.section>
       </main>
 
-      {/* Footer (sin cambios) */}
+      {/* Footer (con corrección de centrado en mobile) */}
       <motion.footer
-    className="bg-dark text-white py-12"
-    initial="hidden"
-    whileInView="visible"
-    viewport={{ once: true }}
-    variants={sectionVariants}
->
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* grid-cols-1 para mobile (apilado y centrado) | md:grid-cols-3 para desktop */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 border-b border-gray-700 pb-8 mb-8 space-y-8 md:space-y-0">
-            
-            {/* Columna 1: Info Empresa */}
-            <div className="text-center md:text-left">
-                <h5 className="text-xl font-bold text-secondary mb-3">Padel Pro Ranking</h5>
-                <p className="text-gray-400 text-sm">Innovación y profesionalismo en la gestión de torneos de pádel en Argentina.</p>
-            </div>
-            
-            {/* Columna 2: Explorar */}
-            <div className="text-center md:text-left">
-                <h5 className="text-lg font-bold mb-3">Explorar</h5>
-                <ul className="space-y-2 text-sm"> 
-                    <li><a href="#about-us" className="text-gray-400 hover:text-white transition">Sobre Nosotros</a></li>
-                    <li><a href="#solucion" className="text-gray-400 hover:text-white transition">Características</a></li>
-                    <li><a href="#numeros" className="text-gray-400 hover:text-white transition">Estadísticas</a></li>
-                    <li><a href="https://www.padelproranking.com" target="_blank" className="text-gray-400 hover:text-white transition">Ayuda / FAQ</a></li>
-                </ul>
-            </div>
-            
-            {/* Columna 3: Contacto */}
-            <div className="text-center md:text-left">
-                <h5 className="text-lg font-bold mb-3">Contacto</h5>
-                {/* justify-center centra el contenido flex en mobile */}
-                <p className="text-gray-400 text-sm flex items-center justify-center md:justify-start">
-                    <Icon name="Mail" className="h-4 w-4 mr-2 stroke-2" /> info@padelproranking.com
-                </p>
-                <p className="text-gray-400 text-sm flex items-center justify-center md:justify-start">
-                    <Icon name="Phone" className="h-4 w-4 mr-2 stroke-2" /> +54 9 291 5729501
-                </p>
-                <p className="text-gray-400 text-sm mt-3">¡Seguinos en redes!</p>
-                <div className="flex space-x-4 mt-2 justify-center md:justify-start">
-                    <a href="https://www.instagram.com/padelproranking/" target="_blank" className="text-gray-400 hover:text-white transition"><Icon name="Instagram" className="text-xl h-6 w-6 stroke-2" /></a>
+        className="bg-dark text-white py-12"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={sectionVariants}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 border-b border-gray-700 pb-8 mb-8 space-y-8 md:space-y-0">
+                
+                <div className="text-center md:text-left">
+                    <h5 className="text-xl font-bold text-secondary mb-3">Padel Pro Ranking</h5>
+                    <p className="text-gray-400 text-sm">Innovación y profesionalismo en la gestión de torneos de pádel en Argentina.</p>
+                </div>
+                
+                <div className="text-center md:text-left">
+                    <h5 className="text-lg font-bold mb-3">Explorar</h5>
+                    <ul className="space-y-2 text-sm"> 
+                        <li><a href="#about-us" className="text-gray-400 hover:text-white transition">Sobre Nosotros</a></li>
+                        <li><a href="#solucion" className="text-gray-400 hover:text-white transition">Características</a></li>
+                        <li><a href="#numeros" className="text-gray-400 hover:text-white transition">Estadísticas</a></li>
+                        <li><a href="https://www.padelproranking.com" target="_blank" className="text-gray-400 hover:text-white transition">Ayuda / FAQ</a></li>
+                    </ul>
+                </div>
+                
+                <div className="text-center md:text-left">
+                    <h5 className="text-lg font-bold mb-3">Contacto</h5>
+                    <p className="text-gray-400 text-sm flex items-center justify-center md:justify-start">
+                        <Icon name="Mail" className="h-4 w-4 mr-2 stroke-2" /> info@padelproranking.com
+                    </p>
+                    <p className="text-gray-400 text-sm flex items-center justify-center md:justify-start">
+                        <Icon name="Phone" className="h-4 w-4 mr-2 stroke-2" /> +54 9 291 5729501
+                    </p>
+                    <p className="text-gray-400 text-sm mt-3">¡Seguinos en redes!</p>
+                    <div className="flex space-x-4 mt-2 justify-center md:justify-start">
+                        <a href="https://www.instagram.com/padelproranking/" target="_blank" className="text-gray-400 hover:text-white transition"><Icon name="Instagram" className="text-xl h-6 w-6 stroke-2" /></a>
+                    </div>
                 </div>
             </div>
+            <div className="text-center text-sm text-gray-500">
+                &copy; 2024 Padel Pro Ranking. Todos los derechos reservados.
+            </div>
         </div>
-        <div className="text-center text-sm text-gray-500">
-            &copy; 2024 Padel Pro Ranking. Todos los derechos reservados.
-        </div>
-    </div>
-</motion.footer>
+      </motion.footer>
     </>
   );
 };
