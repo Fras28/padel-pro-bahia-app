@@ -5,6 +5,27 @@ import Morton from "../assets/morton.png";
 import Rucca from "../assets/ruca.png";
 import PadelPro from "../assets/PadelProArg.png";
 
+// =========================================================================
+// FUNCIÓN DE UTILIDAD AÑADIDA
+// =========================================================================
+/**
+ * Trunca una cadena de texto a una longitud máxima y añade "..." si es más larga.
+ * @param {string} name - La cadena a truncar.
+ * @param {number} maxLength - La longitud máxima (por defecto 16).
+ * @returns {string} El nombre truncado o el nombre original.
+ */
+const truncateName = (name, maxLength = 16) => {
+    if (!name) return 'N/A';
+    const trimmedName = String(name).trim(); // Asegurarse de que es una cadena
+    if (trimmedName.length <= maxLength) {
+        return trimmedName;
+    }
+    // Trunca, elimina espacios finales que queden del truncado y añade "..."
+    return trimmedName.substring(0, maxLength).trim() + '...';
+};
+// =========================================================================
+
+
 // --- IMPLEMENTACIÓN DE REDUX DENTRO DEL COMPONENTE (MOCK) ---
 // Usaremos un patrón de estado simple que simula la persistencia de Redux Toolkit.
 // ESTA ES LA CLAVE PARA QUE LOS DATOS NO SE RECARGUEN EN CADA VISITA.
@@ -576,8 +597,8 @@ const getInsignia = (player) => {
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {/* Mostrar los primeros 16 jugadores */}
-                      {categoryData.players.slice(0, 16).map((player, index) => { 
-                        const playerName = player
+                      {categoryData.players.slice(0, 20).map((player, index) => { 
+                        const rawName = player // Renombramos para clarity, manteniendo la lógica
                           ? (() => {
                               let fullName = player.nombre || "";
                               // Limpieza del sufijo de categoría y retorno del nombre limpio completo.
@@ -585,6 +606,9 @@ const getInsignia = (player) => {
                             })()
                           : "Desconocido";
 
+                        // APLICACIÓN DEL TRUNCADO DE 16 CARACTERES
+                        const playerName = truncateName(rawName, 16);
+                        
                         const globalPoints = player?.rankingGeneral || 0; 
                         const insignia = getInsignia(player);
 
@@ -604,7 +628,7 @@ const getInsignia = (player) => {
                               {insignia}
                             </td>
                             <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700 text-left">
-                              {/* Muestra el nombre limpio completo */}
+                              {/* Muestra el nombre limpio y truncado */}
                               <span className="font-medium text-gray-800">{playerName}</span>
                             </td>
                             <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-700 text-center">
