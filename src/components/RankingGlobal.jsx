@@ -31,7 +31,7 @@ const truncateName = (name, maxLength = 16) => {
 // ESTA ES LA CLAVE PARA QUE LOS DATOS NO SE RECARGUEN EN CADA VISITA.
 
 // Variables y lógica del rankingSlice.js
-const API_BASE = "https://padelproback-ranking.onrender.com/"; 
+const API_BASE = "https://back-padelpro.onrender.com/"; 
 const GLOBAL_RANKING_CATEGORIES_URL = `${API_BASE}api/ranking-global-categorias`;
 
 // ********************************************

@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 // La URL base es un placeholder aquí. En tu proyecto real, esto debe provenir del entorno.
-const API_BASE = "https://padelproback-ranking.onrender.com/"; 
+const API_BASE = "https://back-padelpro.onrender.com/"; 
 const GLOBAL_RANKING_CATEGORIES_URL = `${API_BASE}api/ranking-global-categorias`;
 
 // Definición del orden de categorías (Mantenido de la lógica anterior)
