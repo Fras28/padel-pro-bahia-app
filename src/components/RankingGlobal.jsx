@@ -31,7 +31,7 @@ const truncateName = (name, maxLength = 16) => {
 // ESTA ES LA CLAVE PARA QUE LOS DATOS NO SE RECARGUEN EN CADA VISITA.
 
 // Variables y lógica del rankingSlice.js
-const API_BASE = "https://back-padelpro.onrender.com/"; 
+const API_BASE = import.meta.env.VITE_API_BASE; 
 const GLOBAL_RANKING_CATEGORIES_URL = `${API_BASE}api/ranking-global-categorias`;
 
 // ********************************************
@@ -83,66 +83,28 @@ const dispatch = (action) => {
 };
 
 // Simulación del Thunk (fetchCategorizedRanking)
+// Reemplaza el Thunk simulado dentro de RankingGlobal.jsx
 const fetchCategorizedRanking = () => async () => {
-    dispatch({ type: 'ranking/fetchCategorizedRanking/pending' });
-    try {
-        const response = await fetch(`${GLOBAL_RANKING_CATEGORIES_URL}?populate=categoria`);
-        if (!response.ok) {
-            throw new Error('Error al obtener la lista de categorías de ranking.');
-        }
-        const categoriesData = await response.json();
+  dispatch({ type: 'ranking/fetchCategorizedRanking/pending' });
+  try {
+      // Petición limpia sin populates manuales
+      const response = await fetch(`${GLOBAL_RANKING_CATEGORIES_URL}`);
+      if (!response.ok) throw new Error('Error al obtener el ranking.');
+      
+      const result = await response.json();
 
-        const detailFetches = categoriesData.data.map(async (item) => {
-            const categoryDocumentId = item?.documentId;
-            const categoryName = item?.categoria?.nombre; 
+      const orderedCategories = {};
+      // Strapi V5 entrega los datos en result.data
+      result.data
+          .sort((a, b) => getCategoryOrderIndex(a.name) - getCategoryOrderIndex(b.name))
+          .forEach(category => {
+              orderedCategories[category.id] = category;
+          });
 
-            if (!categoryDocumentId || !categoryName) return null;
-
-            const DETAIL_URL = `${GLOBAL_RANKING_CATEGORIES_URL}/${categoryDocumentId}?populate=entradasRankingGlobal.jugador.club.logo&populate=entradasRankingGlobal.jugador.estadisticas`;
-
-            const detailResponse = await fetch(DETAIL_URL);
-            if (!detailResponse.ok) {
-                console.error(`Error al obtener detalle del ranking para ${categoryName}: Estado ${detailResponse.status}`);
-                return null;
-            }
-            const detailData = await detailResponse.json();
-
-            const rankingEntries = detailData.data?.entradasRankingGlobal || [];
-
-            const sortedPlayers = rankingEntries
-                .map(entry => ({
-                    rankingEntryId: entry.id, 
-                    posicionGlobal: entry.posicionGlobal,
-                    puntosGlobales: entry.puntosGlobales || 0,
-                    ...entry.jugador,
-                    rankingGeneral: entry.puntosGlobales || 0, 
-                    id: entry.jugador?.id, 
-                    nombre: entry.jugador?.nombre,
-                    apellido: entry.jugador?.apellido,
-                    historialRanking: entry.jugador?.historialRanking || [],
-                    estadisticas: entry.jugador?.estadisticas,
-                    club: entry.jugador?.club,
-                }))
-                .sort((a, b) => b.rankingGeneral - a.rankingGeneral);
-
-            return { id: item.id, name: categoryName, players: sortedPlayers };
-        });
-
-        const results = await Promise.all(detailFetches);
-        const orderedCategories = {};
-
-        // Aplicamos el ordenamiento aquí antes de guardar en el estado
-        results.filter(r => r !== null)
-            .sort((a, b) => getCategoryOrderIndex(a.name) - getCategoryOrderIndex(b.name))
-            .forEach(category => {
-                orderedCategories[category.id] = category;
-            });
-
-        dispatch({ type: 'ranking/fetchCategorizedRanking/fulfilled', payload: orderedCategories });
-
-    } catch (error) {
-        dispatch({ type: 'ranking/fetchCategorizedRanking/rejected', payload: error.message });
-    }
+      dispatch({ type: 'ranking/fetchCategorizedRanking/fulfilled', payload: orderedCategories });
+  } catch (error) {
+      dispatch({ type: 'ranking/fetchCategorizedRanking/rejected', payload: error.message });
+  }
 };
 
 // --- FIN IMPLEMENTACIÓN DE REDUX MOCK ---
@@ -609,7 +571,7 @@ const getInsignia = (player) => {
                         // APLICACIÓN DEL TRUNCADO DE 16 CARACTERES
                         const playerName = truncateName(rawName, 16);
                         
-                        const globalPoints = player?.rankingGeneral || 0; 
+                        const globalPoints = player?.puntosGlobales || 0; 
                         const insignia = getInsignia(player);
 
                         return (

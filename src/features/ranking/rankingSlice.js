@@ -23,70 +23,25 @@ export const fetchCategorizedRanking = createAsyncThunk(
   'ranking/fetchCategorizedRanking',
   async (_, { rejectWithValue }) => {
     try {
-      // 1. Obtener la lista de todos los rankings globales (categorías)
-      const response = await fetch(`${GLOBAL_RANKING_CATEGORIES_URL}?populate=categoria`);
+      // 1. Una SOLA petición al nuevo endpoint optimizado
+      // Ya no necesitamos ?populate=... porque el controlador se encarga de todo
+      const response = await fetch(`${GLOBAL_RANKING_CATEGORIES_URL}`);
+      
       if (!response.ok) {
-        throw new Error('Error al obtener la lista de categorías de ranking.');
+        throw new Error('Error al obtener el ranking unificado.');
       }
-      const categoriesData = await response.json();
+      
+      const result = await response.json();
 
-      const tempCategorizedRanking = {};
-
-      // Almacenar todas las promesas de detalle para ejecutar en paralelo
-      const detailFetches = categoriesData.data.map(async (item) => {
-        const categoryDocumentId = item?.documentId;
-        const categoryName = item?.categoria?.nombre; 
-
-        if (!categoryDocumentId || !categoryName) return null;
-
-        // URL para obtener los detalles de una categoría específica con jugadores
-        const DETAIL_URL = `${GLOBAL_RANKING_CATEGORIES_URL}/${categoryDocumentId}?populate=entradasRankingGlobal.jugador.club.logo&populate=entradasRankingGlobal.jugador.estadisticas`;
-
-        const detailResponse = await fetch(DETAIL_URL);
-        if (!detailResponse.ok) {
-          console.error(`Error al obtener detalle del ranking para ${categoryName}: Estado ${detailResponse.status}`);
-          return null;
-        }
-        const detailData = await detailResponse.json();
-
-        // 3. Procesar los datos de la categoría detallada
-        const rankingEntries = detailData.data?.entradasRankingGlobal || [];
-
-        const sortedPlayers = rankingEntries
-          .map(entry => ({
-            rankingEntryId: entry.id, 
-            posicionGlobal: entry.posicionGlobal,
-            puntosGlobales: entry.puntosGlobales || 0,
-            
-            // Mapeo de datos
-            ...entry.jugador,
-            rankingGeneral: entry.puntosGlobales || 0, 
-            id: entry.jugador?.id, 
-            nombre: entry.jugador?.nombre,
-            apellido: entry.jugador?.apellido,
-            historialRanking: entry.jugador?.historialRanking || [],
-            estadisticas: entry.jugador?.estadisticas,
-            club: entry.jugador?.club,
-          }))
-          .sort((a, b) => b.rankingGeneral - a.rankingGeneral);
-
-        return {
-          id: item.id,
-          name: categoryName,
-          players: sortedPlayers,
-        };
-      });
-
-      // Ejecutar todas las peticiones en paralelo y esperar los resultados
-      const results = await Promise.all(detailFetches);
-
-      // Mapear los resultados válidos al objeto final y aplicar el orden
+      // 2. Mapear al formato que espera tu estado de Redux
       const orderedCategories = {};
-      results.filter(r => r !== null)
-             .sort((a, b) => getCategoryOrderIndex(a.name) - getCategoryOrderIndex(b.name))
-             .forEach(category => {
-                orderedCategories[category.id] = category;
-             });
+      
+      // El resultado ya viene con 'name' y 'players' procesados desde Strapi
+      result.data
+        .sort((a, b) => getCategoryOrderIndex(a.name) - getCategoryOrderIndex(b.name))
+        .forEach(category => {
+          orderedCategories[category.id] = category;
+        });
 
       return orderedCategories;
 
