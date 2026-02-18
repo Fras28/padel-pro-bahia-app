@@ -34,6 +34,10 @@ const truncateName = (name, maxLength = 16) => {
 const API_BASE = import.meta.env.VITE_API_BASE; 
 const GLOBAL_RANKING_CATEGORIES_URL = `${API_BASE}api/ranking-global-categorias`;
 
+// Años disponibles para el selector
+const AVAILABLE_YEARS = [2026, 2025];
+const DEFAULT_YEAR = new Date().getFullYear(); // Usa el año actual por defecto
+
 // ********************************************
 // CORRECCIÓN FINAL: Orden de categorías garantizado (3RA a 8VA Libre)
 // ********************************************
@@ -50,60 +54,75 @@ const getCategoryOrderIndex = (categoryName) => {
   return index !== -1 ? index : CATEGORY_ORDER.length + 1; 
 };
 
-// --- ESTADO GLOBAL SIMULADO ---
-let globalRankingState = {
-    data: {},
-    loading: 'idle', // 'idle' | 'pending' | 'succeeded' | 'failed'
-    error: null,
-};
+// --- ESTADO GLOBAL SIMULADO (caché por año) ---
+const globalRankingStateByYear = {};
 let setGlobalStateUpdater = null;
+let currentYear = DEFAULT_YEAR;
 
-// Función que simula el dispatch de Redux
-const dispatch = (action) => {
+const getInitialStateForYear = () => ({
+    data: {},
+    loading: 'idle',
+    error: null,
+    lastUpdated: null,
+});
+
+const dispatch = (action, year) => {
     if (!setGlobalStateUpdater) return;
+    if (!globalRankingStateByYear[year]) {
+        globalRankingStateByYear[year] = getInitialStateForYear();
+    }
+    const next = { ...globalRankingStateByYear[year] };
 
-    let newState = { ...globalRankingState };
-
-    // Simular reducers de loading
     if (action.type === 'ranking/fetchCategorizedRanking/pending') {
-         if (newState.loading === 'idle' || newState.loading === 'failed') {
-            newState.loading = 'pending';
+        if (next.loading === 'idle' || next.loading === 'failed') {
+            next.loading = 'pending';
         }
     } else if (action.type === 'ranking/fetchCategorizedRanking/fulfilled') {
-        newState.loading = 'succeeded';
-        newState.data = action.payload;
-        newState.error = null;
+        next.loading = 'succeeded';
+        next.data = action.payload.categories;
+        next.lastUpdated = action.payload.lastUpdated;
+        next.error = null;
     } else if (action.type === 'ranking/fetchCategorizedRanking/rejected') {
-        newState.loading = 'failed';
-        newState.error = action.payload;
+        next.loading = 'failed';
+        next.error = action.payload;
     }
 
-    globalRankingState = newState;
-    setGlobalStateUpdater(newState);
+    globalRankingStateByYear[year] = next;
+    if (year === currentYear) {
+        setGlobalStateUpdater({ ...next });
+    }
 };
 
-// Simulación del Thunk (fetchCategorizedRanking)
-// Reemplaza el Thunk simulado dentro de RankingGlobal.jsx
-const fetchCategorizedRanking = () => async () => {
-  dispatch({ type: 'ranking/fetchCategorizedRanking/pending' });
+// Thunk con filtro por campo anio (biginteger en Strapi)
+const fetchCategorizedRanking = (year = DEFAULT_YEAR) => async () => {
+  dispatch({ type: 'ranking/fetchCategorizedRanking/pending' }, year);
   try {
-      // Petición limpia sin populates manuales
-      const response = await fetch(`${GLOBAL_RANKING_CATEGORIES_URL}`);
+      const url = `${GLOBAL_RANKING_CATEGORIES_URL}?filters[anio][$eq]=${year}`;
+
+      const response = await fetch(url);
       if (!response.ok) throw new Error('Error al obtener el ranking.');
       
       const result = await response.json();
 
       const orderedCategories = {};
-      // Strapi V5 entrega los datos en result.data
       result.data
           .sort((a, b) => getCategoryOrderIndex(a.name) - getCategoryOrderIndex(b.name))
           .forEach(category => {
               orderedCategories[category.id] = category;
           });
 
-      dispatch({ type: 'ranking/fetchCategorizedRanking/fulfilled', payload: orderedCategories });
+      // Tomar la fechaActualizacion más reciente entre las categorías devueltas
+      const allDates = result.data
+          .map(cat => cat.fechaActualizacion)
+          .filter(Boolean)
+          .map(d => new Date(d));
+      const lastUpdated = allDates.length > 0
+          ? new Date(Math.max(...allDates)).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+          : null;
+
+      dispatch({ type: 'ranking/fetchCategorizedRanking/fulfilled', payload: { categories: orderedCategories, lastUpdated } }, year);
   } catch (error) {
-      dispatch({ type: 'ranking/fetchCategorizedRanking/rejected', payload: error.message });
+      dispatch({ type: 'ranking/fetchCategorizedRanking/rejected', payload: error.message }, year);
   }
 };
 
@@ -387,21 +406,34 @@ const AnimatedPoints = ({ points }) => {
 // --- COMPONENTE PRINCIPAL ---
 
 function RankingGlobal() {
-  // Inicializamos el estado local para simular Redux
-  const [reduxState, setReduxState] = useState(globalRankingState);
+  const [selectedYear, setSelectedYear] = useState(DEFAULT_YEAR);
 
-  // Mapeamos los selectores
+  const [reduxState, setReduxState] = useState(() => {
+    if (!globalRankingStateByYear[DEFAULT_YEAR]) {
+      globalRankingStateByYear[DEFAULT_YEAR] = getInitialStateForYear();
+    }
+    return { ...globalRankingStateByYear[DEFAULT_YEAR] };
+  });
+
   const categorizedRanking = reduxState.data;
   const loading = reduxState.loading;
   const error = reduxState.error;
+  const lastUpdated = reduxState.lastUpdated;
 
-  // EFECTO DE MONTAJE para establecer el actualizador global
+  // Registrar el actualizador global al montar
   useEffect(() => {
-    setGlobalStateUpdater = setReduxState; // Establecer el actualizador del estado
-    
-    // Al desmontar, limpiamos la referencia
+    setGlobalStateUpdater = setReduxState;
     return () => { setGlobalStateUpdater = null; };
-  }, []); 
+  }, []);
+
+  // Al cambiar de año: sincronizar estado con el caché
+  useEffect(() => {
+    currentYear = selectedYear;
+    if (!globalRankingStateByYear[selectedYear]) {
+      globalRankingStateByYear[selectedYear] = getInitialStateForYear();
+    }
+    setReduxState({ ...globalRankingStateByYear[selectedYear] });
+  }, [selectedYear]);
 
   // URLs de imágenes reales simuladas para los sponsors (usando PLACEHOLDERS)
   const sponsorImages = [
@@ -415,16 +447,15 @@ function RankingGlobal() {
     { src: Rucca, url: "https://www.ruccabahia.com/", blurred: false },
   ];
 
-  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
 
-  // EFECTO PRINCIPAL: Cargar datos SOLO si el estado es 'idle' o 'failed'
+  // Disparar fetch si el año no tiene datos cargados
   useEffect(() => {
     if (loading === 'idle' || loading === 'failed') {
-      fetchCategorizedRanking()(); // Dispara el mock-thunk
+      fetchCategorizedRanking(selectedYear)();
     }
-  }, [loading]); 
+  }, [loading, selectedYear]);
 
   const openPlayerModal = (playerData) => {
     setSelectedPlayer(playerData);
@@ -517,9 +548,38 @@ const getInsignia = (player) => {
       {/* Colocamos el SponsorBanner al principio del componente RankingGlobal */}
     
 
-      <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6 text-center">
+      <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-3 text-center">
         Ranking Global por Categoría
       </h2>
+
+      {/* Selector de año */}
+      <div className="flex flex-col items-center gap-2 mb-5">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-gray-500">Temporada:</span>
+          {AVAILABLE_YEARS.map((year) => (
+            <button
+              key={year}
+              onClick={() => setSelectedYear(year)}
+              className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-300
+                ${selectedYear === year
+                  ? 'bg-indigo-600 text-white border-indigo-600 shadow-md scale-105'
+                  : 'bg-white text-gray-600 border-gray-300 hover:border-indigo-400 hover:text-indigo-600'
+                }`}
+            >
+              {year}
+            </button>
+          ))}
+        </div>
+        {/* Fecha de última actualización */}
+        {lastUpdated && loading === 'succeeded' && (
+          <p className="text-xs text-gray-400 flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Última actualización: <span className="font-medium text-gray-500">{lastUpdated}</span>
+          </p>
+        )}
+      </div>
       {loading === 'pending' ? ( // Usamos el estado 'loading' de Redux
         <SkeletonRankingTable />
       ) : error ? (
@@ -620,9 +680,11 @@ const getInsignia = (player) => {
             </>
           ))
       ) : (
-        <p className="px-6 py-4 text-center text-sm text-gray-600">
-          No se encontraron categorías o entradas de ranking.
-        </p>
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <span className="text-5xl mb-4">📅</span>
+          <p className="text-gray-500 font-medium text-base">No hay datos disponibles para {selectedYear}.</p>
+          <p className="text-gray-400 text-sm mt-1">Las tablas de esta temporada aún no fueron cargadas.</p>
+        </div>
       )}
 
       {isModalOpen && selectedPlayer && (
